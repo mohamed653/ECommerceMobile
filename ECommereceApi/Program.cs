@@ -19,7 +19,6 @@ builder.Services.AddCors(corsOptions =>
     });
 });
 
-/*Scaffold-DbContext "Server=.;Database=MobileECommerece;User Id=;Password=;"  Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models -ContextDir Data -Context ECommereceDbContext*/
 builder.Services.AddDbContext<ECommerceContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IProductRepo, ProductRepo>();
@@ -31,6 +30,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
 app.UseCors("myPolicy");
 app.UseAuthorization();
 

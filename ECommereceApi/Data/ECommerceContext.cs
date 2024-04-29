@@ -112,49 +112,9 @@ public partial class ECommerceContext : DbContext
 				.HasKey(wl => new { wl.UserId, wl.ProductId });
 
 
-
 			modelBuilder.Entity<ProductOrder>()
 				.HasKey(po => new { po.OrderId, po.ProductId });
 
-	
-
-			// Configure many-to-many relationship between Product and User
-			//modelBuilder.Entity<Product>()
-			//	.HasMany(p => p.Users)
-			//	.WithMany(u => u.Products)
-			//	.UsingEntity<ProductUser>(
-			//		j => j
-			//			.HasOne(pu => pu.User)
-			//			.WithMany(u => u.Products)
-			//			.HasForeignKey(pu => pu.UserId),
-			//		j => j
-			//			.HasOne(pu => pu.Product)
-			//			.WithMany(p => p.Users)
-			//			.HasForeignKey(pu => pu.ProductId),
-			//		j =>
-			//		{
-			//			j.ToTable("ProductUser");
-			//			j.HasKey(pu => new { pu.ProductId, pu.UserId });
-			//		});
-
-			// Configure many-to-many relationship between Product and Order
-			//modelBuilder.Entity<Product>()
-			//	.HasMany(p => p.Orders)
-			//	.WithMany(o => o.Products)
-			//	.UsingEntity<ProductOrder>(
-			//		j => j
-			//			.HasOne(op => op.Order)
-			//			.WithMany(o => o.Products)
-			//			.HasForeignKey(op => op.OrderId),
-			//		j => j
-			//			.HasOne(op => op.Product)
-			//			.WithMany(p => p.Orders)
-			//			.HasForeignKey(op => op.ProductId),
-			//		j =>
-			//		{
-			//			j.ToTable("OrderProduct");
-			//			j.HasKey(op => new { op.OrderId, op.ProductId });
-			//		});
 		});
 
         modelBuilder.Entity<ProductCart>(entity =>
