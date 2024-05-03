@@ -75,24 +75,30 @@ namespace ECommereceApi.Repo
         }
         public async Task<Status> AddProductPhotosAsync(ProductPictureDTO input)
         {
+            List<Task> operations = new();
             var product = await _db.Products.FindAsync(input.ProductId);
             if (product == null) return Status.Failed;
             foreach (var picture in input.Pictures)
             {
-                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(picture.FileName);
-                var path = Path.Combine(_env.WebRootPath, "uploads", fileName);
-                //var path = @$"~/uploads/{fileName}.jpg";
-                using (var stream = new FileStream(path, FileMode.Create))
+                operations.Add(Task.Run(async () =>
                 {
-                    await picture.CopyToAsync(stream);
-                }
-                var pictureObject = new ProductImage()
-                {
-                    ProductId = input.ProductId,
-                    ImageName = "/uploads/" + fileName
-                };
-                product.ProductImages.Add(pictureObject);
+                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(picture.FileName);
+                    var path = Path.Combine(_env.WebRootPath, "uploads", fileName);
+                    //var path = @$"~/uploads/{fileName}.jpg";
+                    using (var stream = new FileStream(path, FileMode.Create))
+                    {
+                        await picture.CopyToAsync(stream);
+                    }
+                    var pictureObject = new ProductImage()
+                    {
+                        ProductId = input.ProductId,
+                        ImageName = "/uploads/" + fileName
+                    };
+                    product.ProductImages.Add(pictureObject);
+                }));
             }
+            //Task.WaitAll([..operations]);
+            await Task.WhenAll(operations);
             await _db.SaveChangesAsync();
             return Status.Success;
         }
@@ -167,7 +173,7 @@ namespace ECommereceApi.Repo
             if (MaxOriginalPrice.HasValue)
                 query = query.Where(p => p.OriginalPrice <= MinOriginalPrice);
             if (MinAmount.HasValue)
-                query = query.Where(p => p.Amount >= MinAmount);            
+                query = query.Where(p => p.Amount >= MinAmount);
             if (MaxAmount.HasValue)
                 query = query.Where(p => p.Amount <= MinAmount);
             if (CategoriesIds is not null)
