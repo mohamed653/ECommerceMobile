@@ -363,3 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 /UnitTestProduct/UnitTestProduct.csproj
 /UnitTestProduct
+/ECommereceApi/appsettings.json
