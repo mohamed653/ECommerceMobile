@@ -4,6 +4,8 @@ using ECommereceApi.Models;
 using ECommereceApi.Repo;
 using ECommereceApi.Services.classes;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +29,27 @@ builder.Services.AddDbContext<ECommerceContext>(options =>
     .AddInterceptors(new SoftDeleteInterceptor());
 });
 
+
+#region Localization Service
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    options.SupportedCultures = new List<CultureInfo>
+    {
+        new CultureInfo("en-US"),
+        new CultureInfo("ar-EG")
+    };
+    options.SupportedCultures = options.SupportedCultures;
+    options.SupportedUICultures = options.SupportedCultures;
+    options.DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture(culture: "ar-EG", uiCulture: "ar-EG");
+
+});
+
+builder.Services.AddScoped<ILanguageRepo, LanguageRepo>();
+#endregion
+
+
 builder.Services.AddAutoMapper(typeof(Program));
 
 builder.Services.AddScoped<IProductRepo, ProductRepo>();
@@ -40,6 +63,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("myPolicy");
+app.UseRequestLocalization(app.Services.GetRequiredService<IOptions<RequestLocalizationOptions>>().Value);
 app.UseAuthorization();
 app.UseStaticFiles();
 app.MapControllers();
