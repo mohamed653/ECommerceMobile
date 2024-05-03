@@ -4,12 +4,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using ECommereceApi.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace ECommereceApi.Models;
 
 [Table("Product")]
-public partial class Product
+public partial class Product : ISoftDeletable
 {
     [Key]
     public int ProductId { get; set; }
@@ -29,6 +30,7 @@ public partial class Product
     public int CategoryId { get; set; }
 
     public bool IsDeleted { get; set; }
+    public DateTime? DateDeleted { get ; set ; }
 
     [ForeignKey("CategoryId")]
     [InverseProperty("Products")]
@@ -58,6 +60,5 @@ public partial class Product
 
 	// Computed properties
 	[NotMapped]
-	public double? FinalPrice { get; set; }
-
+	public double? FinalPrice => OriginalPrice - Discount;
 }
