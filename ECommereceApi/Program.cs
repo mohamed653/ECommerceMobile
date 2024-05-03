@@ -25,7 +25,7 @@ builder.Services.AddCors(corsOptions =>
 
 builder.Services.AddDbContext<ECommerceContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+    options.UseSqlServer(builder.Configuration.GetConnectionString("AzureConnection"))
     .AddInterceptors(new SoftDeleteInterceptor());
 });
 
@@ -52,7 +52,11 @@ builder.Services.AddScoped<ILanguageRepo, LanguageRepo>();
 
 builder.Services.AddAutoMapper(typeof(Program));
 
+// IOC Container Services
 builder.Services.AddScoped<IProductRepo, ProductRepo>();
+builder.Services.AddScoped<IUserRepo, UserRepo>();
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
