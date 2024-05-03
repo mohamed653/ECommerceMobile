@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ECommereceApi.Models;
 
-[PrimaryKey("ProductId", "Image")]
+[PrimaryKey("ProductId", "ImageName")]
 public partial class ProductImage
 {
     [Key]
@@ -16,7 +16,7 @@ public partial class ProductImage
 
     [Key]
     [StringLength(200)]
-    public string Image { get; set; }
+    public string ImageName { get; set; }
 
     [ForeignKey("ProductId")]
     [InverseProperty("ProductImages")]

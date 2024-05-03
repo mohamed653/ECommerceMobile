@@ -1,6 +1,8 @@
+using ECommereceApi.Data;
 using ECommereceApi.IRepo;
 using ECommereceApi.Models;
 using ECommereceApi.Repo;
+using ECommereceApi.Services.classes;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,7 +21,13 @@ builder.Services.AddCors(corsOptions =>
     });
 });
 
-builder.Services.AddDbContext<ECommerceContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<ECommerceContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+    .AddInterceptors(new SoftDeleteInterceptor());
+});
+
+builder.Services.AddAutoMapper(typeof(Program));
 
 builder.Services.AddScoped<IProductRepo, ProductRepo>();
 var app = builder.Build();
@@ -33,7 +41,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("myPolicy");
 app.UseAuthorization();
-
+app.UseStaticFiles();
 app.MapControllers();
 
 app.Run();
