@@ -15,6 +15,10 @@ namespace ECommereceApi.Controllers
         // Server-side validation 
         // Localization through routing 
         // Customizing error messages (Localized)
+        // API Documentation
+        // Search User by Name
+        // Pagination in GetUsers
+        // Sorting in GetUsers
 
 
         private readonly IUserRepo _userRepo;
@@ -33,6 +37,10 @@ namespace ECommereceApi.Controllers
             return Ok(_userRepo.GetUsers());
         }
         [HttpGet("{id}")]
+        /// <summary>
+        /// Get all User
+        /// </summary>
+        /// <returns></returns>
         public IActionResult GetUser(int id)
         {
             var user = _userRepo.GetUser(id);
@@ -42,6 +50,10 @@ namespace ECommereceApi.Controllers
             }
             return Ok(user);
         }
+        /// <summary>
+        /// AddUser
+        /// </summary>
+        /// <returns></returns>
         [HttpPost]
         public IActionResult AddUser([FromBody] UserDTOUi userDto)
         {
@@ -58,13 +70,20 @@ namespace ECommereceApi.Controllers
             }
             return BadRequest();
         }
+
+        /// <summary>
+        /// UpdateUser
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="userDto"></param>
+        /// <returns></returns>
         [HttpPut("{id}")]
         public IActionResult UpdateUser(int id, [FromBody] UserDTO userDto)
         {
-            //if (id != userDto.UserId)
-            //{
-            //    return BadRequest();
-            //}
+            if (id != userDto.UserId)
+            {
+                return BadRequest();
+            }
             var status = _userRepo.UpdateUser(userDto);
             if (status == Status.Success)
             {
@@ -72,6 +91,12 @@ namespace ECommereceApi.Controllers
             }
             return BadRequest();
         }
+
+        /// <summary>
+        /// DeleteUser
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpDelete("{id}")]
         public IActionResult DeleteUser(int id)
         {
