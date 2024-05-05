@@ -17,7 +17,10 @@ namespace ECommereceApi.Services.Mapper
 
             CreateMap<SubCategory, CategoryDTO>()
                 .ForMember(dest => dest.CategoryId, option => option.MapFrom(src => src.SubId));
-           
+
+            CreateMap<User, UserDTO>().ReverseMap();
+            CreateMap<User, UserDTOUi>().ReverseMap();
+
         }
     }
 }

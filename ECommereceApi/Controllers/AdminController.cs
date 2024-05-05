@@ -1,4 +1,5 @@
-﻿using ECommereceApi.IRepo;
+﻿using ECommereceApi.DTOs;
+using ECommereceApi.IRepo;
 using ECommereceApi.Models;
 using ECommereceApi.Repo;
 using Microsoft.AspNetCore.Http;
@@ -31,26 +32,32 @@ namespace ECommereceApi.Controllers
             return Ok(user);
         }
         [HttpPost]
-        public IActionResult AddUser([FromBody] User user)
+        public IActionResult AddUser([FromBody] UserDTOUi userDto)
         {
-            var status = _userRepo.AddUser(user);
+            if(ModelState.IsValid == false)
+            {
+                return BadRequest(ModelState);
+            }
+            var status = _userRepo.AddUser(userDto);
+
             if (status == Status.Success)
             {
-                return CreatedAtAction("GetUser", new { id = user.UserId }, user);
+                //return CreatedAtAction("GetUser", new { id = userDto.UserId }, userDto);
+                return Ok(userDto);
             }
             return BadRequest();
         }
         [HttpPut("{id}")]
-        public IActionResult UpdateUser(int id, [FromBody] User user)
+        public IActionResult UpdateUser(int id, [FromBody] UserDTO userDto)
         {
-            if (id != user.UserId)
-            {
-                return BadRequest();
-            }
-            var status = _userRepo.UpdateUser(user);
+            //if (id != userDto.UserId)
+            //{
+            //    return BadRequest();
+            //}
+            var status = _userRepo.UpdateUser(userDto);
             if (status == Status.Success)
             {
-                return NoContent();
+                return Ok("Updated Successfuly");
             }
             return BadRequest();
         }
@@ -60,7 +67,7 @@ namespace ECommereceApi.Controllers
             var status = _userRepo.DeleteUser(id);
             if (status == Status.Success)
             {
-                return NoContent();
+                return Ok("Deleted Successfuly");
             }
             return NotFound();
         }

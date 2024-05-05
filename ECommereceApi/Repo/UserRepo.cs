@@ -1,4 +1,6 @@
-﻿using ECommereceApi.Data;
+﻿using AutoMapper;
+using ECommereceApi.Data;
+using ECommereceApi.DTOs;
 using ECommereceApi.IRepo;
 using ECommereceApi.Models;
 using Microsoft.EntityFrameworkCore;
@@ -8,25 +10,30 @@ namespace ECommereceApi.Repo
     public class UserRepo:IUserRepo
     {
         private readonly ECommerceContext _context;
-        public UserRepo(ECommerceContext context)
+        private readonly IMapper _mapper;
+        public UserRepo(ECommerceContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
-        public IEnumerable<User> GetUsers()
+        public IEnumerable<UserDTO> GetUsers()
         {
-            return _context.Users.ToList();
+            return _mapper.Map<List<UserDTO>>(_context.Users.ToList());
         }
-        public User GetUser(int id)
+
+        public UserDTO GetUser(int id)
         {
-            return _context.Users.Find(id);
+            return _mapper.Map<UserDTO>( _context.Users.Find(id));
         }
-        public Status AddUser(User user)
+        public Status AddUser(UserDTOUi userDto)
         {
+            var user = _mapper.Map<User>(userDto);
             _context.Users.Add(user);
             return Save();
         }
-        public Status UpdateUser(User user)
+        public Status UpdateUser(UserDTO userDto)
         {
+            var user = _mapper.Map<User>(userDto);
             _context.Entry(user).State = EntityState.Modified;
             return Save();
         }

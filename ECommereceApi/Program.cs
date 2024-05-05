@@ -1,3 +1,4 @@
+using CloudinaryDotNet;
 using ECommereceApi.Data;
 using ECommereceApi.IRepo;
 using ECommereceApi.Models;
@@ -29,6 +30,19 @@ builder.Services.AddDbContext<ECommerceContext>(options =>
     .AddInterceptors(new SoftDeleteInterceptor());
 });
 
+
+#region FileServer
+
+var cloudinaryCredentials = builder.Configuration.GetSection("Cloudinary");
+var account = new Account(
+    cloudinaryCredentials["CloudName"],
+    cloudinaryCredentials["ApiKey"],
+    cloudinaryCredentials["ApiSecret"]
+);
+
+builder.Services.AddSingleton(account);
+builder.Services.AddScoped<Cloudinary>();
+#endregion
 
 #region Localization Service
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
