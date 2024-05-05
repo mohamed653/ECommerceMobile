@@ -4,6 +4,8 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>False</GenerateDocumentationFile>
+    <DocumentationFile>F:\All Projects\ECommerce_Project\API\ECommereceApi\wwwroot\mydoc.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

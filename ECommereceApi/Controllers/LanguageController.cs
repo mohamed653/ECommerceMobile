@@ -21,7 +21,7 @@ namespace ECommereceApi.Controllers
         }
 
 
-        [HttpGet("GetAllLanguages")]
+        [HttpGet("{culture}")]
         public IActionResult GetAll(string culture = "ar-EG")
         {
             CultureInfo.CurrentCulture = new CultureInfo(culture);
@@ -30,7 +30,7 @@ namespace ECommereceApi.Controllers
             var result = _languageRepo.GetAll(culture);
             return Ok(result);
         }
-        [HttpGet("GetByKey")]
+        [HttpGet("{key} {culture}")]
         public IActionResult GetByKey(string key, string culture = "ar-EG")
         {
             if (key == null)
@@ -46,7 +46,7 @@ namespace ECommereceApi.Controllers
             return Ok(result);
         }
 
-        [HttpPost("AddNewResource")]
+        [HttpPost("{key} {valueEN} {valueAR}")]
         public IActionResult AddLocalizationResource(string key, string valueEN, string valueAR)
         {
             if (key == null)
@@ -68,7 +68,7 @@ namespace ECommereceApi.Controllers
             return Ok($"The Key ({key}) has been added successfully!");
         }
 
-        [HttpDelete("DeleteResource")]
+        [HttpDelete("{key} {culture}")]
         public IActionResult DeleteLocalizationResource(string key, string culture)
         {
             if (key == null)
@@ -81,7 +81,7 @@ namespace ECommereceApi.Controllers
             return Ok($"The Key ({key}) has been deleted successfully!");
         }
 
-        [HttpPut("UpdateResource")]
+        [HttpPut("{key} {valueEN} {valueAR}")]
         public IActionResult UpdateLocalizationResource(string key, string valueEN, string valueAR)
         {
             if (key == null)

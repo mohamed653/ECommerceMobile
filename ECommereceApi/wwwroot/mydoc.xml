@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ECommereceApi</name>
+    </assembly>
+    <members>
+        <member name="M:ECommereceApi.Controllers.AdminController.GetUsers">
+            <summary>
+            Get all Users
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:ECommereceApi.Migrations.intialCommit">
+            <inheritdoc />
+        </member>
+        <member name="M:ECommereceApi.Migrations.intialCommit.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ECommereceApi.Migrations.intialCommit.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ECommereceApi.Migrations.intialCommit.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+    </members>
+</doc>

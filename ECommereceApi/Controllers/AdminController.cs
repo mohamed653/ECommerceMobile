@@ -11,11 +11,22 @@ namespace ECommereceApi.Controllers
     [ApiController]
     public class AdminController : ControllerBase
     {
+        // Some Considerations:
+        // Server-side validation 
+        // Localization through routing 
+        // Customizing error messages (Localized)
+
+
         private readonly IUserRepo _userRepo;
         public AdminController(IUserRepo userRepo)
         {
             _userRepo = userRepo;
         }
+
+        /// <summary>
+        /// Get all Users
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         public IActionResult GetUsers()
         {
