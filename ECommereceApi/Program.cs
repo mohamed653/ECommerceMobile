@@ -1,20 +1,41 @@
+using CloudinaryDotNet;
 using ECommereceApi.Data;
 using ECommereceApi.IRepo;
 using ECommereceApi.Models;
 using ECommereceApi.Repo;
 using ECommereceApi.Services.classes;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.OpenApi.Models;
 using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 
-
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+
+var webHostEnvironment = builder.Services.BuildServiceProvider().GetRequiredService<IWebHostEnvironment>();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Mobile ECommerce API",
+        Version = "v1",
+        Description = "Mobile ECommerce ASP.NET Core Web API",
+        Contact = new OpenApiContact
+        {
+            Name = "Mohamed_Hamed",
+            Email = "mohamedHamed@gmail.com"
+        }
+
+    });
+    c.IncludeXmlComments(webHostEnvironment.WebRootPath + "\\mydoc.xml");
+});
+
+
 builder.Services.AddCors(corsOptions =>
 {
     corsOptions.AddPolicy("myPolicy", corsPolicyBuilder =>
@@ -29,6 +50,19 @@ builder.Services.AddDbContext<ECommerceContext>(options =>
     .AddInterceptors(new SoftDeleteInterceptor());
 });
 
+
+#region FileServer
+
+var cloudinaryCredentials = builder.Configuration.GetSection("Cloudinary");
+var account = new Account(
+    cloudinaryCredentials["CloudName"],
+    cloudinaryCredentials["ApiKey"],
+    cloudinaryCredentials["ApiSecret"]
+);
+
+builder.Services.AddSingleton(account);
+builder.Services.AddScoped<Cloudinary>();
+#endregion
 
 #region Localization Service
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
