@@ -10,6 +10,66 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:ECommereceApi.Controllers.AdminController.GetUser(System.Int32)">
+            <summary>
+            Get User by Id
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ECommereceApi.Controllers.AdminController.AddUser(ECommereceApi.DTOs.UserDTOUi)">
+            <summary>
+            AddUser
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ECommereceApi.Controllers.AdminController.SortUsers(ECommereceApi.Repo.UserOrderBy,ECommereceApi.Repo.SortType)">
+            <summary>
+            SortUsers by userOrderBy and sortType  
+            UserOrderBy: Name, Email, Date
+            SortType: ASC, DESC
+            </summary>
+            <param name="userOrderBy"></param>
+            <param name="sortType"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ECommereceApi.Controllers.AdminController.SearchUserByName(System.String)">
+            <summary>
+            SearchUserByName
+            </summary>
+            <param name="name"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ECommereceApi.Controllers.AdminController.SearchUserByEmail(System.String)">
+            <summary>
+            SearchUserByEmail
+            </summary>
+            <param name="email"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ECommereceApi.Controllers.AdminController.GetUserPagination(System.Int32,System.Int32,System.String)">
+            <summary>
+            GetUserPagination
+            </summary>
+            <param name="pageNumber"></param>
+            <param name="pageSize"></param>
+            <param name="email"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ECommereceApi.Controllers.AdminController.UpdateUser(System.Int32,ECommereceApi.DTOs.UserDTO)">
+            <summary>
+            UpdateUser
+            </summary>
+            <param name="id"></param>
+            <param name="userDto"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ECommereceApi.Controllers.AdminController.DeleteUser(System.Int32)">
+            <summary>
+            DeleteUser
+            </summary>
+            <param name="id"></param>
+            <returns></returns>
+        </member>
         <member name="T:ECommereceApi.Migrations.intialCommit">
             <inheritdoc />
         </member>
@@ -20,6 +80,18 @@
             <inheritdoc />
         </member>
         <member name="M:ECommereceApi.Migrations.intialCommit.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:ECommereceApi.Migrations.adding_softdelete">
+            <inheritdoc />
+        </member>
+        <member name="M:ECommereceApi.Migrations.adding_softdelete.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ECommereceApi.Migrations.adding_softdelete.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ECommereceApi.Migrations.adding_softdelete.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
     </members>
