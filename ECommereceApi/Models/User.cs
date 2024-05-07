@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using ECommereceApi.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace ECommereceApi.Models;
@@ -15,7 +16,7 @@ public enum RoleType
 }
 
 [Table("User")]
-public partial class User
+public partial class User: ISoftDeletable
 {
     [Key]
     public int UserId { get; set; }
@@ -73,6 +74,5 @@ public partial class User
 
 	[InverseProperty("User")]
 	public virtual ICollection<WishList> WishLists { get; set; } = new List<WishList>();
-
-
+    public DateTime? DateDeleted { get ; set; }
 }

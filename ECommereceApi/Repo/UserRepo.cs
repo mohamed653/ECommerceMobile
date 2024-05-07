@@ -3,6 +3,7 @@ using ECommereceApi.Data;
 using ECommereceApi.DTOs;
 using ECommereceApi.IRepo;
 using ECommereceApi.Models;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace ECommereceApi.Repo
@@ -27,12 +28,18 @@ namespace ECommereceApi.Repo
         }
         public Status AddUser(UserDTOUi userDto)
         {
+            if (_context.Users.Any(u => u.Email == userDto.Email))
+            {
+                return Status.EmailExistsBefore;
+            }
+            userDto.Email = userDto.Email.ToLower().Trim();
             var user = _mapper.Map<User>(userDto);
             _context.Users.Add(user);
             return Save();
         }
         public Status UpdateUser(UserDTO userDto)
         {
+            userDto.Email = userDto.Email.ToLower().Trim();
             var user = _mapper.Map<User>(userDto);
             _context.Entry(user).State = EntityState.Modified;
             return Save();
@@ -62,6 +69,53 @@ namespace ECommereceApi.Repo
             {
                 return Status.Failed;
             }
+        }
+
+        public IEnumerable<UserDTO> SearchUserByEmail(string email)
+        {
+            return _mapper.Map<List<UserDTO>>(_context.Users.Where(u => u.Email.Contains(email.ToLower())).ToList());
+        }
+        public IEnumerable<UserDTO> SearchUserByName(string name)
+        {
+            return _mapper.Map<List<UserDTO>>(_context.Users.Where(u => u.FName.Contains(name)||u.LName.Contains(name)).ToList());
+        }
+
+        public IEnumerable<UserDTO> GetUserPagination(int pageNumber, int pageSize)
+        {
+            return _mapper.Map<List<UserDTO>>(_context.Users.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList());
+        }
+
+        public IEnumerable<UserDTO> GetUserPagination(int pageNumber, int pageSize, string email)
+        {
+            return _mapper.Map<List<UserDTO>>(_context.Users.Where(u => u.Email.Contains(email)).Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList());
+        }
+
+        public IEnumerable<UserDTO> SortUsers(UserOrderBy userOrderBy, SortType sortType = SortType.ASC)
+        {
+
+            var users = _context.Users.AsQueryable();
+            switch (userOrderBy)
+            {
+                case UserOrderBy.Name:
+                    users = sortType == SortType.ASC ? users.OrderBy(u => u.FName) : users.OrderByDescending(u => u.FName);
+                    break;
+                case UserOrderBy.Email:
+                    users = sortType == SortType.ASC ? users.OrderBy(u => u.Email) : users.OrderByDescending(u => u.Email);
+                    break;
+            }
+            return _mapper.Map<List<UserDTO>>(users.ToList());
+        }
+
+        public Status SoftDelete(int id)
+        {
+            var user = _context.Users.Find(id);
+            if (user == null)
+            {
+                return Status.NotFound;
+            }
+            user.IsDeleted = true;
+            return Save();
+
         }
     }
 }

@@ -15,6 +15,10 @@ namespace ECommereceApi.Controllers
         // Server-side validation 
         // Localization through routing 
         // Customizing error messages (Localized)
+        // API Documentation - Done
+        // Search User by Name - Done
+        // Pagination in GetUsers - Done
+        // Sorting in GetUsers - Done
 
 
         private readonly IUserRepo _userRepo;
@@ -32,7 +36,14 @@ namespace ECommereceApi.Controllers
         {
             return Ok(_userRepo.GetUsers());
         }
-        [HttpGet("{id}")]
+
+
+
+        /// <summary>
+        /// Get User by Id
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("{id:int}")]
         public IActionResult GetUser(int id)
         {
             var user = _userRepo.GetUser(id);
@@ -42,6 +53,10 @@ namespace ECommereceApi.Controllers
             }
             return Ok(user);
         }
+        /// <summary>
+        /// AddUser
+        /// </summary>
+        /// <returns></returns>
         [HttpPost]
         public IActionResult AddUser([FromBody] UserDTOUi userDto)
         {
@@ -56,15 +71,98 @@ namespace ECommereceApi.Controllers
                 //return CreatedAtAction("GetUser", new { id = userDto.UserId }, userDto);
                 return Ok(userDto);
             }
-            return BadRequest();
+            else if (status == Status.EmailExistsBefore)
+            {
+                return BadRequest("Email Exists Before");
+            }
+            return BadRequest("An Error Has Occured");
         }
+
+        /// <summary>
+        /// SortUsers by userOrderBy and sortType  
+        /// UserOrderBy: Name, Email, Date
+        /// SortType: ASC, DESC
+        /// </summary>
+        /// <param name="userOrderBy"></param>
+        /// <param name="sortType"></param>
+        /// <returns></returns>
+        [HttpGet("{userOrderBy:int}/{sortType:int}")]
+        public IActionResult SortUsers(UserOrderBy userOrderBy, SortType sortType = SortType.ASC)
+        {
+            return Ok(_userRepo.SortUsers(userOrderBy, sortType));
+        }
+
+        /// <summary>
+        /// SearchUserByName
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        [HttpGet("{name:alpha}")]
+        public IActionResult SearchUserByName(string name)
+        {
+            var user = _userRepo.SearchUserByName(name);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            return Ok(user);
+        }
+
+        /// <summary>
+        /// SearchUserByEmail
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns></returns>
+        [HttpGet("{email}")]
+        public IActionResult SearchUserByEmail(string email)
+        {
+            var user = _userRepo.SearchUserByEmail(email);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            return Ok(user);
+        }
+        /// <summary>
+        /// GetUserPagination
+        /// </summary>
+        /// <param name="pageNumber"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="email"></param>
+        /// <returns></returns>
+
+        [HttpGet("{pageNumber}/{pageSize}")]
+        public IActionResult GetUserPagination(int pageNumber, int pageSize,string? email)
+        {
+            IEnumerable<UserDTO> users;
+            if (email == null)
+            {
+                users = _userRepo.GetUserPagination(pageNumber, pageSize);
+            }
+            else
+            {
+                users = _userRepo.GetUserPagination(pageNumber, pageSize,email);
+            }
+            if (users == null)
+            {
+                return NotFound();
+            }
+            return Ok(users);
+        }
+
+        /// <summary>
+        /// UpdateUser
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="userDto"></param>
+        /// <returns></returns>
         [HttpPut("{id}")]
         public IActionResult UpdateUser(int id, [FromBody] UserDTO userDto)
         {
-            //if (id != userDto.UserId)
-            //{
-            //    return BadRequest();
-            //}
+            if (id != userDto.UserId)
+            {
+                return BadRequest();
+            }
             var status = _userRepo.UpdateUser(userDto);
             if (status == Status.Success)
             {
@@ -72,6 +170,12 @@ namespace ECommereceApi.Controllers
             }
             return BadRequest();
         }
+
+        /// <summary>
+        /// DeleteUser
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpDelete("{id}")]
         public IActionResult DeleteUser(int id)
         {
@@ -82,6 +186,7 @@ namespace ECommereceApi.Controllers
             }
             return NotFound();
         }
+
 
 
     }
