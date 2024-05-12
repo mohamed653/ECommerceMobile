@@ -51,6 +51,17 @@ public partial class User
     [StringLength(50)]
     public string Password { get; set; }
 
+
+    [Required]
+    [StringLength(8)]
+    public string VertificationCode { get; set; }
+
+
+    public DateTime? VerifiedAt{ get; set; }
+
+    public bool IsVerified { get; set; }
+
+
     public bool IsDeleted { get; set; }
 
     public RoleType Role { get; set; }
