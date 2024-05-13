@@ -75,6 +75,5 @@ public partial class User : ISoftDeletable
 
 	[InverseProperty("User")]
 	public virtual ICollection<WishList> WishLists { get; set; } = new List<WishList>();
-
-
+    public DateTime? DateDeleted { get ; set; }
 }

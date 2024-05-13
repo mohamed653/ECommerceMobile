@@ -5,5 +5,18 @@
 		Success,
 		Failed,
 		NotFound,
-	}
+        EmailExistsBefore
+    }
+
+	public enum SortType
+	{
+        ASC,
+        DESC
+    }
+	public enum UserOrderBy
+	{
+        Name,
+        Email,
+        Date
+    }
 }
