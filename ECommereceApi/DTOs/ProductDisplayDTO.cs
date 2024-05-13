@@ -20,8 +20,6 @@ namespace ECommereceApi.DTOs
 
         public string CategoryName { get; set; }
 
-        // Computed properties
-        [NotMapped]
         public double? FinalPrice { get; set; }
     }
 }

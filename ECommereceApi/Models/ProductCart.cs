@@ -30,12 +30,12 @@ public partial class ProductCart
 
     // Computed properties
 
-    [NotMapped]
-    public double? TotalPrice { get; set; }
+ //   [NotMapped]
+ //   public double? TotalPrice { get; set; }
 
-	[NotMapped]
-	public int? TotalAmount { get; set; }
+	//[NotMapped]
+	//public int? TotalAmount { get; set; }
 
-    [NotMapped]
-	public double? ProductTotalPrice { get; set; }
+ //   [NotMapped]
+	//public double? ProductTotalPrice { get; set; }
 }

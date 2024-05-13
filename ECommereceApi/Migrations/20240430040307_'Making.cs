@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace ECommereceApi.Migrations
+namespace DataBase.Migrations
 {
     /// <inheritdoc />
-    public partial class intialCommit : Migration
+    public partial class Making : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

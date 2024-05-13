@@ -5,6 +5,9 @@ using Microsoft.EntityFrameworkCore;
 using ECommereceApi.DTOs;
 using AutoMapper;
 using Microsoft.IdentityModel.Tokens;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
+using Azure;
 
 namespace ECommereceApi.Repo
 {
@@ -13,11 +16,13 @@ namespace ECommereceApi.Repo
         private readonly ECommerceContext _db;
         private readonly IMapper _mapper;
         private readonly IWebHostEnvironment _env;
-        public ProductRepo(IWebHostEnvironment env, ECommerceContext context, IMapper mapper)
+        private readonly Cloudinary _cloudinary;
+        public ProductRepo(IWebHostEnvironment env, ECommerceContext context, IMapper mapper, Cloudinary cloudinary)
         {
             _env = env;
             _db = context;
             _mapper = mapper;
+            _cloudinary = cloudinary;
         }
         public async Task<Status> AddProductAsync(ProductAddDTO product)
         {
@@ -75,55 +80,65 @@ namespace ECommereceApi.Repo
         }
         public async Task<Status> AddProductPhotosAsync(ProductPictureDTO input)
         {
-            List<Task> operations = new();
+            List<Task<ImageUploadResult>> operations = new();
             var product = await _db.Products.FindAsync(input.ProductId);
             if (product == null) return Status.Failed;
             foreach (var picture in input.Pictures)
             {
-                operations.Add(Task.Run(async () =>
+                operations.Add(UploadImage(picture));
+            }
+            //Task.WaitAll([..operations]);
+            var operationsResult = await Task.WhenAll(operations);
+            foreach (var operationResult in operationsResult)
+            {
+                if (operationResult.Error is null)
                 {
-                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(picture.FileName);
-                    var path = Path.Combine(_env.WebRootPath, "uploads", fileName);
-                    //var path = @$"~/uploads/{fileName}.jpg";
-                    using (var stream = new FileStream(path, FileMode.Create))
-                    {
-                        await picture.CopyToAsync(stream);
-                    }
                     var pictureObject = new ProductImage()
                     {
                         ProductId = input.ProductId,
-                        ImageName = "/uploads/" + fileName
+                        ImageUri = operationResult.Url.ToString(),
+                        ImageId = operationResult.PublicId
                     };
-                    product.ProductImages.Add(pictureObject);
-                }));
+                    _db.ProductImages.Add(pictureObject);
+                }
             }
-            //Task.WaitAll([..operations]);
-            await Task.WhenAll(operations);
             await _db.SaveChangesAsync();
             return Status.Success;
+        }
+        private async Task<ImageUploadResult> UploadImage(IFormFile file)
+        {
+            var fileName = Guid.NewGuid().ToString();
+            var uploadParams = new ImageUploadParams()
+            {
+                File = new FileDescription(fileName, file.OpenReadStream()),
+                PublicId = $"images/uploads/{fileName}"
+            };
+            return await _cloudinary.UploadAsync(uploadParams);
         }
         public async Task<List<string>> GetProductPicturesAsync(int ProductId)
         {
             var product = await _db.Products.Include(p => p.ProductImages).FirstOrDefaultAsync(p => p.ProductId == ProductId);
             if (product == null) return null;
-            return product.ProductImages.Select(p => p.ImageName).ToList();
+            return product.ProductImages.Select(p => p.ImageUri).ToList();
         }
         public async Task<Status> RemoveProductPictureAsync(int productId, string picture)
         {
             Product product = await _db.Products.Include(p => p.ProductImages).FirstOrDefaultAsync(p => p.ProductId == productId);
             if (product == null)
                 return Status.NotFound;
-            ProductImage image = product.ProductImages.Where(image => image.ImageName == picture.Substring(picture.IndexOf("/uploads"))).FirstOrDefault();
+            ProductImage image = product.ProductImages.Where(image => image.ImageUri == picture).FirstOrDefault();
             if (image == null)
                 return Status.NotFound;
             product.ProductImages.Remove(image);
+            DeletionParams del = new DeletionParams(image.ImageId);
+            await _cloudinary.DestroyAsync(del);
             await _db.SaveChangesAsync();
             return Status.Success;
         }
         public PagedResult<ProductDisplayDTO> RenderPagination(int page, int pageSize, List<Product> inputProducts)
         {
             PagedResult<ProductDisplayDTO> result = new PagedResult<ProductDisplayDTO>();
-            int totalCount = inputProducts.Count();
+            int totalCount = inputProducts.Count;
             result.TotalItems = totalCount;
             result.TotalPages = totalCount / pageSize;
             if (totalCount % pageSize > 0)
@@ -190,6 +205,13 @@ namespace ECommereceApi.Repo
             var products = await GetAllFilteredProductsFromSearchAsync(Name, MinOriginalPrice, MaxOriginalPrice, MinAmount, MaxAmount, CategoriesIds);
             var output = RenderPagination(page, pageSize, products);
             return output;
+        }
+        public async Task<bool> IsAllProductsExistsAsync(HashSet<int> productsIds)
+        {
+            var onBoth = productsIds.Intersect(_db.Products.Select(p => p.ProductId));
+            if (onBoth.Count() == productsIds.Count)
+                return true;
+            return false;
         }
 
     }

@@ -1,4 +1,3 @@
-using CloudinaryDotNet;
 using ECommereceApi.Data;
 using ECommereceApi.IRepo;
 using ECommereceApi.Models;
@@ -6,6 +5,8 @@ using ECommereceApi.Repo;
 using ECommereceApi.Services.classes;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using System.Globalization;
@@ -46,7 +47,7 @@ builder.Services.AddCors(corsOptions =>
 
 builder.Services.AddDbContext<ECommerceContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("AzureConnection"))
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
     .AddInterceptors(new SoftDeleteInterceptor());
 });
 
@@ -83,14 +84,14 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
 builder.Services.AddScoped<ILanguageRepo, LanguageRepo>();
 #endregion
 
-
 builder.Services.AddAutoMapper(typeof(Program));
 
-// IOC Container Services
+
 builder.Services.AddScoped<IProductRepo, ProductRepo>();
 builder.Services.AddScoped<IUserRepo, UserRepo>();
 
 
+builder.Services.AddScoped<ICartRepo, CartRepo>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

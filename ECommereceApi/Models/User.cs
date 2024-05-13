@@ -16,7 +16,7 @@ public enum RoleType
 }
 
 [Table("User")]
-public partial class User: ISoftDeletable
+public partial class User : ISoftDeletable
 {
     [Key]
     public int UserId { get; set; }
@@ -53,6 +53,7 @@ public partial class User: ISoftDeletable
     public string Password { get; set; }
 
     public bool IsDeleted { get; set; }
+    public DateTime? DateDeleted { get; set; }
 
     public RoleType Role { get; set; }
 
@@ -74,5 +75,4 @@ public partial class User: ISoftDeletable
 
 	[InverseProperty("User")]
 	public virtual ICollection<WishList> WishLists { get; set; } = new List<WishList>();
-    public DateTime? DateDeleted { get ; set; }
 }
