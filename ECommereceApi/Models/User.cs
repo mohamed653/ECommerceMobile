@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using ECommereceApi.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace ECommereceApi.Models;
@@ -15,7 +16,7 @@ public enum RoleType
 }
 
 [Table("User")]
-public partial class User
+public partial class User : ISoftDeletable
 {
     [Key]
     public int UserId { get; set; }
@@ -52,6 +53,7 @@ public partial class User
     public string Password { get; set; }
 
     public bool IsDeleted { get; set; }
+    public DateTime? DateDeleted { get; set; }
 
     public RoleType Role { get; set; }
 
