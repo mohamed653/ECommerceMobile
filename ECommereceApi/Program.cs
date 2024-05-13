@@ -1,4 +1,3 @@
-using CloudinaryDotNet;
 using ECommereceApi.Data;
 using ECommereceApi.IRepo;
 using ECommereceApi.Models;
@@ -7,6 +6,8 @@ using ECommereceApi.Services.classes;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
 using Microsoft.OpenApi.Models;
 using System.Text.Unicode;
 using Microsoft.Extensions.Options;
@@ -86,7 +87,6 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
 builder.Services.AddScoped<ILanguageRepo, LanguageRepo>();
 #endregion
 
-
 builder.Services.AddAutoMapper(typeof(Program));
 
 builder.Services.AddAuthentication(options =>
@@ -140,6 +140,7 @@ builder.Services.AddScoped<IUserManagementRepo, UserManagementRepo>();
 builder.Services.AddScoped<IMailRepo, MailRepo>();
 
 
+builder.Services.AddScoped<ICartRepo, CartRepo>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

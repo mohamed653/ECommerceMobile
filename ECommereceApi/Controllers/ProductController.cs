@@ -107,8 +107,8 @@ namespace ECommereceApi.Controllers
             var result = await productRepo.GetProductPicturesAsync(productId);
             if (result is null)
                 return NotFound();
-            string baseURL = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
-            return Ok(result.Select(i => $"{baseURL}{i}"));
+            //string baseURL = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
+            return Ok(result);
         }
         [HttpDelete]
         [Route("/api/products/pictures")]

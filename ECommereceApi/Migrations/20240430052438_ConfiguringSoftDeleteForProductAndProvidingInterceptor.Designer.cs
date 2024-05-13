@@ -12,13 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataBase.Migrations
 {
     [DbContext(typeof(ECommerceContext))]
-<<<<<<<< HEAD:ECommereceApi/Migrations/20240513132825_ElbazUser.Designer.cs
-    [Migration("20240513132825_ElbazUser")]
-    partial class ElbazUser
-========
-    [Migration("20240504035755_modifying user to be softdeleted")]
-    partial class modifyingusertobesoftdeleted
->>>>>>>> ecbda36e91b3eb4ed6d1f31f09fed994da09a7b2:ECommereceApi/Migrations/20240504035755_modifying user to be softdeleted.Designer.cs
+    [Migration("20240430052438_ConfiguringSoftDeleteForProductAndProvidingInterceptor")]
+    partial class ConfiguringSoftDeleteForProductAndProvidingInterceptor
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -250,14 +245,11 @@ namespace DataBase.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
-                    b.Property<string>("ImageUri")
+                    b.Property<string>("Image")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<string>("ImageId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("ProductId", "ImageUri");
+                    b.HasKey("ProductId", "Image");
 
                     b.ToTable("ProductImages");
                 });
@@ -371,9 +363,6 @@ namespace DataBase.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<DateTime?>("DateDeleted")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -389,9 +378,6 @@ namespace DataBase.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsVerified")
                         .HasColumnType("bit");
 
                     b.Property<string>("LName")
@@ -418,14 +404,6 @@ namespace DataBase.Migrations
                     b.Property<string>("Street")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateTime?>("VerifiedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("VertificationCode")
-                        .IsRequired()
-                        .HasMaxLength(8)
-                        .HasColumnType("nvarchar(8)");
 
                     b.HasKey("UserId");
 

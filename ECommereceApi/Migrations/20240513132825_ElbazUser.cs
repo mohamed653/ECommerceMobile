@@ -3,10 +3,14 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace ECommereceApi.Migrations
+namespace DataBase.Migrations
 {
     /// <inheritdoc />
+<<<<<<<< HEAD:ECommereceApi/Migrations/20240513132825_ElbazUser.cs
     public partial class ElbazUser : Migration
+========
+    public partial class Making : Migration
+>>>>>>>> ecbda36e91b3eb4ed6d1f31f09fed994da09a7b2:ECommereceApi/Migrations/20240430040307_'Making.cs
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
