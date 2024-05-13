@@ -12,10 +12,14 @@ namespace ECommereceApi.Controllers
     {
         private readonly IUserManagementRepo _userManagementRepo;
         private readonly IConfiguration _configuration;
-        public AccountController(IUserManagementRepo userManagementRepo ,IConfiguration configuration)
+        private readonly IMailRepo _mailRepo;
+
+
+        public AccountController(IUserManagementRepo userManagementRepo ,IConfiguration configuration, IMailRepo mailRepo)
         {
             _userManagementRepo = userManagementRepo;
             _configuration = configuration;
+            _mailRepo = mailRepo;
         }
 
         [HttpPost("register")]
@@ -32,15 +36,20 @@ namespace ECommereceApi.Controllers
                 return BadRequest("No");
             }
 
-            bool isRegistered = await _userManagementRepo.TryRegisterUser(dto);
+            string code = GenerateCode().ToString();
 
+            bool isRegistered = await _userManagementRepo.TryRegisterUser(dto ,code);
 
+            bool isValidEmail = _mailRepo.TrySendEmail(dto.Email,code);
+
+            if (!isValidEmail)
+                return BadRequest("Invalid Email");
 
             if (! isRegistered)
                 return BadRequest("Invalid Registry");
 
-            // generate jwt token
             string token = await GenerateToken(dto.Email);
+
             return Created("",token);
 
         }
@@ -62,6 +71,16 @@ namespace ECommereceApi.Controllers
             
             return Ok();
         }
+
+        [HttpPost("verify")]
+        public async Task<IActionResult> Verify(VerifyEmail verifyModel)
+        {
+            if (await _userManagementRepo.ConfirmEmail(verifyModel))
+                return Ok();
+            else
+                return BadRequest("Email or code is incorrect");
+        }
+
 
         [Authorize]
         [HttpPatch("resetpassword")]
@@ -167,6 +186,12 @@ namespace ECommereceApi.Controllers
             
             return token;
         }
+
+        private int GenerateCode()
+        {
+            return new Random().Next(100000, 999999);
+        }
+
 
     }
 }

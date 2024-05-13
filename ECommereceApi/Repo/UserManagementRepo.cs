@@ -14,6 +14,29 @@ namespace ECommereceApi.Repo
             _context = context;
         }
 
+        public async Task<bool> ConfirmEmail(VerifyEmail verifyModel)
+        {
+            try
+            {
+                User? user = await _context.Users.FirstOrDefaultAsync(user => user.Email == verifyModel.Email);
+                if (user is null)
+                    return false;
+
+                if (user.VertificationCode != verifyModel.Code)
+                    return false;
+
+                user.VerifiedAt = DateTime.UtcNow;
+                user.IsVerified = true;
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+            
+        }
+
         public async Task<User?> GetUserByEmail(string email)
         {
             User? user =await _context.Users
@@ -41,7 +64,7 @@ namespace ECommereceApi.Repo
             return true;
         }
 
-        public async Task<bool> TryRegisterUser(RegisterUserDTO dto)
+        public async Task<bool> TryRegisterUser(RegisterUserDTO dto, string code)
         {
             bool emailExisted =await _context.Users
                                         .AnyAsync(user => user.Email.Equals(dto.Email));
@@ -50,6 +73,7 @@ namespace ECommereceApi.Repo
                 return false;
             }
 
+            //code = GenerateCode().ToString();
             User user = new User()
             {
                 FName = dto.FName,
@@ -57,7 +81,10 @@ namespace ECommereceApi.Repo
                 Email = dto.Email,
                 Phone = dto.phone,
                 Password = dto.Password,
-                Role = RoleType.Customer
+                Role = RoleType.Customer,
+                VertificationCode =code,
+                IsVerified=false,
+                IsDeleted=false
             };
 
             await _context.Users.AddAsync(user);
@@ -75,5 +102,10 @@ namespace ECommereceApi.Repo
             await _context.SaveChangesAsync();
             return true;
         }
+
+
+
     }
+
+
 }

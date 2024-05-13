@@ -77,7 +77,7 @@ builder.Services.AddSwaggerGen(c =>
 
 builder.Services.AddScoped<IProductRepo, ProductRepo>();
 builder.Services.AddScoped<IUserManagementRepo, UserManagementRepo>();
-
+builder.Services.AddScoped<IMailRepo, MailRepo>();
 
 
 var app = builder.Build();
