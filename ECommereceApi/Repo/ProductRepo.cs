@@ -96,7 +96,8 @@ namespace ECommereceApi.Repo
                     var pictureObject = new ProductImage()
                     {
                         ProductId = input.ProductId,
-                        ImageName = operationResult.Url.ToString()
+                        ImageUri = operationResult.Url.ToString(),
+                        ImageId = operationResult.PublicId
                     };
                     _db.ProductImages.Add(pictureObject);
                 }
@@ -106,10 +107,11 @@ namespace ECommereceApi.Repo
         }
         private async Task<ImageUploadResult> UploadImage(IFormFile file)
         {
-            var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+            var fileName = Guid.NewGuid().ToString();
             var uploadParams = new ImageUploadParams()
             {
-                File = new FileDescription(fileName, file.OpenReadStream())
+                File = new FileDescription(fileName, file.OpenReadStream()),
+                PublicId = $"images/uploads/{fileName}"
             };
             return await _cloudinary.UploadAsync(uploadParams);
         }
@@ -117,17 +119,19 @@ namespace ECommereceApi.Repo
         {
             var product = await _db.Products.Include(p => p.ProductImages).FirstOrDefaultAsync(p => p.ProductId == ProductId);
             if (product == null) return null;
-            return product.ProductImages.Select(p => p.ImageName).ToList();
+            return product.ProductImages.Select(p => p.ImageUri).ToList();
         }
         public async Task<Status> RemoveProductPictureAsync(int productId, string picture)
         {
             Product product = await _db.Products.Include(p => p.ProductImages).FirstOrDefaultAsync(p => p.ProductId == productId);
             if (product == null)
                 return Status.NotFound;
-            ProductImage image = product.ProductImages.Where(image => image.ImageName == picture).FirstOrDefault();
+            ProductImage image = product.ProductImages.Where(image => image.ImageUri == picture).FirstOrDefault();
             if (image == null)
                 return Status.NotFound;
             product.ProductImages.Remove(image);
+            DeletionParams del = new DeletionParams(image.ImageId);
+            await _cloudinary.DestroyAsync(del);
             await _db.SaveChangesAsync();
             return Status.Success;
         }
