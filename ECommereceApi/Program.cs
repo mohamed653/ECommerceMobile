@@ -88,17 +88,6 @@ builder.Services.AddScoped<ILanguageRepo, LanguageRepo>();
 
 builder.Services.AddAutoMapper(typeof(Program));
 
-#region FileServer
-var cloudinaryCredentials = builder.Configuration.GetSection("Cloudinary");
-var account = new Account(
-    cloudinaryCredentials["CloudName"],
-    cloudinaryCredentials["APIKey"],
-    cloudinaryCredentials["APISecret"]
-    );
-builder.Services.AddSingleton(account);
-builder.Services.AddScoped<Cloudinary>();
-#endregion
-
 
 builder.Services.AddScoped<IProductRepo, ProductRepo>();
 builder.Services.AddScoped<IUserRepo, UserRepo>();
