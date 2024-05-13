@@ -1,4 +1,3 @@
-using CloudinaryDotNet;
 using ECommereceApi.Data;
 using ECommereceApi.IRepo;
 using ECommereceApi.Models;
@@ -48,7 +47,7 @@ builder.Services.AddCors(corsOptions =>
 
 builder.Services.AddDbContext<ECommerceContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("AzureConnection"))
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
     .AddInterceptors(new SoftDeleteInterceptor());
 });
 
@@ -84,7 +83,6 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
 
 builder.Services.AddScoped<ILanguageRepo, LanguageRepo>();
 #endregion
-
 
 builder.Services.AddAutoMapper(typeof(Program));
 
