@@ -4,8 +4,11 @@ using ECommereceApi.IRepo;
 using ECommereceApi.Models;
 using ECommereceApi.Repo;
 using ECommereceApi.Services.classes;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
+using System.Text.Unicode;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using System.Globalization;
@@ -86,9 +89,55 @@ builder.Services.AddScoped<ILanguageRepo, LanguageRepo>();
 
 builder.Services.AddAutoMapper(typeof(Program));
 
-// IOC Container Services
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(o =>
+{
+    o.TokenValidationParameters = new TokenValidationParameters()
+    {
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetValue<string>("JWT:secretkey"))),
+    };
+});
+
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Your API", Version = "v1" });
+    var securityScheme = new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Description = "Enter JWT token in this format: Bearer {token}",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT"
+    };
+    c.AddSecurityDefinition("Bearer", securityScheme);
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
+});
+
+
+
 builder.Services.AddScoped<IProductRepo, ProductRepo>();
 builder.Services.AddScoped<IUserRepo, UserRepo>();
+
+
+builder.Services.AddScoped<IUserManagementRepo, UserManagementRepo>();
+builder.Services.AddScoped<IMailRepo, MailRepo>();
 
 
 var app = builder.Build();
@@ -101,6 +150,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("myPolicy");
+app.UseAuthentication();
 app.UseRequestLocalization(app.Services.GetRequiredService<IOptions<RequestLocalizationOptions>>().Value);
 app.UseAuthorization();
 app.UseStaticFiles();
