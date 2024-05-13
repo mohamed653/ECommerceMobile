@@ -108,14 +108,14 @@ public partial class ECommerceContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Product_Category");
 
-			modelBuilder.Entity<WishList>()
-				.HasKey(wl => new { wl.UserId, wl.ProductId });
+            modelBuilder.Entity<WishList>()
+                .HasKey(wl => new { wl.UserId, wl.ProductId });
 
 
-			modelBuilder.Entity<ProductOrder>()
-				.HasKey(po => new { po.OrderId, po.ProductId });
+            modelBuilder.Entity<ProductOrder>()
+                .HasKey(po => new { po.OrderId, po.ProductId });
 
-		});
+        });
 
         modelBuilder.Entity<ProductCart>(entity =>
         {

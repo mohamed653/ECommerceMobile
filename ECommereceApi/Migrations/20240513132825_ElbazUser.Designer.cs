@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ECommereceApi.Migrations
 {
     [DbContext(typeof(ECommerceContext))]
-    [Migration("20240506114927_adding_softdelete")]
-    partial class adding_softdelete
+    [Migration("20240513132825_ElbazUser")]
+    partial class ElbazUser
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -245,11 +245,14 @@ namespace ECommereceApi.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
-                    b.Property<string>("ImageName")
+                    b.Property<string>("ImageUri")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.HasKey("ProductId", "ImageName");
+                    b.Property<string>("ImageId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("ProductId", "ImageUri");
 
                     b.ToTable("ProductImages");
                 });
@@ -383,6 +386,9 @@ namespace ECommereceApi.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsVerified")
+                        .HasColumnType("bit");
+
                     b.Property<string>("LName")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
@@ -407,6 +413,14 @@ namespace ECommereceApi.Migrations
                     b.Property<string>("Street")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("VerifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("VertificationCode")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("nvarchar(8)");
 
                     b.HasKey("UserId");
 

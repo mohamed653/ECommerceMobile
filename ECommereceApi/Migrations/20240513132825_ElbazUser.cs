@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ECommereceApi.Migrations
 {
     /// <inheritdoc />
-    public partial class intialCommit : Migration
+    public partial class ElbazUser : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -69,7 +69,11 @@ namespace ECommereceApi.Migrations
                     Street = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     PostalCode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     Password = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    VertificationCode = table.Column<string>(type: "nvarchar(8)", maxLength: 8, nullable: false),
+                    VerifiedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsVerified = table.Column<bool>(type: "bit", nullable: false),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DateDeleted = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Role = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -106,7 +110,8 @@ namespace ECommereceApi.Migrations
                     Amount = table.Column<int>(type: "int", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CategoryId = table.Column<int>(type: "int", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DateDeleted = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -246,11 +251,12 @@ namespace ECommereceApi.Migrations
                 columns: table => new
                 {
                     ProductId = table.Column<int>(type: "int", nullable: false),
-                    Image = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false)
+                    ImageUri = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    ImageId = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ProductImages", x => new { x.ProductId, x.Image });
+                    table.PrimaryKey("PK_ProductImages", x => new { x.ProductId, x.ImageUri });
                     table.ForeignKey(
                         name: "FK_ProductImages_Product",
                         column: x => x.ProductId,

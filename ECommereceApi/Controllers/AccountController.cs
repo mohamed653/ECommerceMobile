@@ -39,14 +39,15 @@ namespace ECommereceApi.Controllers
             string code = GenerateCode().ToString();
 
             bool isRegistered = await _userManagementRepo.TryRegisterUser(dto ,code);
+         
+            if (!isRegistered)
+                return BadRequest("Invalid Registry");
 
             bool isValidEmail = _mailRepo.TrySendEmail(dto.Email,code);
 
             if (!isValidEmail)
                 return BadRequest("Invalid Email");
 
-            if (! isRegistered)
-                return BadRequest("Invalid Registry");
 
             string token = await GenerateToken(dto.Email);
 
@@ -72,6 +73,7 @@ namespace ECommereceApi.Controllers
             return Ok();
         }
 
+        [Authorize]
         [HttpPost("verify")]
         public async Task<IActionResult> Verify(VerifyEmail verifyModel)
         {

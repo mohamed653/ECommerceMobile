@@ -242,11 +242,14 @@ namespace ECommereceApi.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
-                    b.Property<string>("ImageName")
+                    b.Property<string>("ImageUri")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.HasKey("ProductId", "ImageName");
+                    b.Property<string>("ImageId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("ProductId", "ImageUri");
 
                     b.ToTable("ProductImages");
                 });

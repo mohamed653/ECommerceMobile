@@ -27,6 +27,8 @@ namespace ECommereceApi.Repo
 
                 user.VerifiedAt = DateTime.UtcNow;
                 user.IsVerified = true;
+                _context.Users.Update(user);
+                await _context.SaveChangesAsync();
 
                 return true;
             }
@@ -66,30 +68,37 @@ namespace ECommereceApi.Repo
 
         public async Task<bool> TryRegisterUser(RegisterUserDTO dto, string code)
         {
-            bool emailExisted =await _context.Users
+            try
+            {
+                bool emailExisted = await _context.Users
                                         .AnyAsync(user => user.Email.Equals(dto.Email));
-            if (emailExisted)
+                if (emailExisted)
+                {
+                    return false;
+                }
+
+                //code = GenerateCode().ToString();
+                User user = new User()
+                {
+                    FName = dto.FName,
+                    LName = dto.LName,
+                    Email = dto.Email,
+                    Phone = dto.phone,
+                    Password = dto.Password,
+                    Role = RoleType.Customer,
+                    VertificationCode = code,
+                    IsVerified = false,
+                    IsDeleted = false
+                };
+
+                await _context.Users.AddAsync(user);
+                await _context.SaveChangesAsync();
+                return true;
+            }catch
             {
                 return false;
             }
-
-            //code = GenerateCode().ToString();
-            User user = new User()
-            {
-                FName = dto.FName,
-                LName = dto.LName,
-                Email = dto.Email,
-                Phone = dto.phone,
-                Password = dto.Password,
-                Role = RoleType.Customer,
-                VertificationCode =code,
-                IsVerified=false,
-                IsDeleted=false
-            };
-
-            await _context.Users.AddAsync(user);
-            await _context.SaveChangesAsync();
-            return true;
+            
         }
 
         public async Task<bool> TryResetPassword(string email, string newPassword)

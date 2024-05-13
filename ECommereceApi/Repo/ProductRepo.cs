@@ -92,7 +92,7 @@ namespace ECommereceApi.Repo
                     var pictureObject = new ProductImage()
                     {
                         ProductId = input.ProductId,
-                        ImageName = "/uploads/" + fileName
+                        ImageUri = "/uploads/" + fileName
                     };
                     product.ProductImages.Add(pictureObject);
                 }));
@@ -106,14 +106,14 @@ namespace ECommereceApi.Repo
         {
             var product = await _db.Products.Include(p => p.ProductImages).FirstOrDefaultAsync(p => p.ProductId == ProductId);
             if (product == null) return null;
-            return product.ProductImages.Select(p => p.ImageName).ToList();
+            return product.ProductImages.Select(p => p.ImageUri).ToList();
         }
         public async Task<Status> RemoveProductPictureAsync(int productId, string picture)
         {
             Product product = await _db.Products.Include(p => p.ProductImages).FirstOrDefaultAsync(p => p.ProductId == productId);
             if (product == null)
                 return Status.NotFound;
-            ProductImage image = product.ProductImages.Where(image => image.ImageName == picture.Substring(picture.IndexOf("/uploads"))).FirstOrDefault();
+            ProductImage image = product.ProductImages.Where(image => image.ImageUri == picture.Substring(picture.IndexOf("/uploads"))).FirstOrDefault();
             if (image == null)
                 return Status.NotFound;
             product.ProductImages.Remove(image);

@@ -1,5 +1,6 @@
 ﻿using System.Net.Mail;
 using System.Net;
+using Microsoft.Extensions.Configuration;
 
 namespace ECommereceApi.Repo
 {
@@ -15,7 +16,9 @@ namespace ECommereceApi.Repo
 
         public bool TrySendEmail(string email, string code)
         {
-            string? fromEmail = _configuration.GetValue<string>("username");
+            string fromEmail = _configuration.GetValue<string>("fromEmail");
+
+            fromEmail = "mohamedhamed3343@gmail.com";
 
             string toEmail = email;
 
@@ -26,14 +29,14 @@ namespace ECommereceApi.Repo
 
            SmtpClient client = new SmtpClient(smtpServer, port)
            {
-               Credentials = new NetworkCredential(fromEmail, "frfp qfsl phiq gexf"),
+               Credentials = new NetworkCredential(fromEmail, password),
                EnableSsl = true 
            };
 
             MailMessage message = new MailMessage(fromEmail, toEmail)
             {
                 Subject = "Email Verification",
-                Body = code
+                Body = $"{code}"
             };
             try
             {

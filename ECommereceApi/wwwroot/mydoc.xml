@@ -70,28 +70,16 @@
             <param name="id"></param>
             <returns></returns>
         </member>
-        <member name="T:ECommereceApi.Migrations.intialCommit">
+        <member name="T:ECommereceApi.Migrations.ElbazUser">
             <inheritdoc />
         </member>
-        <member name="M:ECommereceApi.Migrations.intialCommit.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:ECommereceApi.Migrations.ElbazUser.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:ECommereceApi.Migrations.intialCommit.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:ECommereceApi.Migrations.ElbazUser.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:ECommereceApi.Migrations.intialCommit.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="T:ECommereceApi.Migrations.adding_softdelete">
-            <inheritdoc />
-        </member>
-        <member name="M:ECommereceApi.Migrations.adding_softdelete.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:ECommereceApi.Migrations.adding_softdelete.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:ECommereceApi.Migrations.adding_softdelete.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+        <member name="M:ECommereceApi.Migrations.ElbazUser.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
     </members>

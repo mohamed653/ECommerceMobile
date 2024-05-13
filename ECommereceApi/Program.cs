@@ -23,7 +23,7 @@ builder.Services.AddEndpointsApiExplorer();
 var webHostEnvironment = builder.Services.BuildServiceProvider().GetRequiredService<IWebHostEnvironment>();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo
+    c.SwaggerDoc("v2", new OpenApiInfo
     {
         Title = "Mobile ECommerce API",
         Version = "v1",
@@ -49,7 +49,7 @@ builder.Services.AddCors(corsOptions =>
 
 builder.Services.AddDbContext<ECommerceContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("AzureConnection"))
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
     .AddInterceptors(new SoftDeleteInterceptor());
 });
 
