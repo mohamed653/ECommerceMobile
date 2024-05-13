@@ -15,10 +15,7 @@ namespace ECommereceApi.Controllers
         // Server-side validation 
         // Localization through routing 
         // Customizing error messages (Localized)
-        // API Documentation - Done
-        // Search User by Name - Done
-        // Pagination in GetUsers - Done
-        // Sorting in GetUsers - Done
+ 
 
 
         private readonly IUserRepo _userRepo;
