@@ -22,22 +22,22 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
 var webHostEnvironment = builder.Services.BuildServiceProvider().GetRequiredService<IWebHostEnvironment>();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v2", new OpenApiInfo
-    {
-        Title = "Mobile ECommerce API",
-        Version = "v1",
-        Description = "Mobile ECommerce ASP.NET Core Web API",
-        Contact = new OpenApiContact
-        {
-            Name = "Mohamed_Hamed",
-            Email = "mohamedHamed@gmail.com"
-        }
+//builder.Services.AddSwaggerGen(c =>
+//{
+//    c.SwaggerDoc("v2", new OpenApiInfo
+//    {
+//        Title = "Mobile ECommerce API",
+//        Version = "v1",
+//        Description = "Mobile ECommerce ASP.NET Core Web API",
+//        Contact = new OpenApiContact
+//        {
+//            Name = "Mohamed_Hamed",
+//            Email = "mohamedHamed@gmail.com"
+//        }
 
-    });
-    c.IncludeXmlComments(webHostEnvironment.WebRootPath + "\\mydoc.xml");
-});
+//    });
+//    c.IncludeXmlComments(webHostEnvironment.WebRootPath + "\\mydoc.xml");
+//});
 
 
 builder.Services.AddCors(corsOptions =>
@@ -113,6 +113,7 @@ builder.Services.AddSwaggerGen(c =>
         Scheme = "bearer",
         BearerFormat = "JWT"
     };
+    c.IncludeXmlComments(webHostEnvironment.WebRootPath + "\\mydoc.xml");
     c.AddSecurityDefinition("Bearer", securityScheme);
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
@@ -134,6 +135,7 @@ builder.Services.AddSwaggerGen(c =>
 
 builder.Services.AddScoped<IProductRepo, ProductRepo>();
 builder.Services.AddScoped<IUserRepo, UserRepo>();
+builder.Services.AddScoped<IOfferRepo, OfferRepo>();
 
 
 builder.Services.AddScoped<IUserManagementRepo, UserManagementRepo>();
