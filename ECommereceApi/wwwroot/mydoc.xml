@@ -70,17 +70,5 @@
             <param name="id"></param>
             <returns></returns>
         </member>
-        <member name="T:ECommereceApi.Migrations.create">
-            <inheritdoc />
-        </member>
-        <member name="M:ECommereceApi.Migrations.create.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:ECommereceApi.Migrations.create.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:ECommereceApi.Migrations.create.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
     </members>
 </doc>
