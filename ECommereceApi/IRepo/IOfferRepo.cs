@@ -2,11 +2,15 @@
 {
     public interface IOfferRepo
     {
-        Task<Offer> GetOfferById(int id);
-        Task<IEnumerable<Offer>> GetOffers();
-        Task AddOffer(Offer offer,int productId);
-        Task UpdateOffer(Offer offer);
-        Task DeleteOffer(Offer offer);
-        bool OfferExpiredOrInActive(int id);
+        Task<OffersDTOUI> GetOfferById(int id);
+        Task<List<Offer>> GetOffers();
+        Task<List<OffersDTOUI>> GetOffersWithProducts();
+        Task<int> AddOffer(OfferDTO offerDTO);
+        Task AddProductsToOffer(int offerId, List<OfferProductsDTO> offerProductsDTOs,decimal? PackageDiscount);
+
+        Task DeleteOffer(int offerId);
+        Task <bool> OfferExpiredOrInActive(int offerId);
+
+        Task UpdateOffer(OffersDTOUI offersDTOUI );
     }
 }

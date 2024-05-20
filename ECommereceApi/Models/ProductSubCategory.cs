@@ -10,6 +10,7 @@ namespace ECommereceApi.Models;
 
 [PrimaryKey("ProductId", "SubId")]
 [Table("ProductSubCategory")]
+[Index("SubId", Name = "IX_ProductSubCategory_SubId")]
 public partial class ProductSubCategory
 {
     [Key]
