@@ -20,7 +20,7 @@ namespace ECommereceApi.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public async Task<IActionResult> GetOffers()
+        public async Task<IActionResult> GetAllOffers()
         {
             return Ok(await offerRepo.GetOffers());
         }
@@ -45,13 +45,29 @@ namespace ECommereceApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetOfferById(int id)
         {
-            var offer = await offerRepo.GetOfferById(id);
-            if (offer == null) return NotFound();
-            return Ok(offer);
+            try
+            {
+                var offer = await offerRepo.GetOfferById(id);
+                if (offer == null) return NotFound();
+                return Ok(offer);
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
+
+        }
+
+        [HttpGet("/byProductId/{productId}")]
+        public async Task<IActionResult> GetOffersByProductId(int productId)
+        {
+            var offers =await offerRepo.GetOffersByProductId(productId);
+            if (offers == null) return NotFound();
+            return Ok(offers);
         }
 
         /// <summary>
-        /// Add a new offer
+        /// Add a new offer  the date should be in this format "2024-5-1"
         /// </summary>
         /// <param name="offerDTO"></param>
         /// <returns>the offer Id</returns>
@@ -80,7 +96,7 @@ namespace ECommereceApi.Controllers
         /// update an offer
         /// </summary>
         [HttpPut]
-        public async Task<IActionResult> UpdateOffer(OffersDTOUI offersDTOUI)
+        public async Task<IActionResult> UpdateOffer(OffersDTOUI offersDTOUI)  // adding new parameter which is new Image
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
             await offerRepo.UpdateOffer(offersDTOUI);
@@ -98,9 +114,6 @@ namespace ECommereceApi.Controllers
             await offerRepo.DeleteOffer(offerId);
             return NoContent();
         }
-
-
-
 
     }
 }

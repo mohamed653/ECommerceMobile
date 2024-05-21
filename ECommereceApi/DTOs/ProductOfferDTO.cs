@@ -14,6 +14,8 @@ namespace ECommereceApi.DTOs
 
         public int? Duration { get; set; }
 
+        public decimal? PackageDiscount { get; set; }
+
         // Plus Image
 
         public IFormFile Image { get; set; }

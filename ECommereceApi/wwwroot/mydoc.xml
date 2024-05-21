@@ -70,7 +70,7 @@
             <param name="id"></param>
             <returns></returns>
         </member>
-        <member name="M:ECommereceApi.Controllers.OffersController.GetOffers">
+        <member name="M:ECommereceApi.Controllers.OffersController.GetAllOffers">
             <summary>
             Get all offers
             </summary>
@@ -91,7 +91,7 @@
         </member>
         <member name="M:ECommereceApi.Controllers.OffersController.AddOffer(ECommereceApi.DTOs.OfferDTO)">
             <summary>
-            Add a new offer
+            Add a new offer  the date should be in this format "2024-5-1"
             </summary>
             <param name="offerDTO"></param>
             <returns>the offer Id</returns>

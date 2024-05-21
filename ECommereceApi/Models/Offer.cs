@@ -26,7 +26,7 @@ public partial class Offer
 
     public int? Duration { get; set; }
 
-    public decimal? PackageDiscount{ get; set; }
+    public decimal? PackageDiscount { get; set; } = 0;
 
 
     [InverseProperty("Offer")]
