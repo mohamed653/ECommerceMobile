@@ -9,10 +9,10 @@ using Microsoft.EntityFrameworkCore;
 namespace ECommereceApi.Models;
 
 [Table("Web_Info")]
-public partial class Web_Info
+public partial class WebInfo
 {
     [Key]
-    public int WebInfoId { get; set; }
+    public int WebInfoId { get; set; } 
 
     [StringLength(50)]
     public string WebPhone { get; set; }

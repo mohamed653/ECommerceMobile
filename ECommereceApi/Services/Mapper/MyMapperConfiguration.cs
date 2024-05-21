@@ -24,7 +24,7 @@ namespace ECommereceApi.Services.Mapper
             CreateMap<OffersDTOUI,Offer > ().ReverseMap();
             CreateMap<OfferProductsDTO, ProductOffer>().ReverseMap();
             CreateMap<ProductOffer, OfferProductsDTO>().ReverseMap();
-
+            CreateMap<ECommereceApi.Models.WebInfo, WebInfoDTO>().ReverseMap();
 
         }
     }
