@@ -137,6 +137,7 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddScoped<IProductRepo, ProductRepo>();
 builder.Services.AddScoped<IUserRepo, UserRepo>();
 builder.Services.AddScoped<IOfferRepo, OfferRepo>();
+builder.Services.AddScoped<IWebInfoRepo, WebInfoRepo>();
 
 
 builder.Services.AddScoped<IUserManagementRepo, UserManagementRepo>();

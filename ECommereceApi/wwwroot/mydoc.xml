@@ -113,6 +113,21 @@
             <param name="offerId"></param>
             <returns></returns>
         </member>
+        <member name="M:ECommereceApi.Controllers.WebInfoController.GetWebInfo">
+            <summary>
+            get web info
+            </summary>
+        </member>
+        <member name="M:ECommereceApi.Controllers.WebInfoController.UpdateWebInfo(ECommereceApi.DTOs.WebInfoDTO)">
+            <summary>
+            update web info
+            </summary> 
+        </member>
+        <member name="M:ECommereceApi.Controllers.WebInfoController.AddWebInfo(ECommereceApi.DTOs.WebInfoDTO)">
+            <summary>
+            add web info
+            </summary>
+        </member>
         <member name="T:ECommereceApi.Migrations.intialCreate">
             <inheritdoc />
         </member>

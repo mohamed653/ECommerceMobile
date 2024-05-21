@@ -46,7 +46,7 @@ public partial class ECommerceContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
-    public virtual DbSet<Web_Info> Web_Infos { get; set; }
+    public virtual DbSet<WebInfo> Web_Infos { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
