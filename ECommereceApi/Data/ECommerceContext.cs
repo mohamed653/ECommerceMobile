@@ -48,6 +48,8 @@ public partial class ECommerceContext : DbContext
 
     public virtual DbSet<WebInfo> Web_Infos { get; set; }
 
+    public virtual DbSet<WishList> WishLists { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Admin>(entity =>

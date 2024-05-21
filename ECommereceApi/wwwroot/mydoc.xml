@@ -140,5 +140,17 @@
         <member name="M:ECommereceApi.Migrations.intialCreate.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="T:ECommereceApi.Migrations.userDTOUpdate">
+            <inheritdoc />
+        </member>
+        <member name="M:ECommereceApi.Migrations.userDTOUpdate.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ECommereceApi.Migrations.userDTOUpdate.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ECommereceApi.Migrations.userDTOUpdate.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
     </members>
 </doc>
