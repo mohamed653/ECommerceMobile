@@ -14,6 +14,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using System.Globalization;
 using ECommereceApi.Extensions;
+using ECommereceApi.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -133,13 +134,17 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 
+//File Server Service
+builder.Services.AddScoped<IFileCloudService, FileCloudService>();
 
+
+//builder.Services.AddScoped(typeof(IGenericRepo<>), typeof(GenericRepo<>));
 builder.Services.AddScoped<IProductRepo, ProductRepo>();
 builder.Services.AddScoped<IUserRepo, UserRepo>();
 builder.Services.AddScoped<IOfferRepo, OfferRepo>();
 builder.Services.AddScoped<IWebInfoRepo, WebInfoRepo>();
 
-
+builder.Services.AddScoped<IWishListRepo, WishListRepo>();
 builder.Services.AddScoped<IUserManagementRepo, UserManagementRepo>();
 builder.Services.AddScoped<IMailRepo, MailRepo>();
 

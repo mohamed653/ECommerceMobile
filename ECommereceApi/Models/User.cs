@@ -59,8 +59,8 @@ public partial class User : ISoftDeletable
 
     public DateTime? VerifiedAt { get; set; }
 
-    public bool IsVerified { get; set; }
-    public bool IsDeleted { get; set; }
+    public bool? IsVerified { get; set; }
+    public bool IsDeleted { get; set; } = false;
     public DateTime? DateDeleted { get; set; }
 
     public RoleType Role { get; set; }

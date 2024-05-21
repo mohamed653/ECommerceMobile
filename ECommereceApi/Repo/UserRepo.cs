@@ -38,7 +38,17 @@ namespace ECommereceApi.Repo
             }
             userDto.Email = userDto.Email.ToLower().Trim();
             var user = _mapper.Map<User>(userDto);
-            _context.Users.Add(user);
+            user.VertificationCode = "adminver"; //  Generate Random Code
+            await _context.Users.AddAsync(user);
+            if (userDto.Role == RoleType.Customer)
+            {
+              await _context.Customers.AddAsync(new Customer { UserId = user.UserId});
+            }
+            else
+            {
+              await _context.Admins.AddAsync(new Admin { UserId = user.UserId });
+            }
+         
             return await SaveAsync();
         }
 

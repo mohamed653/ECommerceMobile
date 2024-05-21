@@ -11,8 +11,7 @@ namespace ECommereceApi.DTOs
         [StringLength(50)]
         public string WebName { get; set; }
 
-        [StringLength(200)]
-        public string WebLogoImageUrl { get; set; }
+        public IFormFile WebLogo { get; set; }
 
         [StringLength(50)]
         public string InstagramAccount { get; set; }

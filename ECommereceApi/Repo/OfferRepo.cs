@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
+using ECommereceApi.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace ECommereceApi.Repo
@@ -8,12 +9,12 @@ namespace ECommereceApi.Repo
     public class OfferRepo : IOfferRepo
     {
         private readonly ECommerceContext _context;
-        private readonly Cloudinary _cloudinary;
+        private readonly IFileCloudService _fileCloudService;
         private readonly IMapper _mapper;
-        public OfferRepo(ECommerceContext context, Cloudinary cloudinary, IMapper mapper)
+        public OfferRepo(ECommerceContext context, IFileCloudService fileCloudService, IMapper mapper)
         {
             _context = context;
-            _cloudinary = cloudinary;
+            _fileCloudService = fileCloudService;
             _mapper = mapper;
         }
         public async Task<List<Offer>> GetOffers()
@@ -167,8 +168,7 @@ namespace ECommereceApi.Repo
 
                 // remove image from cloudinary
                 var publicId = offer.Image.Split("/").Last().Split(".")[0];
-                var deleteParams = new DeletionParams(publicId);
-                await _cloudinary.DestroyAsync(deleteParams);
+                await _fileCloudService.DeleteImage(publicId);
 
 
                 //remove the products assigned to the offer
@@ -201,12 +201,11 @@ namespace ECommereceApi.Repo
                 File = new FileDescription(picture.FileName, picture.OpenReadStream())
             };
 
-            var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+            var uploadResult = await _fileCloudService.UploadImages(picture);
 
             // Handle the result as needed, e.g., save the image URL to your database
-            var imageUrl = uploadResult.Url.ToString();
+            return uploadResult;
 
-            return imageUrl;
         }
 
         public async Task<bool> OfferExpiredOrInActive(int offerId)

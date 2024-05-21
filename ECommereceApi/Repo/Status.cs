@@ -5,7 +5,8 @@
 		Success,
 		Failed,
 		NotFound,
-        EmailExistsBefore
+        EmailExistsBefore,
+        Deleted,
     }
 
 	public enum SortType

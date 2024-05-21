@@ -1,13 +1,14 @@
 ﻿using CloudinaryDotNet.Actions;
 using CloudinaryDotNet;
+using ECommereceApi.Services.Interfaces;
 
-namespace MVCTestImages.Controllers
+namespace ECommereceApi.Services.classes
 {
-    public class ImageServerCloudinary
+    public class FileCloudService: IFileCloudService
     {
 
         private readonly Cloudinary _cloudinary;
-        public ImageServerCloudinary(Cloudinary cloudinary)
+        public FileCloudService(Cloudinary cloudinary)
         {
             _cloudinary = cloudinary;
         }
@@ -48,6 +49,26 @@ namespace MVCTestImages.Controllers
 
             return imageUrl;
         }
+        public async Task<string> UpdateImage(IFormFile picture,string publicId)
+        {
+            if (picture == null || picture.Length == 0)
+            {
+                return "Invalid picture";
+            }
+
+            var delParams = new DeletionParams(publicId);
+            var result = await _cloudinary.DestroyAsync(delParams);
+            // upload new image
+            var uploadParams = new ImageUploadParams()
+            {
+                File = new FileDescription(picture.FileName, picture.OpenReadStream())
+            };
+            var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+
+            var imageUrl = uploadResult.Url.ToString();
+            return imageUrl;
+        }
+
 
     }
 }
