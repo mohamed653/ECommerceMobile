@@ -76,9 +76,9 @@ public partial class ECommerceContext : DbContext
                     {
                         j.HasKey("CategoryId", "SubId");
                         j.ToTable("CategorySubCategory");
+                        j.HasIndex(new[] { "SubId" }, "IX_CategorySubCategory_SubId");
                     });
         });
-
         modelBuilder.Entity<Customer>(entity =>
         {
             entity.Property(e => e.UserId).ValueGeneratedNever();
@@ -158,7 +158,6 @@ public partial class ECommerceContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_ProductSubCategory_SubCategory");
         });
-
         modelBuilder.Entity<Rate>(entity =>
         {
             entity.HasOne(d => d.Customer).WithMany(p => p.Rates)

@@ -6,20 +6,21 @@ namespace ECommereceApi.IRepo
 {
     public interface IUserRepo
     {
-        IEnumerable<UserDTO> GetUsers();
+        Task<IEnumerable<UserDTO>> GetUsersAsync();
 
-        IEnumerable<UserDTO> SearchUserByEmail(string email);
-        IEnumerable<UserDTO> SearchUserByName(string name);
-        IEnumerable<UserDTO> GetUserPagination(int pageNumber, int pageSize);
-        IEnumerable<UserDTO> GetUserPagination(int pageNumber, int pageSize,string email);
+        Task<IEnumerable<UserDTO>> SearchUserByEmailAsync(string email);
+        Task<IEnumerable<UserDTO>> SearchUserByNameAsync(string name);
+        Task<IEnumerable<UserDTO>> GetUserPaginationAsync(int pageNumber, int pageSize);
+        Task<IEnumerable<UserDTO>> GetUserPaginationAsync(int pageNumber, int pageSize, string email);
 
-        IEnumerable<UserDTO> SortUsers(UserOrderBy userOrderBy, SortType sortType = SortType.ASC);
-        UserDTO GetUser(int id);
-        Status AddUser(UserDTOUi userDto);
-        Status UpdateUser(UserDTO userDto);
-        Status DeleteUser(int id);
-        bool UserExists(int id);
-        Status Save();
-        Status SoftDelete(int id);
+        Task<IEnumerable<UserDTO>> SortUsersAsync(UserOrderBy userOrderBy, SortType sortType = SortType.ASC);
+        Task<UserDTO> GetUserAsync(int id);
+        Task<Status> AddUserAsync(UserDTOUi userDto);
+        Task<Status> UpdateUserAsync(UserDTO userDto);
+        Task<Status> DeleteUserAsync(int id);
+        Task<bool> UserExistsAsync(int id);
+        Task<Status> SaveAsync();
+        Task<Status> SoftDeleteAsync(int id);
     }
+
 }

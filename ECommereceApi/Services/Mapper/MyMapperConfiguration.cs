@@ -20,6 +20,11 @@ namespace ECommereceApi.Services.Mapper
 
             CreateMap<User, UserDTO>().ReverseMap();
             CreateMap<User, UserDTOUi>().ReverseMap();
+            CreateMap<Offer, OfferDTO>().ReverseMap();
+            CreateMap<OffersDTOUI,Offer > ().ReverseMap();
+            CreateMap<OfferProductsDTO, ProductOffer>().ReverseMap();
+            CreateMap<ProductOffer, OfferProductsDTO>().ReverseMap();
+
 
         }
     }

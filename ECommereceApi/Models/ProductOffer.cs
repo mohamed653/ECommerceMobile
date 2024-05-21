@@ -20,7 +20,7 @@ public partial class ProductOffer
 
     public int ProductAmount { get; set; }
 
-    public double Discount { get; set; }
+    public double? Discount { get; set; }
 
     [ForeignKey("OfferId")]
     [InverseProperty("ProductOffers")]
