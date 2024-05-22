@@ -6,7 +6,7 @@ namespace ECommereceApi.IRepo
 {
     public interface IProductRepo
     {
-        Task<Status> AddProductAsync(ProductAddDTO product);
+        Task<ProductDisplayDTO> AddProductAsync(ProductAddDTO product);
         Task<Status> DeleteProductAsync(int id);
         Task<IEnumerable<ProductDisplayDTO>> GetAllProductsAsync();
         Task<ProductDisplayDTO> GetProductByIdAsync(int id);

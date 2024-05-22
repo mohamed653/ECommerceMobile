@@ -24,11 +24,11 @@ namespace ECommereceApi.Repo
             _mapper = mapper;
             _cloudinary = cloudinary;
         }
-        public async Task<Status> AddProductAsync(ProductAddDTO product)
+        public async Task<ProductDisplayDTO> AddProductAsync(ProductAddDTO product)
         {
-            await _db.Products.AddAsync(_mapper.Map<Product>(product));
+            var result = await _db.Products.AddAsync(_mapper.Map<Product>(product));
             await _db.SaveChangesAsync();
-            return Status.Success;
+            return await GetProductByIdAsync(result.Entity.ProductId);
         }
 
         public async Task<Status> DeleteProductAsync(int id)
@@ -75,6 +75,7 @@ namespace ECommereceApi.Repo
         public async Task<IEnumerable<ProductDisplayDTO>> GetAllProductsForSubCategoryAsync(int subId, string value)
         {
             return _mapper.Map<List<ProductDisplayDTO>>(await _db.Products.Include(p => p.ProductSubCategories)
+                .Include(p => p.Category)
                 .Where(p => p.ProductSubCategories.Where(ps => ps.SubId == subId)
                 .Any(ps => ps.SubCategoryValue == value)).ToListAsync());
         }
