@@ -27,8 +27,8 @@ namespace ECommereceApi.Controllers
         public async Task<IActionResult> AddProductAsync([Required]ProductAddDTO product)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            await productRepo.AddProductAsync(product);
-            return Created();
+            var result = await productRepo.AddProductAsync(product);
+            return Created("", result);
         }
         [HttpDelete]
         public async Task<IActionResult> DeleteProductAsync(int id)
