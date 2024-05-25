@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ECommereceApi.Repo
 {
-    public class UserRepo:IUserRepo
+    public class UserRepo : IUserRepo
     {
         private readonly ECommerceContext _context;
         private readonly IMapper _mapper;
@@ -17,52 +17,70 @@ namespace ECommereceApi.Repo
             _context = context;
             _mapper = mapper;
         }
-        public IEnumerable<UserDTO> GetUsers()
+
+        public async Task<IEnumerable<UserDTO>> GetUsersAsync()
         {
-            return _mapper.Map<List<UserDTO>>(_context.Users.ToList());
+            var users = await _context.Users.ToListAsync();
+            return _mapper.Map<List<UserDTO>>(users);
         }
 
-        public UserDTO GetUser(int id)
+        public async Task<UserDTO> GetUserAsync(int id)
         {
-            return _mapper.Map<UserDTO>( _context.Users.Find(id));
+            var user = await _context.Users.FindAsync(id);
+            return _mapper.Map<UserDTO>(user);
         }
-        public Status AddUser(UserDTOUi userDto)
+
+        public async Task<Status> AddUserAsync(UserDTOUi userDto)
         {
-            if (_context.Users.Any(u => u.Email == userDto.Email))
+            if (await _context.Users.AnyAsync(u => u.Email == userDto.Email))
             {
                 return Status.EmailExistsBefore;
             }
             userDto.Email = userDto.Email.ToLower().Trim();
             var user = _mapper.Map<User>(userDto);
-            _context.Users.Add(user);
-            return Save();
+            user.VertificationCode = "adminver"; //  Generate Random Code
+            await _context.Users.AddAsync(user);
+            if (userDto.Role == RoleType.Customer)
+            {
+              await _context.Customers.AddAsync(new Customer { UserId = user.UserId});
+            }
+            else
+            {
+              await _context.Admins.AddAsync(new Admin { UserId = user.UserId });
+            }
+         
+            return await SaveAsync();
         }
-        public Status UpdateUser(UserDTO userDto)
+
+        public async Task<Status> UpdateUserAsync(UserDTO userDto)
         {
             userDto.Email = userDto.Email.ToLower().Trim();
             var user = _mapper.Map<User>(userDto);
             _context.Entry(user).State = EntityState.Modified;
-            return Save();
+            return await SaveAsync();
         }
-        public Status DeleteUser(int id)
+
+        public async Task<Status> DeleteUserAsync(int id)
         {
-            var user = _context.Users.Find(id);
+            var user = await _context.Users.FindAsync(id);
             if (user == null)
             {
                 return Status.NotFound;
             }
             _context.Users.Remove(user);
-            return Save();
+            return await SaveAsync();
         }
-        public bool UserExists(int id)
+
+        public async Task<bool> UserExistsAsync(int id)
         {
-            return _context.Users.Any(e => e.UserId == id);
+            return await _context.Users.AnyAsync(e => e.UserId == id);
         }
-        public Status Save()
+
+        public async Task<Status> SaveAsync()
         {
             try
             {
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
                 return Status.Success;
             }
             catch (Exception ex)
@@ -71,28 +89,32 @@ namespace ECommereceApi.Repo
             }
         }
 
-        public IEnumerable<UserDTO> SearchUserByEmail(string email)
+        public async Task<IEnumerable<UserDTO>> SearchUserByEmailAsync(string email)
         {
-            return _mapper.Map<List<UserDTO>>(_context.Users.Where(u => u.Email.Contains(email.ToLower())).ToList());
-        }
-        public IEnumerable<UserDTO> SearchUserByName(string name)
-        {
-            return _mapper.Map<List<UserDTO>>(_context.Users.Where(u => u.FName.Contains(name)||u.LName.Contains(name)).ToList());
+            var users = await _context.Users.Where(u => u.Email.Contains(email.ToLower())).ToListAsync();
+            return _mapper.Map<List<UserDTO>>(users);
         }
 
-        public IEnumerable<UserDTO> GetUserPagination(int pageNumber, int pageSize)
+        public async Task<IEnumerable<UserDTO>> SearchUserByNameAsync(string name)
         {
-            return _mapper.Map<List<UserDTO>>(_context.Users.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList());
+            var users = await _context.Users.Where(u => u.FName.Contains(name) || u.LName.Contains(name)).ToListAsync();
+            return _mapper.Map<List<UserDTO>>(users);
         }
 
-        public IEnumerable<UserDTO> GetUserPagination(int pageNumber, int pageSize, string email)
+        public async Task<IEnumerable<UserDTO>> GetUserPaginationAsync(int pageNumber, int pageSize)
         {
-            return _mapper.Map<List<UserDTO>>(_context.Users.Where(u => u.Email.Contains(email)).Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList());
+            var users = await _context.Users.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+            return _mapper.Map<List<UserDTO>>(users);
         }
 
-        public IEnumerable<UserDTO> SortUsers(UserOrderBy userOrderBy, SortType sortType = SortType.ASC)
+        public async Task<IEnumerable<UserDTO>> GetUserPaginationAsync(int pageNumber, int pageSize, string email)
         {
+            var users = await _context.Users.Where(u => u.Email.Contains(email)).Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+            return _mapper.Map<List<UserDTO>>(users);
+        }
 
+        public async Task<IEnumerable<UserDTO>> SortUsersAsync(UserOrderBy userOrderBy, SortType sortType = SortType.ASC)
+        {
             var users = _context.Users.AsQueryable();
             switch (userOrderBy)
             {
@@ -103,19 +125,20 @@ namespace ECommereceApi.Repo
                     users = sortType == SortType.ASC ? users.OrderBy(u => u.Email) : users.OrderByDescending(u => u.Email);
                     break;
             }
-            return _mapper.Map<List<UserDTO>>(users.ToList());
+            var sortedUsers = await users.ToListAsync();
+            return _mapper.Map<List<UserDTO>>(sortedUsers);
         }
 
-        public Status SoftDelete(int id)
+        public async Task<Status> SoftDeleteAsync(int id)
         {
-            var user = _context.Users.Find(id);
+            var user = await _context.Users.FindAsync(id);
             if (user == null)
             {
                 return Status.NotFound;
             }
             user.IsDeleted = true;
-            return Save();
-
+            return await SaveAsync();
         }
+
     }
 }

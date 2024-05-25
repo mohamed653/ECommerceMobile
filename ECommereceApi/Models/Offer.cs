@@ -26,6 +26,12 @@ public partial class Offer
 
     public int? Duration { get; set; }
 
+    public decimal? PackageDiscount { get; set; } = 0;
+
+
     [InverseProperty("Offer")]
     public virtual ICollection<ProductOffer> ProductOffers { get; set; } = new List<ProductOffer>();
+
+
+
 }

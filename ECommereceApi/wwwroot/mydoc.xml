@@ -70,28 +70,86 @@
             <param name="id"></param>
             <returns></returns>
         </member>
-        <member name="T:ECommereceApi.Migrations.intialCommit">
+        <member name="M:ECommereceApi.Controllers.OffersController.GetAllOffers">
+            <summary>
+            Get all offers
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ECommereceApi.Controllers.OffersController.GetOffersWithProducts">
+            <summary>
+            returns all offers with their products
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ECommereceApi.Controllers.OffersController.GetOfferById(System.Int32)">
+            <summary>
+            returns a specific offer by its ID
+            </summary>
+            <param name="id"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ECommereceApi.Controllers.OffersController.AddOffer(ECommereceApi.DTOs.OfferDTO)">
+            <summary>
+            Add a new offer  the date should be in this format "2024-5-1"
+            </summary>
+            <param name="offerDTO"></param>
+            <returns>the offer Id</returns>
+        </member>
+        <member name="M:ECommereceApi.Controllers.OffersController.AddProductsToOffer(System.Int32,System.Collections.Generic.List{ECommereceApi.DTOs.OfferProductsDTO},System.Nullable{System.Decimal})">
+            <summary>
+            assign products to a specific offer
+            </summary>
+        </member>
+        <member name="M:ECommereceApi.Controllers.OffersController.UpdateOffer(ECommereceApi.DTOs.OffersDTOUI)">
+            <summary>
+            update an offer
+            </summary>
+        </member>
+        <member name="M:ECommereceApi.Controllers.OffersController.DeleteOffer(System.Int32)">
+            <summary>
+            delete an offer
+            </summary>
+            <param name="offerId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ECommereceApi.Controllers.WebInfoController.GetWebInfo">
+            <summary>
+            get web info
+            </summary>
+        </member>
+        <member name="M:ECommereceApi.Controllers.WebInfoController.UpdateWebInfo(ECommereceApi.DTOs.WebInfoDTO)">
+            <summary>
+            update web info
+            </summary> 
+        </member>
+        <member name="M:ECommereceApi.Controllers.WebInfoController.AddWebInfo(ECommereceApi.DTOs.WebInfoDTO)">
+            <summary>
+            add web info
+            </summary>
+        </member>
+        <member name="T:ECommereceApi.Migrations.intialCreate">
             <inheritdoc />
         </member>
-        <member name="M:ECommereceApi.Migrations.intialCommit.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:ECommereceApi.Migrations.intialCreate.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:ECommereceApi.Migrations.intialCommit.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:ECommereceApi.Migrations.intialCreate.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:ECommereceApi.Migrations.intialCommit.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+        <member name="M:ECommereceApi.Migrations.intialCreate.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
-        <member name="T:ECommereceApi.Migrations.adding_softdelete">
+        <member name="T:ECommereceApi.Migrations.userDTOUpdate">
             <inheritdoc />
         </member>
-        <member name="M:ECommereceApi.Migrations.adding_softdelete.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:ECommereceApi.Migrations.userDTOUpdate.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:ECommereceApi.Migrations.adding_softdelete.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:ECommereceApi.Migrations.userDTOUpdate.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:ECommereceApi.Migrations.adding_softdelete.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+        <member name="M:ECommereceApi.Migrations.userDTOUpdate.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
     </members>

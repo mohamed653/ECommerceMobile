@@ -52,7 +52,15 @@ public partial class User : ISoftDeletable
     [StringLength(50)]
     public string Password { get; set; }
 
-    public bool IsDeleted { get; set; }
+    [Required]
+    [StringLength(8)]
+    public string VertificationCode { get; set; }
+
+
+    public DateTime? VerifiedAt { get; set; }
+
+    public bool? IsVerified { get; set; }
+    public bool IsDeleted { get; set; } = false;
     public DateTime? DateDeleted { get; set; }
 
     public RoleType Role { get; set; }

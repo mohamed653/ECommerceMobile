@@ -4,6 +4,7 @@ namespace ECommereceApi.DTOs
 {
     public class UserDTO
     {
+        
         public int UserId { get; set; }
         public string FName { get; set; }
         public string LName { get; set; }
@@ -13,7 +14,6 @@ namespace ECommereceApi.DTOs
         public string City { get; set; }
         public string Street { get; set; }
         public string PostalCode { get; set; }
-        public string Password { get; set; }
         public bool IsDeleted { get; set; }
         public RoleType Role { get; set; }
     }

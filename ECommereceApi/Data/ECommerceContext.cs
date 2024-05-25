@@ -46,7 +46,9 @@ public partial class ECommerceContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
-    public virtual DbSet<Web_Info> Web_Infos { get; set; }
+    public virtual DbSet<WebInfo> Web_Infos { get; set; }
+
+    public virtual DbSet<WishList> WishLists { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -76,9 +78,9 @@ public partial class ECommerceContext : DbContext
                     {
                         j.HasKey("CategoryId", "SubId");
                         j.ToTable("CategorySubCategory");
+                        j.HasIndex(new[] { "SubId" }, "IX_CategorySubCategory_SubId");
                     });
         });
-
         modelBuilder.Entity<Customer>(entity =>
         {
             entity.Property(e => e.UserId).ValueGeneratedNever();
@@ -108,14 +110,14 @@ public partial class ECommerceContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Product_Category");
 
-			modelBuilder.Entity<WishList>()
-				.HasKey(wl => new { wl.UserId, wl.ProductId });
+            modelBuilder.Entity<WishList>()
+                .HasKey(wl => new { wl.UserId, wl.ProductId });
 
 
-			modelBuilder.Entity<ProductOrder>()
-				.HasKey(po => new { po.OrderId, po.ProductId });
+            modelBuilder.Entity<ProductOrder>()
+                .HasKey(po => new { po.OrderId, po.ProductId });
 
-		});
+        });
 
         modelBuilder.Entity<ProductCart>(entity =>
         {
@@ -158,7 +160,6 @@ public partial class ECommerceContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_ProductSubCategory_SubCategory");
         });
-
         modelBuilder.Entity<Rate>(entity =>
         {
             entity.HasOne(d => d.Customer).WithMany(p => p.Rates)

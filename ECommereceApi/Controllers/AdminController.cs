@@ -11,16 +11,6 @@ namespace ECommereceApi.Controllers
     [ApiController]
     public class AdminController : ControllerBase
     {
-        // Some Considerations:
-        // Server-side validation 
-        // Localization through routing 
-        // Customizing error messages (Localized)
-        // API Documentation - Done
-        // Search User by Name - Done
-        // Pagination in GetUsers - Done
-        // Sorting in GetUsers - Done
-
-
         private readonly IUserRepo _userRepo;
         public AdminController(IUserRepo userRepo)
         {
@@ -32,50 +22,49 @@ namespace ECommereceApi.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public IActionResult GetUsers()
+        public async Task<IActionResult> GetUsers()
         {
-            return Ok(_userRepo.GetUsers());
+            var users = await _userRepo.GetUsersAsync();
+            return Ok(users);
         }
-
-
 
         /// <summary>
         /// Get User by Id
         /// </summary>
         /// <returns></returns>
         [HttpGet("{id:int}")]
-        public IActionResult GetUser(int id)
+        public async Task<IActionResult> GetUser(int id)
         {
-            var user = _userRepo.GetUser(id);
+            var user = await _userRepo.GetUserAsync(id);
             if (user == null)
             {
                 return NotFound();
             }
             return Ok(user);
         }
+
         /// <summary>
         /// AddUser
         /// </summary>
         /// <returns></returns>
         [HttpPost]
-        public IActionResult AddUser([FromBody] UserDTOUi userDto)
+        public async Task<IActionResult> AddUser([FromBody] UserDTOUi userDto)
         {
-            if(ModelState.IsValid == false)
+            if (ModelState.IsValid == false)
             {
                 return BadRequest(ModelState);
             }
-            var status = _userRepo.AddUser(userDto);
+            var status = await _userRepo.AddUserAsync(userDto);
 
             if (status == Status.Success)
             {
-                //return CreatedAtAction("GetUser", new { id = userDto.UserId }, userDto);
                 return Ok(userDto);
             }
             else if (status == Status.EmailExistsBefore)
             {
                 return BadRequest("Email Exists Before");
             }
-            return BadRequest("An Error Has Occured");
+            return BadRequest("An Error Has Occurred");
         }
 
         /// <summary>
@@ -87,9 +76,10 @@ namespace ECommereceApi.Controllers
         /// <param name="sortType"></param>
         /// <returns></returns>
         [HttpGet("{userOrderBy:int}/{sortType:int}")]
-        public IActionResult SortUsers(UserOrderBy userOrderBy, SortType sortType = SortType.ASC)
+        public async Task<IActionResult> SortUsers(UserOrderBy userOrderBy, SortType sortType = SortType.ASC)
         {
-            return Ok(_userRepo.SortUsers(userOrderBy, sortType));
+            var users = await _userRepo.SortUsersAsync(userOrderBy, sortType);
+            return Ok(users);
         }
 
         /// <summary>
@@ -98,9 +88,9 @@ namespace ECommereceApi.Controllers
         /// <param name="name"></param>
         /// <returns></returns>
         [HttpGet("{name:alpha}")]
-        public IActionResult SearchUserByName(string name)
+        public async Task<IActionResult> SearchUserByName(string name)
         {
-            var user = _userRepo.SearchUserByName(name);
+            var user = await _userRepo.SearchUserByNameAsync(name);
             if (user == null)
             {
                 return NotFound();
@@ -114,15 +104,16 @@ namespace ECommereceApi.Controllers
         /// <param name="email"></param>
         /// <returns></returns>
         [HttpGet("{email}")]
-        public IActionResult SearchUserByEmail(string email)
+        public async Task<IActionResult> SearchUserByEmail(string email)
         {
-            var user = _userRepo.SearchUserByEmail(email);
+            var user = await _userRepo.SearchUserByEmailAsync(email);
             if (user == null)
             {
                 return NotFound();
             }
             return Ok(user);
         }
+
         /// <summary>
         /// GetUserPagination
         /// </summary>
@@ -130,18 +121,17 @@ namespace ECommereceApi.Controllers
         /// <param name="pageSize"></param>
         /// <param name="email"></param>
         /// <returns></returns>
-
         [HttpGet("{pageNumber}/{pageSize}")]
-        public IActionResult GetUserPagination(int pageNumber, int pageSize,string? email)
+        public async Task<IActionResult> GetUserPagination(int pageNumber, int pageSize, string? email)
         {
             IEnumerable<UserDTO> users;
             if (email == null)
             {
-                users = _userRepo.GetUserPagination(pageNumber, pageSize);
+                users = await _userRepo.GetUserPaginationAsync(pageNumber, pageSize);
             }
             else
             {
-                users = _userRepo.GetUserPagination(pageNumber, pageSize,email);
+                users = await _userRepo.GetUserPaginationAsync(pageNumber, pageSize, email);
             }
             if (users == null)
             {
@@ -157,16 +147,16 @@ namespace ECommereceApi.Controllers
         /// <param name="userDto"></param>
         /// <returns></returns>
         [HttpPut("{id}")]
-        public IActionResult UpdateUser(int id, [FromBody] UserDTO userDto)
+        public async Task<IActionResult> UpdateUser(int id, [FromBody] UserDTO userDto)
         {
             if (id != userDto.UserId)
             {
                 return BadRequest();
             }
-            var status = _userRepo.UpdateUser(userDto);
+            var status = await _userRepo.UpdateUserAsync(userDto);
             if (status == Status.Success)
             {
-                return Ok("Updated Successfuly");
+                return Ok("Updated Successfully");
             }
             return BadRequest();
         }
@@ -177,17 +167,15 @@ namespace ECommereceApi.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpDelete("{id}")]
-        public IActionResult DeleteUser(int id)
+        public async Task<IActionResult> DeleteUser(int id)
         {
-            var status = _userRepo.DeleteUser(id);
+            var status = await _userRepo.DeleteUserAsync(id);
             if (status == Status.Success)
             {
-                return Ok("Deleted Successfuly");
+                return Ok("Deleted Successfully");
             }
             return NotFound();
         }
-
-
-
     }
+
 }

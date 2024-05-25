@@ -1,5 +1,3 @@
-<!-- PROJECT LOGO -->
-<br />
 <div align="center">
   <h3 align="center">Mobile ECommerce</h3>
   <p align="center">
