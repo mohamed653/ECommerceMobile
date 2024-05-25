@@ -34,7 +34,7 @@ namespace ECommereceApi.Controllers
         public async Task<IActionResult> DeleteProductAsync(int id)
         {
             var result = await productRepo.DeleteProductAsync(id);
-            if (result == Status.Failed) return NotFound();
+            if (result == Status.Failed) return BadRequest();
             return Ok();
         }
         [HttpPut]

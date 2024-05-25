@@ -33,8 +33,12 @@ namespace ECommereceApi.Repo
 
         public async Task<Status> DeleteProductAsync(int id)
         {
-            var product = await _db.Products.FindAsync(id);
+            var product = await _db.Products.Include(p => p.ProductOffers).FirstOrDefaultAsync(p => p.ProductId == id);
             if (product == null) return Status.Failed;
+            if(product.ProductOffers.Count != 0)
+            {
+                return Status.Failed;
+            }
             _db.Products.Remove(product);
             await _db.SaveChangesAsync();
             return Status.Success;
