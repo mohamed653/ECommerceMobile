@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 
-namespace ECommereceApi.DTOs
+namespace ECommereceApi.DTOs.Product
 {
     public class ProductDisplayDTO
     {

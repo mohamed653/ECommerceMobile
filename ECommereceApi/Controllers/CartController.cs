@@ -1,4 +1,4 @@
-﻿using ECommereceApi.DTOs;
+﻿using ECommereceApi.DTOs.Product;
 using ECommereceApi.IRepo;
 using ECommereceApi.Models;
 using Microsoft.AspNetCore.Http;

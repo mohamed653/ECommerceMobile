@@ -52,7 +52,7 @@ builder.Services.AddCors(corsOptions =>
 
 builder.Services.AddDbContext<ECommerceContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("AzureConnection"))
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
     .AddInterceptors(new SoftDeleteInterceptor());
 });
 
@@ -91,18 +91,18 @@ builder.Services.AddScoped<ILanguageRepo, LanguageRepo>();
 
 builder.Services.AddAutoMapper(typeof(Program));
 
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(o =>
-{
-    o.TokenValidationParameters = new TokenValidationParameters()
-    {
-        ValidateIssuer = false,
-        ValidateAudience = false,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetValue<string>("JWT:secretkey"))),
-    };
-});
+//builder.Services.AddAuthentication(options =>
+//{
+//    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+//}).AddJwtBearer(o =>
+//{
+//    o.TokenValidationParameters = new TokenValidationParameters()
+//    {
+//        ValidateIssuer = false,
+//        ValidateAudience = false,
+//        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetValue<string>("JWT:secretkey"))),
+//    };
+//});
 
 builder.Services.AddSwaggerGen(c =>
 {

@@ -1,4 +1,4 @@
-﻿using ECommereceApi.DTOs;
+﻿using ECommereceApi.DTOs.Product;
 using ECommereceApi.Models;
 
 namespace ECommereceApi.IRepo

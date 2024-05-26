@@ -2,12 +2,12 @@
 using ECommereceApi.IRepo;
 using ECommereceApi.Data;
 using Microsoft.EntityFrameworkCore;
-using ECommereceApi.DTOs;
 using AutoMapper;
 using Microsoft.IdentityModel.Tokens;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using Azure;
+using ECommereceApi.DTOs.Product;
 
 namespace ECommereceApi.Repo
 {
@@ -27,6 +27,24 @@ namespace ECommereceApi.Repo
         public async Task<ProductDisplayDTO> AddProductAsync(ProductAddDTO product)
         {
             var result = await _db.Products.AddAsync(_mapper.Map<Product>(product));
+            if (product.SubCategoriesIds.Count != product.SubCategoriesValues.Count)
+                return null;
+            await _db.SaveChangesAsync();
+            var category = await _db.Categories.Include(c => c.Subs).FirstOrDefaultAsync(c => c.CategoryId == product.CategoryId);
+            var subcatsIds = category.Subs.Select(s => s.SubId).ToList();
+            for (int i = 0; i < product.SubCategoriesIds.Count; i++)
+            {
+                if (subcatsIds.Contains(subcatsIds[i]))
+                {
+                    var productSubCats = new ProductSubCategory()
+                    {
+                        ProductId = result.Entity.ProductId,
+                        SubId = subcatsIds[i],
+                        SubCategoryValue = product.SubCategoriesValues[i]
+                    };
+                    await _db.ProductSubCategories.AddAsync(productSubCats);
+                }
+            }
             await _db.SaveChangesAsync();
             return await GetProductByIdAsync(result.Entity.ProductId);
         }
@@ -35,7 +53,7 @@ namespace ECommereceApi.Repo
         {
             var product = await _db.Products.Include(p => p.ProductOffers).FirstOrDefaultAsync(p => p.ProductId == id);
             if (product == null) return Status.Failed;
-            if(product.ProductOffers.Count != 0)
+            if (product.ProductOffers.Count != 0)
             {
                 return Status.Failed;
             }
@@ -70,11 +88,82 @@ namespace ECommereceApi.Repo
         }
         public async Task<IEnumerable<CategoryDTO>> GetAllCategoriesAsync()
         {
-            return _mapper.Map<List<CategoryDTO>>(await _db.Categories.ToListAsync());
+            return _mapper.Map<List<CategoryDTO>>(await _db.Categories.Include(c => c.Subs).ToListAsync());
         }
-        public async Task<IEnumerable<CategoryDTO>> GetAllSubCategoriesForCategoryAsync(int categoryId)
+        public async Task<CategoryDTO> AddCategoryAsync(CategoryAddDTO category)
         {
-            return _mapper.Map<List<CategoryDTO>>(await _db.SubCategories.Where(s => s.Categories.Select(c => c.CategoryId).Contains(categoryId)).ToListAsync());
+            var result = await _db.Categories.AddAsync(new Category() { Name = category.Name });
+            foreach (var subId in category.SubCategoriesIds)
+            {
+                result.Entity.Subs.Add(await _db.SubCategories.FirstOrDefaultAsync(s => s.SubId == subId));
+            }
+            await _db.SaveChangesAsync();
+            return _mapper.Map<CategoryDTO>(result.Entity);
+        }
+        public async Task<CategoryDTO> UpdateCategoryAsync(int id, CategoryAddDTO category)
+        {
+            var target = await _db.Categories.Include(c => c.Subs).FirstOrDefaultAsync(c => c.CategoryId == id);
+            if (target is null)
+                return null;
+            target.Name = category.Name;
+            target.Subs.Clear();
+            foreach (var subId in category.SubCategoriesIds)
+            {
+                target.Subs.Add(await _db.SubCategories.FirstOrDefaultAsync(s => s.SubId == subId));
+            }
+            _db.Update(target);
+            await _db.SaveChangesAsync();
+            return _mapper.Map<CategoryDTO>(target);
+        }
+        public async Task<Status> DeleteCategoryAsync(int categoryId)
+        {
+            var target = await _db.Categories.Include(c => c.Subs).FirstOrDefaultAsync(c => c.CategoryId == categoryId);
+            if(target is null)
+                return Status.NotFound;
+            target.Subs.Clear();
+            _db.Categories.Remove(target);
+            await _db.SaveChangesAsync();
+            return Status.Success;
+        }
+        public async Task<List<SubCategoryDTO>> GetAllSubCategoriesAsync()
+        {
+            return _mapper.Map<List<SubCategoryDTO>>(await _db.SubCategories.ToListAsync());
+        }
+        public async Task<SubCategoryDTO> GetSubCategoryById(int id)
+        {
+            return _mapper.Map<SubCategoryDTO>(await _db.SubCategories.Include(s => s.Categories).FirstOrDefaultAsync(s => s.SubId == id));
+        }
+        public async Task<SubCategoryDTO> AddSubCategoryAsync(SubCategoryAddDTO category)
+        {
+            var Subcategory = _mapper.Map<SubCategory>(category);
+            var result = await _db.SubCategories.AddAsync(Subcategory);
+            await _db.SaveChangesAsync();
+            return _mapper.Map<SubCategoryDTO>(result.Entity);
+        }
+        public async Task<SubCategoryDTO> UpdateSubCategoryAsync(int subId, SubCategoryAddDTO subcat)
+        {
+            var target = await _db.SubCategories.FirstOrDefaultAsync(s => s.SubId == subId);
+            if(target is null)
+                return null;
+            target.Name = subcat.Name;
+            _db.Update(target);
+            await _db.SaveChangesAsync();
+            return _mapper.Map<SubCategoryDTO>(target);
+        }
+        public async Task<Status> DeleteSubCategoryAsync(int id)
+        {
+            var target = await _db.SubCategories.Include(s => s.Categories).FirstOrDefaultAsync(s => s.SubId == id);
+            if(target is null)
+                return Status.NotFound;
+            if(target.Categories.Any() || target.ProductSubCategories.Any())
+                return Status.Failed;
+            _db.SubCategories.Remove(target);
+            await _db.SaveChangesAsync();
+            return Status.Success;
+        }
+        public async Task<IEnumerable<SubCategoryDTO>> GetAllSubCategoriesForCategoryAsync(int categoryId)
+        {
+            return _mapper.Map<List<SubCategoryDTO>>(await _db.SubCategories.Where(s => s.Categories.Select(c => c.CategoryId).Contains(categoryId)).ToListAsync());
         }
         public async Task<IEnumerable<ProductDisplayDTO>> GetAllProductsForSubCategoryAsync(int subId, string value)
         {
