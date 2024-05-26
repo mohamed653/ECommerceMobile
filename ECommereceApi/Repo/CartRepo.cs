@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using ECommereceApi.Data;
-using ECommereceApi.DTOs;
+using ECommereceApi.DTOs.Product;
 using ECommereceApi.IRepo;
 using ECommereceApi.Models;
 using Microsoft.AspNetCore.Mvc;

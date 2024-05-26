@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace ECommereceApi.DTOs
+namespace ECommereceApi.DTOs.Product
 {
     public class ProductAddDTO
     {
@@ -15,5 +15,7 @@ namespace ECommereceApi.DTOs
         public string Description { get; set; }
 
         public int CategoryId { get; set; }
+        public HashSet<int> SubCategoriesIds { get; set; } = new HashSet<int>();
+        public List<string> SubCategoriesValues { get; set; } = new List<string>();
     }
 }
