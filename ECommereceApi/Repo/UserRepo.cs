@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using ECommereceApi.Data;
-using ECommereceApi.DTOs;
+using ECommereceApi.DTOs.Account;
 using ECommereceApi.IRepo;
 using ECommereceApi.Models;
 using Microsoft.Data.SqlClient;

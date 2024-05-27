@@ -11,7 +11,7 @@ namespace ECommereceApi.IRepo
         Task<List<Offer>> GetOffersByProductId(int productId);
 
         Task<int> AddOffer(OfferDTO offerDTO);
-        Task AddProductsToOffer(int offerId, List<OfferProductsDTO> offerProductsDTOs,decimal? PackageDiscount);
+        Task AddProductsToOffer(OffersDTOPost offerProductsDTO);
         Task UpdateOffer(OffersDTOUI offersDTOUI);
         Task DeleteOffer(int offerId);
         Task <bool> OfferExpiredOrInActive(int offerId);
