@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using ECommereceApi.DTOs;
+using ECommereceApi.DTOs.Product;
 using ECommereceApi.Models;
 
 namespace ECommereceApi.Services.Mapper
@@ -13,10 +13,16 @@ namespace ECommereceApi.Services.Mapper
                 .ReverseMap();
 
             CreateMap<Product, ProductAddDTO>().ReverseMap();
-            CreateMap<CategoryDTO, Category>().ReverseMap();
+            CreateMap<CategoryDTO, Category>()
+                .ForMember(c => c.Subs, options => options.MapFrom(dest => dest.SubCategories))
+                .ReverseMap();
 
-            CreateMap<SubCategory, CategoryDTO>()
-                .ForMember(dest => dest.CategoryId, option => option.MapFrom(src => src.SubId));
+            CreateMap<SubCategory, SubCategoryDTO>()
+                .ForMember(dest => dest.SubCategoryId, option => option.MapFrom(src => src.SubId))
+                .ReverseMap();
+
+            CreateMap<SubCategoryAddDTO, SubCategory>()
+                .ReverseMap();
 
             CreateMap<User, UserDTO>().ReverseMap();
             CreateMap<User, UserDTOUi>().ReverseMap();

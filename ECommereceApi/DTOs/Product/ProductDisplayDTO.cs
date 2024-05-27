@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 
-namespace ECommereceApi.DTOs
+namespace ECommereceApi.DTOs.Product
 {
     public class ProductDisplayDTO
     {
@@ -18,6 +18,7 @@ namespace ECommereceApi.DTOs
 
         public string Description { get; set; }
 
+        public int CategoryId { get; set; }
         public string CategoryName { get; set; }
 
         public double? FinalPrice { get; set; }

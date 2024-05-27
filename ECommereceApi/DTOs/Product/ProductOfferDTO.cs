@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ECommereceApi.DTOs
+namespace ECommereceApi.DTOs.Product
 {
     public class OfferDTO
     {
@@ -38,9 +38,9 @@ namespace ECommereceApi.DTOs
         public DateOnly OfferDate { get; set; }
 
         public int? Duration { get; set; }
-        public string Image{ get; set; }
+        public string Image { get; set; }
 
-        public decimal? PackageDiscount{ get; set; }
+        public decimal? PackageDiscount { get; set; }
         public List<OfferProductsDTO> ProductOffers { get; set; } = new List<OfferProductsDTO>();
     }
 }

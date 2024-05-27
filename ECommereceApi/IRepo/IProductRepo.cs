@@ -1,4 +1,4 @@
-﻿using ECommereceApi.DTOs;
+﻿using ECommereceApi.DTOs.Product;
 using ECommereceApi.Models;
 using ECommereceApi.Repo;
 
@@ -6,14 +6,22 @@ namespace ECommereceApi.IRepo
 {
     public interface IProductRepo
     {
-        Task<Status> AddProductAsync(ProductAddDTO product);
+        Task<ProductDisplayDTO> AddProductAsync(ProductAddDTO product);
         Task<Status> DeleteProductAsync(int id);
         Task<IEnumerable<ProductDisplayDTO>> GetAllProductsAsync();
         Task<ProductDisplayDTO> GetProductByIdAsync(int id);
         Task<Status> UpdateProductAsync(ProductAddDTO product, int Id);
         Task<IEnumerable<ProductDisplayDTO>> GetAllCategoryProductsAsync(int categoryId);
         Task<IEnumerable<CategoryDTO>> GetAllCategoriesAsync();
-        Task<IEnumerable<CategoryDTO>> GetAllSubCategoriesForCategoryAsync(int categoryId);
+        Task<CategoryDTO> AddCategoryAsync(CategoryAddDTO category);
+        Task<CategoryDTO> UpdateCategoryAsync(int id, CategoryAddDTO category);
+        Task<Status> DeleteCategoryAsync(int categoryId);
+        Task<List<SubCategoryDTO>> GetAllSubCategoriesAsync();
+        Task<SubCategoryDTO> GetSubCategoryById(int id);
+        Task<SubCategoryDTO> UpdateSubCategoryAsync(int subId, SubCategoryAddDTO subcat);
+        Task<Status> DeleteSubCategoryAsync(int id);
+        Task<SubCategoryDTO> AddSubCategoryAsync(SubCategoryAddDTO category);
+        Task<IEnumerable<SubCategoryDTO>> GetAllSubCategoriesForCategoryAsync(int categoryId);
         Task<IEnumerable<ProductDisplayDTO>> GetAllProductsForSubCategoryAsync(int subId, string value);
         Task<Status> AddProductPhotosAsync(ProductPictureDTO input);
         Task<List<string>> GetProductPicturesAsync(int ProductId);

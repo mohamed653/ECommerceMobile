@@ -1,4 +1,6 @@
-﻿namespace ECommereceApi.IRepo
+﻿using ECommereceApi.DTOs.Product;
+
+namespace ECommereceApi.IRepo
 {
     public interface IOfferRepo
     {
