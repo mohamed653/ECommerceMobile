@@ -35,6 +35,7 @@ namespace ECommereceApi.Repo
                 foreach (var offer in offersDTO)
                 {
                     offer.ProductOffers = _mapper.Map<List<OfferProductsDTO>>(offers.FirstOrDefault(x => x.OfferId == offer.OfferId).ProductOffers);
+                    await LoadProductDetails(offer);
                 }
                 return offersDTO;
             }
@@ -77,6 +78,29 @@ namespace ECommereceApi.Repo
             }
         }
 
+        //public async Task<OffersDTOUI> GetOfferById(int id)
+        //{
+        //    try
+        //    {
+        //        var offer = await _context.Offers.Include(x => x.ProductOffers).FirstOrDefaultAsync(x => x.OfferId == id);
+        //        if (offer == null)
+        //            throw new Exception("Offer not found");
+        //        if (OfferExpiredOrInActive(offer))
+        //            throw new Exception("Offer is expired or inactive");
+
+        //        var offerDTO = _mapper.Map<OffersDTOUI>(offer);
+        //        offerDTO.ProductOffers = _mapper.Map<List<OfferProductsDTO>>(offer.ProductOffers);
+
+
+        //        return offerDTO;
+        //    }
+        //    catch (Exception)
+        //    {
+        //        throw;
+        //    }
+
+        //}
+
         public async Task<OffersDTOUI> GetOfferById(int id)
         {
             try
@@ -89,7 +113,7 @@ namespace ECommereceApi.Repo
 
                 var offerDTO = _mapper.Map<OffersDTOUI>(offer);
                 offerDTO.ProductOffers = _mapper.Map<List<OfferProductsDTO>>(offer.ProductOffers);
-
+                await LoadProductDetails(offerDTO);
 
                 return offerDTO;
             }
@@ -99,6 +123,19 @@ namespace ECommereceApi.Repo
             }
 
         }
+
+        private async Task LoadProductDetails(OffersDTOUI offersDTOUI)
+        {
+            foreach (var item in offersDTOUI.ProductOffers)
+            {
+                var product = await _context.Products.Include(p=>p.ProductImages).FirstOrDefaultAsync(p=>p.ProductId==item.ProductId);
+                if (product == null)
+                    throw new Exception("Product not found");
+                item.Name = product.Name;
+                if(product.ProductImages.Count>0)
+                    item.Image = product.ProductImages.FirstOrDefault().ImageId;
+            }
+        }   
         public async Task AddProductsToOffer(int offerId, List<OfferProductsDTO> offerProductsDTOs, decimal? PackageDiscount)
         {
             try
@@ -186,8 +223,28 @@ namespace ECommereceApi.Repo
             }
         }
 
+        public async Task<List<OffersDTOUI>> RemoveProductFromOffer(int offerId, int productId)
+        {
+            try
+            {
+                var offer = await _context.Offers.Include(x => x.ProductOffers).FirstOrDefaultAsync(x => x.OfferId == offerId);
+                if (offer == null)
+                    throw new Exception("Offer not found");
 
+                var productOffer = offer.ProductOffers.FirstOrDefault(x => x.ProductId == productId);
+                if (productOffer == null)
+                    throw new Exception("Product not found in the offer");
 
+                offer.ProductOffers.Remove(productOffer);
+                await _context.SaveChangesAsync();
+
+                return await GetOffersWithProducts();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
 
 
         public async Task<string> UploadImages(IFormFile picture)

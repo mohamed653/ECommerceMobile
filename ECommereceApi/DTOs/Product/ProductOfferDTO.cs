@@ -24,10 +24,23 @@ namespace ECommereceApi.DTOs.Product
     public class OfferProductsDTO
     {
         public int ProductId { get; set; }
+        public string? Name { get; set; }
+
+        public string? Image { get; set; }
         public int ProductAmount { get; set; }
 
         public double? Discount { get; set; }
+
+
     }
+    //public class OfferProductsDetailedDTO
+    //{
+    //    public string Name { get; set; }
+
+    //    public string? Image { get; set; }
+    //}
+
+
     public class OffersDTOUI
     {
         public int OfferId { get; set; }

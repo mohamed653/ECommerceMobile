@@ -39,7 +39,7 @@ namespace ECommereceApi.Controllers
         }
 
         /// <summary>
-        /// returns a specific offer by its ID
+        /// returns a specific offer by its ID with its products+ name and image (first default image)
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
@@ -114,6 +114,27 @@ namespace ECommereceApi.Controllers
         {
             await offerRepo.DeleteOffer(offerId);
             return NoContent();
+        }
+
+        /// <summary>
+        /// remove a product from an offer
+        ///  <param name="offerId"></param>
+        ///   <param name="productId"></param>
+        /// <returns>all offers with thier products</returns>
+        /// </summary>
+        [HttpDelete("{offerId}/products/{productId}")]
+        public async Task<IActionResult> RemoveProductFromOffer(int offerId, int productId)
+        {
+            try
+            {
+                var offers = await offerRepo.RemoveProductFromOffer(offerId, productId);
+                if(offers == null) return NotFound();
+                return Ok(offers);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
         }
 
     }

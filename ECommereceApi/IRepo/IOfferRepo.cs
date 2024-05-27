@@ -15,6 +15,8 @@ namespace ECommereceApi.IRepo
         Task UpdateOffer(OffersDTOUI offersDTOUI);
         Task DeleteOffer(int offerId);
         Task <bool> OfferExpiredOrInActive(int offerId);
+
+        Task<List<OffersDTOUI>> RemoveProductFromOffer(int offerId, int productId);
        
 
     }
