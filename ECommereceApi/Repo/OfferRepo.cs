@@ -34,7 +34,7 @@ namespace ECommereceApi.Repo
                 var offersDTO = _mapper.Map<List<OffersDTOUI>>(offers);
                 foreach (var offer in offersDTO)
                 {
-                    offer.ProductOffers = _mapper.Map<List<OfferProductsDTO>>(offers.FirstOrDefault(x => x.OfferId == offer.OfferId).ProductOffers);
+                    offer.ProductOffers = _mapper.Map<List<OfferProductsDetailedDTO>>(offers.FirstOrDefault(x => x.OfferId == offer.OfferId).ProductOffers);
                     await LoadProductDetails(offer);
                 }
                 return offersDTO;
@@ -112,7 +112,7 @@ namespace ECommereceApi.Repo
                     throw new Exception("Offer is expired or inactive");
 
                 var offerDTO = _mapper.Map<OffersDTOUI>(offer);
-                offerDTO.ProductOffers = _mapper.Map<List<OfferProductsDTO>>(offer.ProductOffers);
+                offerDTO.ProductOffers = _mapper.Map<List<OfferProductsDetailedDTO>>(offer.ProductOffers);
                 await LoadProductDetails(offerDTO);
 
                 return offerDTO;
@@ -136,24 +136,22 @@ namespace ECommereceApi.Repo
                     item.Image = product.ProductImages.FirstOrDefault().ImageId;
             }
         }   
-        public async Task AddProductsToOffer(int offerId, List<OfferProductsDTO> offerProductsDTOs, decimal? PackageDiscount)
+        public async Task AddProductsToOffer(OffersDTOPost offerProductsDTO)
         {
             try
             {
-                
-                var offer = await _context.Offers.Include(x => x.ProductOffers).FirstOrDefaultAsync(x => x.OfferId == offerId);
+                var offer = await _context.Offers.Include(x => x.ProductOffers).FirstOrDefaultAsync(x => x.OfferId == offerProductsDTO.OfferId);
                 if (offer == null)
                     throw new Exception("Offer not found");
 
-                var productOffer = _mapper.Map<List<ProductOffer>>(offerProductsDTOs);
-                if (PackageDiscount != null)
-                    offer.PackageDiscount = PackageDiscount;
-
-                foreach (var item in productOffer)
+                var productOffer = new ProductOffer()
                 {
-                    item.OfferId = offerId;
-                    offer.ProductOffers.Add(item);
-                }
+                    OfferId = offerProductsDTO.OfferId,
+                    ProductId = offerProductsDTO.ProductId,
+                    ProductAmount = offerProductsDTO.ProductAmount,
+                    Discount = offerProductsDTO.Discount
+                };
+                offer.ProductOffers.Add(productOffer);
                 await _context.SaveChangesAsync();
             }
             catch (Exception)
@@ -184,8 +182,6 @@ namespace ECommereceApi.Repo
 
                 //update the offer
                 _mapper.Map(offersDTOUI, offer);
-
- 
                
                 await _context.SaveChangesAsync();
             }
@@ -277,8 +273,8 @@ namespace ECommereceApi.Repo
             // Calculate the end date of the offer
             var startDate = offer.OfferDate;
             int durationInDays = offer.Duration ?? 0; // Assuming a duration of 0 if it is null
-
-            if (DateTime.Now > startDate.ToDateTime(TimeOnly.MinValue).AddDays(durationInDays))
+            var _date = startDate.ToDateTime(TimeOnly.MinValue).AddDays(durationInDays);
+            if (DateTime.Now < _date)
                 return false;
 
             return true;
@@ -294,7 +290,8 @@ namespace ECommereceApi.Repo
             var startDate = offer.OfferDate;
             int durationInDays = offer.Duration ?? 0; // Assuming a duration of 0 if it is null
 
-            if (DateTime.Now > startDate.ToDateTime(TimeOnly.MinValue).AddDays(durationInDays))
+            var _date = startDate.ToDateTime(TimeOnly.MinValue).AddDays(durationInDays);
+            if (DateTime.Now < _date )
                 return false;
 
             return true;

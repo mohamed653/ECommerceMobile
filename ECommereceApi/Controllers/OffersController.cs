@@ -56,7 +56,6 @@ namespace ECommereceApi.Controllers
             {
                 return BadRequest();
             }
-
         }
 
         [HttpGet("/byProductId/{productId}")]
@@ -83,13 +82,13 @@ namespace ECommereceApi.Controllers
         }
 
         /// <summary>
-        /// assign products to a specific offer
+        /// assign product to a specific offer
         /// </summary>
-        [HttpPost("{offerId}/products")]
-        public async Task<IActionResult> AddProductsToOffer(int offerId, List<OfferProductsDTO> offerProductsDTOs, decimal? PackageDiscount)
+        [HttpPost("addProductsToOffer")]
+        public async Task<IActionResult> AddProductsToOffer(OffersDTOPost offerProductsDTO)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            await offerRepo.AddProductsToOffer( offerId, offerProductsDTOs,PackageDiscount);
+            await offerRepo.AddProductsToOffer( offerProductsDTO);
             return Created();
         }
 
