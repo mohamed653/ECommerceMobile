@@ -9,15 +9,23 @@ namespace ECommereceApi.Repo
 {
     public class OfferRepo : IOfferRepo
     {
+        #region Fields
         private readonly ECommerceContext _context;
         private readonly IFileCloudService _fileCloudService;
         private readonly IMapper _mapper;
-        public OfferRepo(ECommerceContext context, IFileCloudService fileCloudService, IMapper mapper)
+        private readonly IProductRepo _productRepo;
+        #endregion
+        #region Constructors
+        public OfferRepo(ECommerceContext context, IFileCloudService fileCloudService, IMapper mapper, IProductRepo productRepo)
         {
             _context = context;
             _fileCloudService = fileCloudService;
             _mapper = mapper;
+            _productRepo = productRepo;
         }
+        #endregion
+
+        #region Methods
         public async Task<List<Offer>> GetOffers()
         {
             return await _context.Offers.ToListAsync();
@@ -190,6 +198,32 @@ namespace ECommereceApi.Repo
                 throw;
             }
         }
+
+        public async Task<Status> UpdateProductsFromOffer(int offerId, ProductAddDTO productAddDTO, int productId)
+        {
+            try
+            {
+                var offer = await _context.Offers.Include(x => x.ProductOffers).FirstOrDefaultAsync(x => x.OfferId == offerId);
+
+                if (offer == null)
+                    throw new Exception("Offer not found");
+
+                // check if the product is already in the offer
+                if (!offer.ProductOffers.Any(x => x.ProductId == productId))
+                    throw new Exception("Product doesn't exist in the offer");
+                
+                var updatedProduct = await _productRepo.UpdateProductAsync( productAddDTO, productId);
+
+                return Status.Success;
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+
+        }
+
         public async Task DeleteOffer(int offerId)
         {
             try
@@ -275,9 +309,9 @@ namespace ECommereceApi.Repo
             int durationInDays = offer.Duration ?? 0; // Assuming a duration of 0 if it is null
             var _date = startDate.ToDateTime(TimeOnly.MinValue).AddDays(durationInDays);
             if (DateTime.Now < _date)
-                return false;
+                return true;
 
-            return true;
+            return false;
         }
         public  bool OfferExpiredOrInActive(Offer offer)
         {
@@ -292,11 +326,12 @@ namespace ECommereceApi.Repo
 
             var _date = startDate.ToDateTime(TimeOnly.MinValue).AddDays(durationInDays);
             if (DateTime.Now < _date )
-                return false;
+                return true;
 
-            return true;
+            return false;
         }
 
+        #endregion
 
 
     }

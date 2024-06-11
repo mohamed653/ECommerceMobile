@@ -1,4 +1,5 @@
 ﻿using ECommereceApi.DTOs.Product;
+using ECommereceApi.Repo;
 
 namespace ECommereceApi.IRepo
 {
@@ -9,7 +10,7 @@ namespace ECommereceApi.IRepo
         Task<List<OffersDTOUI>> GetOffersWithProducts();
 
         Task<List<Offer>> GetOffersByProductId(int productId);
-
+        Task<Status> UpdateProductsFromOffer(int offerId, ProductAddDTO productAddDTO, int productId);
         Task<int> AddOffer(OfferDTO offerDTO);
         Task AddProductsToOffer(OffersDTOPost offerProductsDTO);
         Task UpdateOffer(OffersDTOUI offersDTOUI);

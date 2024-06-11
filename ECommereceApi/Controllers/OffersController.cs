@@ -1,4 +1,5 @@
 ﻿using ECommereceApi.DTOs.Product;
+using ECommereceApi.Repo;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
@@ -16,6 +17,7 @@ namespace ECommereceApi.Controllers
             offerRepo = _offerRepo;
         }
 
+        #region Get Methods
         /// <summary>
         /// Get all offers
         /// </summary>
@@ -58,6 +60,8 @@ namespace ECommereceApi.Controllers
             }
         }
 
+        
+
         [HttpGet("/byProductId/{productId}")]
         public async Task<IActionResult> GetOffersByProductId(int productId)
         {
@@ -65,6 +69,9 @@ namespace ECommereceApi.Controllers
             if (offers == null) return NotFound();
             return Ok(offers);
         }
+        #endregion
+
+        #region Post Methods
 
         /// <summary>
         /// Add a new offer  the date should be in this format "2024-5-1"
@@ -92,6 +99,9 @@ namespace ECommereceApi.Controllers
             return Created();
         }
 
+        #endregion
+
+        #region Put Methods
         /// <summary>
         /// update an offer
         /// </summary>
@@ -102,6 +112,32 @@ namespace ECommereceApi.Controllers
             await offerRepo.UpdateOffer(offersDTOUI);
             return NoContent();
         }
+
+        /// <summary>
+        /// update products from an offer
+        /// </summary>
+
+        [HttpPut("/ProductsFromOffer")]
+        public async Task<IActionResult> UpdateProductsFromOffer(int offerId, int existingProductId,ProductAddDTO updatedProductDTO )
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            try
+            {
+                var status = await offerRepo.UpdateProductsFromOffer(offerId, updatedProductDTO, existingProductId);
+
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+
+            return Ok(new {StatusMessage="Updated Successfully",StatusCode= Status.Success.ToString() });
+        }
+
+        #endregion
+
+        #region Delete Methods
 
         /// <summary>
         /// delete an offer
@@ -135,6 +171,7 @@ namespace ECommereceApi.Controllers
                 return BadRequest(e.Message);
             }
         }
+        #endregion
 
     }
 }
