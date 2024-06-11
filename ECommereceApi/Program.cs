@@ -19,7 +19,7 @@ var webHostEnvironment = builder.Services.BuildServiceProvider().GetRequiredServ
 
 builder.Services.AddDbContext<ECommerceContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("AzureConnection"))
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
     .AddInterceptors(new SoftDeleteInterceptor());
 });
 builder.Services.AddCors(corsOptions =>
