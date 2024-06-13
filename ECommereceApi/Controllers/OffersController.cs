@@ -10,12 +10,17 @@ namespace ECommereceApi.Controllers
     [ApiController]
     public class OffersController : ControllerBase
     {
+        #region Fields
         private readonly IOfferRepo offerRepo;
 
+        #endregion
+
+        #region Constructors
         public OffersController(IOfferRepo _offerRepo)
         {
             offerRepo = _offerRepo;
         }
+        #endregion
 
         #region Get Methods
         /// <summary>
@@ -28,12 +33,11 @@ namespace ECommereceApi.Controllers
             return Ok(await offerRepo.GetOffers());
         }
 
-
         /// <summary>
         /// returns all offers with their products
         /// </summary>
         /// <returns></returns>
-        [HttpGet("/withProducts")]
+        [HttpGet("withProducts")]
 
         public async Task<IActionResult> GetOffersWithProducts()
         {
@@ -59,10 +63,8 @@ namespace ECommereceApi.Controllers
                 return BadRequest();
             }
         }
-
         
-
-        [HttpGet("/byProductId/{productId}")]
+        [HttpGet("byProductId/{productId}")]
         public async Task<IActionResult> GetOffersByProductId(int productId)
         {
             var offers =await offerRepo.GetOffersByProductId(productId);
@@ -106,10 +108,10 @@ namespace ECommereceApi.Controllers
         /// update an offer
         /// </summary>
         [HttpPut]
-        public async Task<IActionResult> UpdateOffer(OffersDTOUI offersDTOUI)  // adding new parameter which is new Image
+        public async Task<IActionResult> UpdateOffer(int offerId,OfferDTO offerDTO)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            await offerRepo.UpdateOffer(offersDTOUI);
+            await offerRepo.UpdateOffer(offerId,offerDTO);
             return NoContent();
         }
 
@@ -117,7 +119,7 @@ namespace ECommereceApi.Controllers
         /// update products from an offer
         /// </summary>
 
-        [HttpPut("/ProductsFromOffer")]
+        [HttpPut("ProductsFromOffer")]
         public async Task<IActionResult> UpdateProductsFromOffer(int offerId, int existingProductId,ProductAddDTO updatedProductDTO )
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);

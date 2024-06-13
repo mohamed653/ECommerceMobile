@@ -169,29 +169,29 @@ namespace ECommereceApi.Repo
         }
 
 
-        public async Task UpdateOffer(OffersDTOUI offersDTOUI)
+        public async Task UpdateOffer(int offerId, OfferDTO offerDTO)
         {
             try
             {
-                var offer = await _context.Offers.Include(x => x.ProductOffers).FirstOrDefaultAsync(x => x.OfferId == offersDTOUI.OfferId);
+                var offer = await _context.Offers.FindAsync(offerId);
                 if (offer == null)
                     throw new Exception("Offer not found");
-                //update the offerProducts
-                _context.ProductOffers.RemoveRange(offer.ProductOffers);
-                var offerProducts = _mapper.Map<List<ProductOffer>>(offersDTOUI.ProductOffers);
-    
 
-                foreach (var item in offerProducts)
+                offer.Title = offerDTO.Title;
+                offer.Description = offerDTO.Description;
+                offer.OfferDate = offerDTO.OfferDate;
+                offer.Duration = offerDTO.Duration;
+                offer.PackageDiscount = offerDTO.PackageDiscount;
+                if (offerDTO.Image != null)
                 {
-                    item.OfferId = offersDTOUI.OfferId;
-                    offer.ProductOffers.Add(item);
+                    offer.Image = await UploadImages(offerDTO.Image);
+                    // remove the old image from cloudinary
+                    var publicId = offer.Image.Split("/").Last().Split(".")[0];
+                    await _fileCloudService.DeleteImage(publicId);
                 }
 
-
-                //update the offer
-                _mapper.Map(offersDTOUI, offer);
-               
                 await _context.SaveChangesAsync();
+
             }
             catch (Exception)
             {
