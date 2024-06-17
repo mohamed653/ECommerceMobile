@@ -93,11 +93,11 @@ namespace ECommereceApi.Controllers
         /// <summary>
         /// assign product to a specific offer
         /// </summary>
-        [HttpPost("addProductsToOffer")]
-        public async Task<IActionResult> AddProductsToOffer(OffersDTOPost offerProductsDTO)
+        [HttpPost("{offerId}")]
+        public async Task<IActionResult> AddProductsToOffer(int offerId, OffersDTOPost offerProductsDTO)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            await offerRepo.AddProductsToOffer( offerProductsDTO);
+            await offerRepo.AddProductsToOffer(offerId,offerProductsDTO);
             return Created();
         }
 
@@ -119,14 +119,14 @@ namespace ECommereceApi.Controllers
         /// update products from an offer
         /// </summary>
 
-        [HttpPut("ProductsFromOffer")]
-        public async Task<IActionResult> UpdateProductsFromOffer(int offerId, int existingProductId,ProductAddDTO updatedProductDTO )
+        [HttpPut("{offerId}/{productId}/ProductsFromOffer")]
+        public async Task<IActionResult> UpdateProductsFromOffer(int offerId, ProductAddDTO productAddDTO,int productId )
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             try
             {
-                var status = await offerRepo.UpdateProductsFromOffer(offerId, updatedProductDTO, existingProductId);
+                var status = await offerRepo.UpdateProductsFromOffer(offerId, productAddDTO, productId);
 
             }
             catch (Exception e)

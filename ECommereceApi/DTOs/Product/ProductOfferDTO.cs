@@ -42,11 +42,19 @@ namespace ECommereceApi.DTOs.Product
     // a DTO for OfferProducts when  POST
     public class OffersDTOPost
     {
-        public int OfferId { get; set; }
         public int ProductId { get; set; }
         public int ProductAmount { get; set; }
         public double? Discount { get; set; }
     }
+
+    public class UpdateProdDTO
+    {
+        public string ProductName { get; set; }
+        public string ProductImage { get; set; }
+
+
+    }
+
     // a DTO for OfferProducts List when  GET
     public class OffersDTOUI
     {

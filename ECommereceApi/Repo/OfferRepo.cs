@@ -109,6 +109,7 @@ namespace ECommereceApi.Repo
 
         //}
 
+ 
         public async Task<OffersDTOUI> GetOfferById(int id)
         {
             try
@@ -144,23 +145,16 @@ namespace ECommereceApi.Repo
                     item.Image = product.ProductImages.FirstOrDefault().ImageId;
             }
         }   
-        public async Task AddProductsToOffer(OffersDTOPost offerProductsDTO)
+        public async Task AddProductsToOffer(int offerId, OffersDTOPost offerProductsDTO)
         {
             try
             {
-                var offer = await _context.Offers.Include(x => x.ProductOffers).FirstOrDefaultAsync(x => x.OfferId == offerProductsDTO.OfferId);
+               
+                var offer = await _context.Offers.Include(x => x.ProductOffers).FirstOrDefaultAsync(x => x.OfferId == offerId);
                 if (offer == null)
                     throw new Exception("Offer not found");
 
-                var productOffer = new ProductOffer()
-                {
-                    OfferId = offerProductsDTO.OfferId,
-                    ProductId = offerProductsDTO.ProductId,
-                    ProductAmount = offerProductsDTO.ProductAmount,
-                    Discount = offerProductsDTO.Discount
-                };
-                offer.ProductOffers.Add(productOffer);
-                await _context.SaveChangesAsync();
+
             }
             catch (Exception)
             {
@@ -211,11 +205,10 @@ namespace ECommereceApi.Repo
                 // check if the product is already in the offer
                 if (!offer.ProductOffers.Any(x => x.ProductId == productId))
                     throw new Exception("Product doesn't exist in the offer");
-                
-                var updatedProduct = await _productRepo.UpdateProductAsync( productAddDTO, productId);
+
+                var updatedProduct = await _productRepo.UpdateProductAsync(productAddDTO, productId);
 
                 return Status.Success;
-
             }
             catch (Exception)
             {
