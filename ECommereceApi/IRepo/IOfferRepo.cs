@@ -11,7 +11,7 @@ namespace ECommereceApi.IRepo
 
         Task<List<Offer>> GetOffersByProductId(int productId);
         //Task<Status> UpdateProductsFromOffer(int offerId, OffersDTOPost offerProductsDTO);
-        Task<Status> UpdateProductsFromOffer(int offerId, ProductAddDTO productAddDTO, int productId);
+        Task<Status> UpdateProductsFromOffer(int offerId, int oldProductId, OffersDTOPost offerProductsDTO);
         Task<int> AddOffer(OfferDTO offerDTO);
         Task AddProductsToOffer(int offerId, OffersDTOPost offerProductsDTO);
         Task UpdateOffer(int offerId,OfferDTO offerDTO);

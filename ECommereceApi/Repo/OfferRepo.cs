@@ -153,7 +153,24 @@ namespace ECommereceApi.Repo
                 var offer = await _context.Offers.Include(x => x.ProductOffers).FirstOrDefaultAsync(x => x.OfferId == offerId);
                 if (offer == null)
                     throw new Exception("Offer not found");
+                
+                var product = await _context.Products.FindAsync(offerProductsDTO.ProductId);
+                if (product == null)
+                    throw new Exception("Product not found");
 
+                if (offer.ProductOffers.Any(x => x.ProductId == offerProductsDTO.ProductId))
+                    throw new Exception("Product already exists in the offer");
+
+                var productOffer = new ProductOffer()
+                {
+                    OfferId = offerId,
+                    ProductId = offerProductsDTO.ProductId,
+                    ProductAmount = offerProductsDTO.ProductAmount,
+                    Discount = offerProductsDTO.Discount
+                };
+
+                offer.ProductOffers.Add(productOffer);
+                await _context.SaveChangesAsync();
 
             }
             catch (Exception)
@@ -193,7 +210,7 @@ namespace ECommereceApi.Repo
             }
         }
 
-        public async Task<Status> UpdateProductsFromOffer(int offerId, ProductAddDTO productAddDTO, int productId)
+        public async Task<Status> UpdateProductsFromOffer(int offerId, int oldProductId, OffersDTOPost offerProductsDTO)
         {
             try
             {
@@ -202,12 +219,36 @@ namespace ECommereceApi.Repo
                 if (offer == null)
                     throw new Exception("Offer not found");
 
+                var product = await _context.Products.FirstOrDefaultAsync(x => x.ProductId == oldProductId); 
+
+                if (product == null)
+                    throw new Exception("Product not found");
+
                 // check if the product is already in the offer
-                if (!offer.ProductOffers.Any(x => x.ProductId == productId))
+                if (!offer.ProductOffers.Any(x => x.ProductId == oldProductId))
                     throw new Exception("Product doesn't exist in the offer");
 
-                var updatedProduct = await _productRepo.UpdateProductAsync(productAddDTO, productId);
+                // remove the productOffer and add it again with the new values
 
+                var productOffer = offer.ProductOffers.FirstOrDefault(x => x.ProductId == oldProductId);
+
+                // Remove the productOffer from the Offer's collection
+                offer.ProductOffers.Remove(productOffer);
+
+                // Create a new ProductOffer with the updated values
+                var newProductOffer = new ProductOffer
+                {
+                    OfferId = offerId,
+                    ProductId = offerProductsDTO.ProductId,
+                    ProductAmount = offerProductsDTO.ProductAmount,
+                    Discount = offerProductsDTO.Discount
+                };
+
+                // Add the new ProductOffer to the Offer's collection
+                offer.ProductOffers.Add(newProductOffer);
+
+                // Save changes to the context
+                await _context.SaveChangesAsync();
                 return Status.Success;
             }
             catch (Exception)
