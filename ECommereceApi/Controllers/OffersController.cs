@@ -119,14 +119,14 @@ namespace ECommereceApi.Controllers
         /// update products from an offer
         /// </summary>
 
-        [HttpPut("{offerId}/{productId}/ProductsFromOffer")]
-        public async Task<IActionResult> UpdateProductsFromOffer(int offerId, ProductAddDTO productAddDTO,int productId )
+        [HttpPut("{offerId}/{oldProductId}")]
+        public async Task<IActionResult> UpdateProductsFromOffer(int offerId, int oldProductId ,OffersDTOPost offerProductsDTO)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             try
             {
-                var status = await offerRepo.UpdateProductsFromOffer(offerId, productAddDTO, productId);
+                var status = await offerRepo.UpdateProductsFromOffer(offerId, oldProductId, offerProductsDTO);
 
             }
             catch (Exception e)
