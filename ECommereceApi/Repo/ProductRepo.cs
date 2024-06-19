@@ -64,12 +64,12 @@ namespace ECommereceApi.Repo
 
         public async Task<IEnumerable<ProductDisplayDTO>> GetAllProductsAsync()
         {
-            return _mapper.Map<List<ProductDisplayDTO>>(await _db.Products.Include(p => p.Category).ToListAsync()); ;
+            return _mapper.Map<List<ProductDisplayDTO>>(await _db.Products.Include(p => p.Category).Include(p => p.ProductImages).ToListAsync()); ;
         }
 
         public async Task<ProductDisplayDTO> GetProductByIdAsync(int id)
         {
-            return _mapper.Map<ProductDisplayDTO>(await _db.Products.Include(p => p.Category).SingleOrDefaultAsync(p => p.ProductId == id));
+            return _mapper.Map<ProductDisplayDTO>(await _db.Products.Include(p => p.Category).Include(p => p.ProductImages).SingleOrDefaultAsync(p => p.ProductId == id));
         }
 
         public async Task<Status> UpdateProductAsync(ProductAddDTO product, int Id)
@@ -84,7 +84,7 @@ namespace ECommereceApi.Repo
         }
         public async Task<IEnumerable<ProductDisplayDTO>> GetAllCategoryProductsAsync(int categoryId)
         {
-            return _mapper.Map<List<ProductDisplayDTO>>(await _db.Products.Where(p => p.CategoryId == categoryId).Include(p => p.Category).ToListAsync());
+            return _mapper.Map<List<ProductDisplayDTO>>(await _db.Products.Where(p => p.CategoryId == categoryId).Include(p => p.Category).Include(p => p.ProductImages).ToListAsync());
         }
         public async Task<IEnumerable<CategoryDTO>> GetAllCategoriesAsync()
         {
@@ -247,7 +247,7 @@ namespace ECommereceApi.Repo
         }
         public async Task<PagedResult<ProductDisplayDTO>> RenderPaginationForAllProductsAsync(int page, int pageSize)
         {
-            return RenderPagination(page, pageSize, await _db.Products.Include(p => p.Category).ToListAsync());
+            return RenderPagination(page, pageSize, await _db.Products.Include(p => p.Category).Include(p => p.ProductImages).ToListAsync());
         }
         public async Task<PagedResult<ProductDisplayDTO>> RenderSortedPaginationSortedAsync(int page, int pageSize, string sortOrder)
         {
@@ -269,7 +269,7 @@ namespace ECommereceApi.Repo
             else if (sortOrder.Equals("discount_des"))
                 productInput = _db.Products.OrderByDescending(p => p.Discount).ToList();
             else
-                productInput = await _db.Products.Include(p => p.Category).OrderBy(p => p.Name).ToListAsync();
+                productInput = await _db.Products.Include(p => p.Category).Include(p => p.ProductImages).OrderBy(p => p.Name).ToListAsync();
             return RenderPagination(page, pageSize, productInput);
         }
         public async Task<List<Product>> GetAllFilteredProductsFromSearchAsync(string? Name, double? MinOriginalPrice, double? MaxOriginalPrice, int? MinAmount, int? MaxAmount, List<int>? CategoriesIds)

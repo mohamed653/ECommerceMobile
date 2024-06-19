@@ -12,8 +12,14 @@ namespace ECommereceApi.Services.Mapper
             CreateMap<Product, ProductDisplayDTO>()
                 .ForMember(p => p.CategoryName, option => option.MapFrom(p => p.Category.Name))
                 .ReverseMap();
+            
+            CreateMap<ProductDisplayDTO, ProductDisplayInCartDTO>().ReverseMap();
+
+            CreateMap<ProductImage, ProductImageDTO>()
+                .ReverseMap();
 
             CreateMap<Product, ProductAddDTO>().ReverseMap();
+
             CreateMap<CategoryDTO, Category>()
                 .ForMember(c => c.Subs, options => options.MapFrom(dest => dest.SubCategories))
                 .ReverseMap();

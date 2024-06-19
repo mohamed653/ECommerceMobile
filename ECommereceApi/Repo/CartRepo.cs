@@ -40,12 +40,11 @@ namespace ECommereceApi.Repo
             }
             CartProductsDTO cartProducts = new CartProductsDTO();
             cartProducts.UserId = user.UserId;
-
-
             foreach (var item in result)
             {
-                ProductDisplayDTO productDisplayDTO = _mapper.Map<ProductDisplayDTO>(await _productRepo.GetProductByIdAsync(item.ProductId));
+                ProductDisplayInCartDTO productDisplayDTO = _mapper.Map<ProductDisplayInCartDTO>(await _productRepo.GetProductByIdAsync(item.ProductId));
                 productDisplayDTO.Amount = item.ProductAmount;
+                productDisplayDTO.AllAmount = _db.Products.FirstOrDefaultAsync(p => p.ProductId == item.ProductId).Result.Amount;
                 cartProducts.ProductsAmounts.Add(productDisplayDTO);
                 cartProducts.numberOfUniqueProducts++;
                 cartProducts.numberOfProducts += item.ProductAmount;

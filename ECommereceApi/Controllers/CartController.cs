@@ -19,7 +19,7 @@ namespace ECommereceApi.Controllers
             _productRepo = productRepo;
         }
         [HttpGet]
-        [Route("/{id:int}")]
+        [Route("{id:int}")]
         public async Task<IActionResult> GetUserCart(int id)
         {
             User user = await _repo.GetUserByIdAsync(id);
@@ -30,7 +30,7 @@ namespace ECommereceApi.Controllers
             return Ok(await _repo.GetCartProductsAsync(user));
         }
         [HttpDelete]
-        [Route("/{id:int}")]
+        [Route("{id:int}")]
         public async Task<IActionResult> DeleteUserCart(int id)
         {
             User user = await _repo.GetUserByIdAsync(id);
