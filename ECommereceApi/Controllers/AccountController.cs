@@ -38,24 +38,22 @@ namespace ECommereceApi.Controllers
 
             string code = GenerateCode().ToString();
 
-            bool isRegistered = await _userManagementRepo.TryRegisterUser(dto ,code);
-         
-            if (!isRegistered)
-                return BadRequest("Invalid Registry");
-
-            bool isValidEmail = _mailRepo.TrySendEmail(dto.Email,code);
+            bool isValidEmail = _mailRepo.TrySendEmail(dto.Email, code);
 
             if (!isValidEmail)
                 return BadRequest("Invalid Email");
 
 
-            string token = await GenerateToken(dto.Email);
+            bool isRegistered = await _userManagementRepo.TryRegisterUser(dto ,code);
+         
+            if (!isRegistered)
+                return BadRequest("Invalid Registry");   
 
-            return Created("",token);
-
+            return Created();
         }
 
-        [HttpGet("login")]
+
+        [HttpPost("login")]
         public async Task<IActionResult> Login(LoginUserDTO dto)
         {
             if (dto == null)
@@ -66,6 +64,10 @@ namespace ECommereceApi.Controllers
             if (user is null || user.Password != dto.Password)
                 return BadRequest("User name or password is incorrect");
 
+            bool isVerified = user?.IsVerified ?? false;
+            if (!isVerified)
+                return BadRequest("Email should be verified first!");
+
             string token =await GenerateToken(dto.Email);
 
             HttpContext.Response.Headers.Add("Bearer-Token", token);
@@ -73,7 +75,6 @@ namespace ECommereceApi.Controllers
             return Ok();
         }
 
-        [Authorize]
         [HttpPost("verify")]
         public async Task<IActionResult> Verify(VerifyEmail verifyModel)
         {
@@ -174,6 +175,7 @@ namespace ECommereceApi.Controllers
 
             List<Claim> claims = new List<Claim>()
             {
+                new Claim(ClaimTypes.NameIdentifier,user.UserId.ToString()),
                 new Claim(ClaimTypes.Email,user.Email),
                 new Claim(ClaimTypes.Role.ToString(), user.Role.ToString())
             };
