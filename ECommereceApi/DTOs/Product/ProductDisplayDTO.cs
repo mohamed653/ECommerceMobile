@@ -10,6 +10,7 @@ namespace ECommereceApi.DTOs.Product
 
         public string Name { get; set; }
 
+        public virtual ICollection<ProductImageDTO> ProductImages { get; set; } = new List<ProductImageDTO>();
         public double? Discount { get; set; }
 
         public double OriginalPrice { get; set; }
@@ -20,7 +21,6 @@ namespace ECommereceApi.DTOs.Product
 
         public int CategoryId { get; set; }
         public string CategoryName { get; set; }
-
         public double? FinalPrice { get; set; }
     }
 }
