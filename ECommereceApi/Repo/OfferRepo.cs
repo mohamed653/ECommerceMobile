@@ -343,9 +343,9 @@ namespace ECommereceApi.Repo
             int durationInDays = offer.Duration ?? 0; // Assuming a duration of 0 if it is null
             var _date = startDate.ToDateTime(TimeOnly.MinValue).AddDays(durationInDays);
             if (DateTime.Now < _date)
-                return true;
+                return false;
 
-            return false;
+            return true;
         }
         public  bool OfferExpiredOrInActive(Offer offer)
         {
@@ -360,9 +360,9 @@ namespace ECommereceApi.Repo
 
             var _date = startDate.ToDateTime(TimeOnly.MinValue).AddDays(durationInDays);
             if (DateTime.Now < _date )
-                return true;
+                return false;
 
-            return false;
+            return true;
         }
 
         #endregion
