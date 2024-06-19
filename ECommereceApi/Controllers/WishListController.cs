@@ -30,7 +30,7 @@ namespace ECommereceApi.Controllers
             var wishList = await _wishListRepo.GetWishListByUserId(userId);
             if (wishList.Count == 0)
             {
-                return NotFound("No product found in your wishlist");
+                return Ok("No product found in your wishlist");
             }
             return Ok(wishList);
         }
@@ -63,7 +63,7 @@ namespace ECommereceApi.Controllers
             var products = await _wishListRepo.GetTopWishlistedProducts();
             if (products.Count == 0)
             {
-                return NotFound("No product found in wishlist");
+                return Ok("No product found in wishlist");
             }
             return Ok(products);
         }
