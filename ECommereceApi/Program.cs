@@ -26,10 +26,9 @@ builder.Services.AddCors(corsOptions =>
 {
     corsOptions.AddPolicy("myPolicy", corsPolicyBuilder =>
     {
-        corsPolicyBuilder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+        corsPolicyBuilder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod().WithExposedHeaders("Bearer-Token");
     });
 });
-
 
 #region FileServer
 

@@ -195,10 +195,13 @@ namespace ECommereceApi.Repo
                 offer.PackageDiscount = offerDTO.PackageDiscount;
                 if (offerDTO.Image != null)
                 {
-                    offer.Image = await UploadImages(offerDTO.Image);
-                    // remove the old image from cloudinary
+                    // delete the old image from cloudinary
                     var publicId = offer.Image.Split("/").Last().Split(".")[0];
                     await _fileCloudService.DeleteImage(publicId);
+
+                    // upload the new image
+                    offer.Image = await UploadImages(offerDTO.Image);
+                   
                 }
 
                 await _context.SaveChangesAsync();
