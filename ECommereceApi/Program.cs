@@ -124,6 +124,7 @@ builder.Services.AddScoped<IUserManagementRepo, UserManagementRepo>();
 builder.Services.AddScoped<IMailRepo, MailRepo>();
 builder.Services.AddScoped<ICartRepo, CartRepo>();
 
+builder.Services.AddTransient<NotificationService>();
 
 var app = builder.Build();
 
