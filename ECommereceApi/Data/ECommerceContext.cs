@@ -21,6 +21,8 @@ public partial class ECommerceContext : DbContext
 
     public virtual DbSet<Category> Categories { get; set; }
 
+    public virtual DbSet<CategorySubCategoryValues> CategorySubCategoryValues {get; set;}
+
     public virtual DbSet<Customer> Customers { get; set; }
 
     public virtual DbSet<NotificationMessage> NotificationMessages { get; set; }
@@ -36,8 +38,6 @@ public partial class ECommerceContext : DbContext
     public virtual DbSet<ProductImage> ProductImages { get; set; }
 
     public virtual DbSet<ProductOffer> ProductOffers { get; set; }
-
-    public virtual DbSet<ProductSubCategory> ProductSubCategories { get; set; }
 
     public virtual DbSet<Rate> Rates { get; set; }
     public virtual DbSet<ProductOrder> ProductOrders { get; set; }
@@ -61,26 +61,33 @@ public partial class ECommerceContext : DbContext
                 .HasConstraintName("FK_Admin_User");
         });
 
-        modelBuilder.Entity<Category>(entity =>
-        {
-            entity.HasMany(d => d.Subs).WithMany(p => p.Categories)
-                .UsingEntity<Dictionary<string, object>>(
-                    "CategorySubCategory",
-                    r => r.HasOne<SubCategory>().WithMany()
-                        .HasForeignKey("SubId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK_CategorySubCategory_SubCategory"),
-                    l => l.HasOne<Category>().WithMany()
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK_CategorySubCategory_Category"),
-                    j =>
-                    {
-                        j.HasKey("CategoryId", "SubId");
-                        j.ToTable("CategorySubCategory");
-                        j.HasIndex(new[] { "SubId" }, "IX_CategorySubCategory_SubId");
-                    });
-        });
+        //modelBuilder.Entity<Category>(entity =>
+        //{
+        //    entity
+        //        .UsingEntity<Dictionary<string, object>>(
+        //            "CategorySubCategory",
+        //            r => r.HasOne<SubCategory>().WithMany()
+        //                .HasForeignKey("SubId")
+        //                .OnDelete(DeleteBehavior.ClientSetNull)
+        //                .HasConstraintName("FK_CategorySubCategory_SubCategory"),
+        //            l => l.HasOne<Category>().WithMany()
+        //                .HasForeignKey("CategoryId")
+        //                .OnDelete(DeleteBehavior.ClientSetNull)
+        //                .HasConstraintName("FK_CategorySubCategory_Category"),
+        //            j =>
+        //            {
+        //                j.HasKey("CategoryId", "SubId");
+        //                j.ToTable("CategorySubCategory");
+        //                j.HasIndex(new[] { "SubId" }, "IX_CategorySubCategory_SubId");
+        //            });
+        //});
+        //modelBuilder.Entity<CategorySubCategory>(entity =>
+        //{
+        //    //entity.HasKey(cs => new { cs.CategoryId, cs.SubCategoryId, cs.Value });
+        //    //entity.HasOne<Category>().WithMany<CategorySubCategory>().HasForeignKey(cs => cs.CategoryId);
+        //    entity.
+
+        //});
         modelBuilder.Entity<Customer>(entity =>
         {
             entity.Property(e => e.UserId).ValueGeneratedNever();
@@ -148,17 +155,6 @@ public partial class ECommerceContext : DbContext
             entity.HasOne(d => d.Product).WithMany(p => p.ProductOffers)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_ProductOffer_Product");
-        });
-
-        modelBuilder.Entity<ProductSubCategory>(entity =>
-        {
-            entity.HasOne(d => d.Product).WithMany(p => p.ProductSubCategories)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_ProductSubCategory_Product");
-
-            entity.HasOne(d => d.Sub).WithMany(p => p.ProductSubCategories)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_ProductSubCategory_SubCategory");
         });
         modelBuilder.Entity<Rate>(entity =>
         {
