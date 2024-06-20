@@ -16,11 +16,5 @@ public partial class SubCategory
 
     [StringLength(50)]
     public string Name { get; set; }
-
-    [InverseProperty("Sub")]
-    public virtual ICollection<ProductSubCategory> ProductSubCategories { get; set; } = new List<ProductSubCategory>();
-
-    [ForeignKey("SubId")]
-    [InverseProperty("Subs")]
-    public virtual ICollection<Category> Categories { get; set; } = new List<Category>();
+    public virtual ICollection<CategorySubCategory> Categories { get; set; } = new List<CategorySubCategory>();
 }

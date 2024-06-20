@@ -46,9 +46,6 @@ public partial class Product : ISoftDeletable
     public virtual ICollection<ProductOffer> ProductOffers { get; set; } = new List<ProductOffer>();
 
     [InverseProperty("Product")]
-    public virtual ICollection<ProductSubCategory> ProductSubCategories { get; set; } = new List<ProductSubCategory>();
-
-    [InverseProperty("Product")]
     public virtual ICollection<Rate> Rates { get; set; } = new List<Rate>();
 
 
@@ -57,7 +54,8 @@ public partial class Product : ISoftDeletable
 
 	[InverseProperty("Product")]
 	public virtual ICollection<ProductOrder> ProductOrders { get; set; } = new List<ProductOrder>();
-
+    
+    public ICollection<CategorySubCategoryValues> CategorySubCategoryValues = new List<CategorySubCategoryValues>();
 	// Computed properties
 	[NotMapped]
 	public double? FinalPrice => OriginalPrice - Discount;

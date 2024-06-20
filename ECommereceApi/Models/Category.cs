@@ -16,11 +16,10 @@ public partial class Category
     [Required]
     [StringLength(50)]
     public string Name { get; set; }
+    public string ImageUri { get; set; }
+    public string ImageId { get; set; }
 
     [InverseProperty("Category")]
     public virtual ICollection<Product> Products { get; set; } = new List<Product>();
-
-    [ForeignKey("CategoryId")]
-    [InverseProperty("Categories")]
-    public virtual ICollection<SubCategory> Subs { get; set; } = new List<SubCategory>();
+    public virtual ICollection<CategorySubCategory> Subs { get; set; } = new List<CategorySubCategory>();
 }

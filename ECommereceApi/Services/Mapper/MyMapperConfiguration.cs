@@ -20,8 +20,8 @@ namespace ECommereceApi.Services.Mapper
 
             CreateMap<Product, ProductAddDTO>().ReverseMap();
 
-            CreateMap<CategoryDTO, Category>()
-                .ForMember(c => c.Subs, options => options.MapFrom(dest => dest.SubCategories))
+            CreateMap<Category, CategoryDTO>()
+                .ForMember(c=> c.SubCategories, opt => opt.MapFrom(sc => sc.Subs.Select(s => s.SubCategory)))
                 .ReverseMap();
 
             CreateMap<SubCategory, SubCategoryDTO>()
