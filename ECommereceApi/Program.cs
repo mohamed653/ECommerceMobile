@@ -8,6 +8,7 @@ using Microsoft.Extensions.Options;
 using System.Globalization;
 using ECommereceApi.Services.Interfaces;
 using Serilog;
+using ECommereceApi.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -133,6 +134,9 @@ builder.Services.AddScoped<IUserManagementRepo, UserManagementRepo>();
 builder.Services.AddScoped<IMailRepo, MailRepo>();
 builder.Services.AddScoped<ICartRepo, CartRepo>();
 
+// Global Exception Handling Service
+builder.Services.AddTransient<GlobalExceptionHandlingMiddleware>();
+
 builder.Services.AddTransient<NotificationService>();
 
 var app = builder.Build();
@@ -143,6 +147,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+// Global Exception Handling Middleware
+app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 
 app.UseCors("myPolicy");
 app.UseAuthentication();
