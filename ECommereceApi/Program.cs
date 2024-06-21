@@ -7,6 +7,7 @@ using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.Options;
 using System.Globalization;
 using ECommereceApi.Services.Interfaces;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -107,6 +108,14 @@ builder.Services.AddSwaggerGen(c =>
 });
 #endregion
 
+#region Logging Service
+
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Debug()
+    .WriteTo.Console()
+    .WriteTo.File("logs/eCommercelog-.txt", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+#endregion
 
 // Add AutoMapper Service
 builder.Services.AddAutoMapper(typeof(Program));

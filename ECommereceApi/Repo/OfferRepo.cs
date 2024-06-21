@@ -4,6 +4,7 @@ using CloudinaryDotNet.Actions;
 using ECommereceApi.DTOs.Product;
 using ECommereceApi.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace ECommereceApi.Repo
 {
@@ -49,6 +50,8 @@ namespace ECommereceApi.Repo
             }
             catch (Exception)
             {
+
+                Log.Error($"Error in GetOffersWithProducts");
                 throw;
             }
         }
@@ -82,6 +85,7 @@ namespace ECommereceApi.Repo
             }
             catch (Exception)
             {
+                Log.Error($"Error in AddOffer");
                 throw;
             }
         }
@@ -128,6 +132,7 @@ namespace ECommereceApi.Repo
             }
             catch (Exception)
             {
+                Log.Error($"Error in GetOfferById");
                 throw;
             }
 
@@ -175,6 +180,7 @@ namespace ECommereceApi.Repo
             }
             catch (Exception)
             {
+                Log.Error($"Error in AddProductsToOffer");
                 throw;
             }
         }
@@ -256,6 +262,7 @@ namespace ECommereceApi.Repo
             }
             catch (Exception)
             {
+                Log.Error($"Error in UpdateProductsFromOffer");
                 throw;
             }
 
@@ -309,6 +316,7 @@ namespace ECommereceApi.Repo
             }
             catch (Exception)
             {
+                Log.Error($"Error in RemoveProductFromOffer");
                 throw;
             }
         }
