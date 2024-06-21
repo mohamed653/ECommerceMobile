@@ -14,7 +14,7 @@ namespace ECommereceApi.Repo
 
 
 
-        public bool TrySendEmail(string email, string code)
+        public bool TrySendEmail(string email, string code, string subject)
         {
             string fromEmail = _configuration.GetValue<string>("fromEmail");
 
@@ -35,7 +35,7 @@ namespace ECommereceApi.Repo
 
             MailMessage message = new MailMessage(fromEmail, toEmail)
             {
-                Subject = "Email Verification",
+                Subject = subject,
                 Body = $"{code}"
             };
             try
@@ -47,8 +47,6 @@ namespace ECommereceApi.Repo
             {
                 return false;
             }
-
-
         }
     }
 

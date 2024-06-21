@@ -2,5 +2,5 @@
 
 public interface IMailRepo
 {
-    bool TrySendEmail(string email, string code);
+    bool TrySendEmail(string email, string code, string subject);
 }

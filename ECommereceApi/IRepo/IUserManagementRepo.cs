@@ -10,11 +10,11 @@ public interface IUserManagementRepo
 
     Task<bool> TryRegisterUser(RegisterUserDTO dto,string code);
 
-    Task<bool> TryResetPassword(string email, string newPassword);
-
+    Task<bool> TryChangeVerificationCode(string email, string code);
 
     Task<bool> TryAlterUserData(AlterUserDataDTO dto);
 
+    Task<bool> TryResetPassword(string email, string password);
 
     Task<bool> ConfirmEmail(VerifyEmail verifyModel);
 
