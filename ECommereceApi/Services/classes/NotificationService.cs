@@ -1,4 +1,5 @@
 ﻿using ECommereceApi.HubConfig;
+using ECommereceApi.Services.Interfaces;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,18 +7,18 @@ namespace ECommereceApi.Services.classes
 {
     public class NotificationService
     {
-        private readonly IHubContext<NotificationHub> _hubContext;
+        //private readonly IHubContext<NotificationHub> _hubContext;
         private readonly ECommerceContext _context;
 
-        public NotificationService(IHubContext<NotificationHub> hubContext, ECommerceContext context)
+        public NotificationService(/*IHubContext<NotificationHub> hubContext,*/ ECommerceContext context)
         {
-            _hubContext = hubContext;
+            //_hubContext = hubContext;
             _context = context;
         }
 
         public async Task SendNotification(string userId, string message)
         {
-            await _hubContext.Clients.User(userId).SendAsync("ReceiveNotification", message);
+            //await _hubContext.Clients.User(userId).SendAsync("ReceiveNotification", message);
         }
         public async Task<List<NotificationMessage>> GetAllMessagesForUser(int userId)
         {
@@ -44,21 +45,35 @@ namespace ECommereceApi.Services.classes
             }
         }
 
-        public async Task SendNotification(int userId, string title, string content)
+        public async Task<int> SendNotification(int userId, string title, string content)
         {
             var notification = new NotificationMessage
             {
                 UserId = userId,
                 Title = title,
                 MsgContent = content,
-                SendingDate = DateOnly.FromDateTime(DateTime.Now),
+                SendingDate = DateTime.Now,
                 Seen = false
             };
 
             _context.NotificationMessages.Add(notification);
             await _context.SaveChangesAsync();
+            return notification.MsgId;
 
-            await _hubContext.Clients.User(userId.ToString()).SendAsync("ReceiveNotification", title, content);
+            //await _hubContext.Clients.User(userId.ToString()).SendAsync("ReceiveNotification", title, content);
         }
+        public async Task SendMessagesToAllClients()
+        {
+
+               //await _hubContext.Clients.All.SendAsync("ReceiveNotification", "Admin", "Hello from Admin");
+        }
+        public async Task SendMessagesToAllAdmins(string message) 
+        { 
+            await _context.Users.Where(u => u.Role == RoleType.Admin).ForEachAsync(async user => 
+            { 
+                await SendNotification(user.UserId.ToString(), message); 
+            });
+        }
+        
     }
 }

@@ -29,11 +29,12 @@ namespace ECommereceApi.Controllers
             return NoContent();
         }
 
-        [HttpPost("sendToSelf")]
+        [HttpPost("SendNotification")]
         public async Task<IActionResult> SendNotification(int userId, string title, string content)
         {
-            await _notificationService.SendNotification(userId, title, content);
-            return Ok();
+            var messageId = await _notificationService.SendNotification(userId, title, content);
+
+            return Ok(new {MsgId = messageId});
         }
 
     }
