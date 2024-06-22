@@ -21,6 +21,7 @@ public partial class ECommerceContext : DbContext
 
     public virtual DbSet<Category> Categories { get; set; }
 
+    public virtual DbSet<CategorySubCategory> CategorySubCategory { get; set; }
     public virtual DbSet<CategorySubCategoryValues> CategorySubCategoryValues {get; set;}
 
     public virtual DbSet<Customer> Customers { get; set; }

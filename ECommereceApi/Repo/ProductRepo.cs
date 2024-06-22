@@ -9,6 +9,7 @@ using CloudinaryDotNet.Actions;
 using Azure;
 using ECommereceApi.DTOs.Product;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Newtonsoft.Json.Linq;
 
 namespace ECommereceApi.Repo
 {
@@ -28,27 +29,27 @@ namespace ECommereceApi.Repo
         public async Task<ProductDisplayDTO> AddProductAsync(ProductAddDTO product)
         {
             var result = await _db.Products.AddAsync(_mapper.Map<Product>(product));
-            if (product.SubCategoriesIds.Count != product.SubCategoriesValues.Count)
-                return null;
+            //if (product.SubCategoriesIds.Count != product.SubCategoriesValues.Count)
+            //    return null;
             await _db.SaveChangesAsync();
-            var category = await _db.Categories.Include(c => c.Subs).ThenInclude(sc => sc).FirstOrDefaultAsync(c => c.CategoryId == product.CategoryId);
-            //var subcatsIds = category.Subs.Select(s => s.SubId).ToList();            
-            var subcatsIds = category.Subs.Select(sc => sc.SubCategoryId).ToList();
+            //var category = await _db.Categories.Include(c => c.Subs).ThenInclude(sc => sc).FirstOrDefaultAsync(c => c.CategoryId == product.CategoryId);
+            ////var subcatsIds = category.Subs.Select(s => s.SubId).ToList();            
+            //var subcatsIds = category.Subs.Select(sc => sc.SubCategoryId).ToList();
 
-            for (int i = 0; i < product.SubCategoriesIds.Count; i++)
-            {
-                if (subcatsIds.Contains(subcatsIds[i]))
-                {
-                    //var productSubCats = new ProductSubCategory()
-                    //{
-                    //    ProductId = result.Entity.ProductId,
-                    //    //CategorySubCategoryValuesId = subcatsIds[i],
-                    //    //SubCategoryValue = product.SubCategoriesValues[i]
-                    //};
-                    //await _db.ProductSubCategories.AddAsync(productSubCats);
-                }
-            }
-            await _db.SaveChangesAsync();
+            //for (int i = 0; i < product.SubCategoriesIds.Count; i++)
+            //{
+            //    if (subcatsIds.Contains(subcatsIds[i]))
+            //    {
+            //        //var productSubCats = new ProductSubCategory()
+            //        //{
+            //        //    ProductId = result.Entity.ProductId,
+            //        //    //CategorySubCategoryValuesId = subcatsIds[i],
+            //        //    //SubCategoryValue = product.SubCategoriesValues[i]
+            //        //};
+            //        //await _db.ProductSubCategories.AddAsync(productSubCats);
+            //    }
+            //}
+            //await _db.SaveChangesAsync();
             return await GetProductByIdAsync(result.Entity.ProductId);
         }
 
@@ -125,16 +126,16 @@ namespace ECommereceApi.Repo
             }
             if (category.Image is not null)
             {
-                var imageresult = await UploadImage(category.Image);
                 var imageId = target.ImageId;
+                if (imageId is not null)
+                {
+                    DeleteImage(target.ImageId);
+                }
+                var imageresult = await UploadImage(category.Image);
                 if (imageresult.Error is null)
                 {
                     target.ImageUri = imageresult?.Uri.ToString();
                     target.ImageId = imageresult?.PublicId;
-                }
-                if(imageId is not null)
-                {
-                    DeleteImage(target.ImageId);
                 }
             }
             _db.Update(target);
@@ -147,7 +148,7 @@ namespace ECommereceApi.Repo
             if (target is null)
                 return Status.NotFound;
             target.Subs.Clear();
-            if(target.ImageId is not null)
+            if (target.ImageId is not null)
                 DeleteImage(target.ImageId);
             _db.Categories.Remove(target);
             await _db.SaveChangesAsync();
@@ -193,14 +194,14 @@ namespace ECommereceApi.Repo
         {
             return _mapper.Map<List<SubCategoryDTO>>(await _db.SubCategories.Where(s => s.Categories.Select(c => c.CategoryId).Contains(categoryId)).ToListAsync());
         }
-        public async Task<IEnumerable<ProductDisplayDTO>> GetAllProductsForSubCategoryAsync(int subId, string value)
-        {
-            //return _mapper.Map<List<ProductDisplayDTO>>(await _db.Products.Include(p => p.ProductSubCategories)
-            //    .Include(p => p.Category)
-            //    .Where(p => p.ProductSubCategories.Where(ps => ps.SubId == subId)
-            //    .Any(ps => ps.SubCategoryValue == value)).ToListAsync());
-            return null;
-        }
+        //public async Task<IEnumerable<ProductDisplayDTO>> GetAllProductsForSubCategoryAsync(int subId, string value)
+        //{
+        //    return _mapper.Map<List<ProductDisplayDTO>>(await _db.Products.Include(p => p.ca)
+        //        .Include(p => p.Category)
+        //        .Where(p => p.ProductSubCategories.Where(ps => ps.SubId == subId)
+        //        .Any(ps => ps.SubCategoryValue == value)).ToListAsync());
+        //    return null;
+        //}
         public async Task<Status> AddProductPhotosAsync(ProductPictureDTO input)
         {
             List<Task<ImageUploadResult>> operations = new();
@@ -338,6 +339,124 @@ namespace ECommereceApi.Repo
             if (onBoth.Count() == productsIds.Count)
                 return true;
             return false;
+        }
+        public async Task<ProductCategorySubCategoryValuesDTO> GetProductCategorySubCategoryValuesAsync(int productId, int CategoryId, int SubCategoryId)
+        {
+            var categorySubCategory = await _db.CategorySubCategory.FirstOrDefaultAsync(cs => cs.CategoryId == CategoryId && cs.SubCategoryId == SubCategoryId);
+            if (categorySubCategory is null)
+                return null;
+            var result = await _db.CategorySubCategoryValues
+                .Include(c => c.CategorySubCategory).ThenInclude(cs => cs.Category)
+                .Include(c => c.Product)
+                .Include(c => c.CategorySubCategory)
+                .ThenInclude(cs => cs.SubCategory)
+                .FirstOrDefaultAsync(c => c.ProductId == productId && c.CategorySubCategoryId == categorySubCategory.CategorySubCategoryId);
+            if (result is null)
+                return null;
+            return _mapper.Map<ProductCategorySubCategoryValuesDTO>(result);
+        }
+        public async Task<List<ProductCategorySubCategoryValuesDTO>> GetAllProductCategorySubCategoryValuesAsync(int productId)
+        {
+            var result = await _db.CategorySubCategoryValues
+                .Include(c => c.CategorySubCategory).ThenInclude(cs => cs.Category)
+                .Include(c => c.Product)
+                .Include(c => c.CategorySubCategory)
+                .ThenInclude(cs => cs.SubCategory)
+                .Where(c => c.ProductId == productId).ToListAsync();
+            return _mapper.Map<List<ProductCategorySubCategoryValuesDTO>>(result);
+        }
+        public async Task<ProductCategorySubCategoryValuesDTO> AssignValueForProductCategorySubCategory(ProductCategorySubCategoyValueAddDTO input)
+        {
+            CategorySubCategoryValues newOne = new();
+            if (input.Image is not null)
+            {
+                var imageoutput = await UploadImage(input.Image);
+                if (imageoutput.Error is null)
+                {
+                    newOne.ImageUri = imageoutput.Uri.ToString();
+                    newOne.ImageId = imageoutput.PublicId;
+                }
+            }
+            newOne.ProductId = input.ProductId;
+            var CategorySubCategoryId = await _db.CategorySubCategory.FirstOrDefaultAsync(cs => cs.CategoryId == input.CategoryId && cs.SubCategoryId == input.SubCategoryId);
+            if (CategorySubCategoryId is null)
+                return null;
+            newOne.CategorySubCategoryId = CategorySubCategoryId.CategorySubCategoryId;
+            newOne.Value = input.Value;
+            var result = await _db.CategorySubCategoryValues.AddAsync(newOne);
+            await _db.SaveChangesAsync();
+            await _db.Entry(result.Entity).Reference(c => c.CategorySubCategory).LoadAsync();
+            await _db.Entry(result.Entity).Reference(c => c.Product).LoadAsync();
+            await _db.Entry(result.Entity).Reference(c => c.CategorySubCategory).TargetEntry.Reference(c => c.Category).LoadAsync();
+            await _db.Entry(result.Entity).Reference(c => c.CategorySubCategory).TargetEntry.Reference(c => c.SubCategory).LoadAsync();
+
+            return _mapper.Map<ProductCategorySubCategoryValuesDTO>(result.Entity);
+        }
+        public async Task<int> DeleteProductCategorySubCategoryValue(int productId, int categoryId, int subCategoryId, string value)
+        {
+            var CategorySubCategory = await _db.CategorySubCategory
+                .FirstOrDefaultAsync(c => c.CategoryId == categoryId && c.SubCategoryId == subCategoryId);
+            if (CategorySubCategory is null)
+                return -1;
+            int CategorySubCategoryId = CategorySubCategory.CategorySubCategoryId;
+            var target = await _db.CategorySubCategoryValues
+                .FirstOrDefaultAsync(c => c.ProductId == productId && c.CategorySubCategoryId == CategorySubCategoryId && c.Value.ToLower() == value.ToLower());
+            if (target is null)
+                return -1;
+            _db.CategorySubCategoryValues.Remove(target);
+            await _db.SaveChangesAsync();
+            return 1;
+        }
+        public async Task<int> DeleteProductCategorySubCategoryValueAll(int productId, int categoryId, int subCategoryId)
+        {
+            var CategorySubCategory = await _db.CategorySubCategory
+                .FirstOrDefaultAsync(c => c.CategoryId == categoryId && c.SubCategoryId == subCategoryId);
+            if (CategorySubCategory is null)
+                return -1;
+            int CategorySubCategoryId = CategorySubCategory.CategorySubCategoryId;
+            var target = _db.CategorySubCategoryValues
+                .Where(c => c.ProductId == productId && c.CategorySubCategoryId == CategorySubCategoryId);
+            if (target is null)
+                return -1;
+            _db.CategorySubCategoryValues.RemoveRange(target);
+            await _db.SaveChangesAsync();
+            return 1;
+        }
+        public async Task<ProductCategorySubCategoryValuesDTO> UpdateProductCategorySubCategoryValue(ProductCategorySubCategoyValueAddDTO addDTO, string newValue)
+        {
+            var CategorySubCategory = await _db.CategorySubCategory
+                .FirstOrDefaultAsync(c => c.CategoryId == addDTO.ProductId && c.SubCategoryId == addDTO.SubCategoryId);
+            if (CategorySubCategory is null)
+                return null;
+            int CategorySubCategoryId = CategorySubCategory.CategorySubCategoryId;
+            var target = await _db.CategorySubCategoryValues
+                .FirstOrDefaultAsync(c => c.ProductId == addDTO.ProductId && c.CategorySubCategoryId == CategorySubCategoryId && c.Value.ToLower() == addDTO.Value.ToLower());
+            if (target is null)
+                return null;
+            target.Value = newValue;
+            if(addDTO.Image is not null)
+            {
+                var imageoutput = await UploadImage(addDTO.Image);
+                if (imageoutput.Error is null)
+                {
+                    target.ImageUri = imageoutput.Uri.ToString();
+                    target.ImageId = imageoutput.PublicId;
+                }
+            }
+            else
+            {
+                if(target.ImageId != null && target.ImageUri != null)
+                {
+                    DeleteImage(target.ImageId);
+                    target.ImageUri = target.ImageId = null;
+                }
+            }
+            _db.Update(target);
+            await _db.SaveChangesAsync();
+            await _db.Entry(target).Reference(t => t.Product).LoadAsync();
+            await _db.Entry(target).Reference(t => t.CategorySubCategory).TargetEntry.Reference(te => te.Category).LoadAsync();
+            await _db.Entry(target).Reference(t => t.CategorySubCategory).TargetEntry.Reference(te => te.SubCategory).LoadAsync();
+            return _mapper.Map<ProductCategorySubCategoryValuesDTO>(target);
         }
 
     }
