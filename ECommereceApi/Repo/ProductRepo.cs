@@ -10,6 +10,8 @@ using Azure;
 using ECommereceApi.DTOs.Product;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Newtonsoft.Json.Linq;
+using ECommereceApi.Services.classes;
+using ECommereceApi.Services.Interfaces;
 
 namespace ECommereceApi.Repo
 {
@@ -18,13 +20,14 @@ namespace ECommereceApi.Repo
         private readonly ECommerceContext _db;
         private readonly IMapper _mapper;
         private readonly IWebHostEnvironment _env;
-        private readonly Cloudinary _cloudinary;
-        public ProductRepo(IWebHostEnvironment env, ECommerceContext context, IMapper mapper, Cloudinary cloudinary)
+        //private readonly Cloudinary _cloudinary;
+        private readonly IFileCloudService _fileCloudService;
+        public ProductRepo(IWebHostEnvironment env, ECommerceContext context, IMapper mapper, IFileCloudService fileCloudService)
         {
             _env = env;
             _db = context;
             _mapper = mapper;
-            _cloudinary = cloudinary;
+            _fileCloudService = fileCloudService;
         }
         public async Task<ProductDisplayDTO> AddProductAsync(ProductAddDTO product)
         {
@@ -99,12 +102,9 @@ namespace ECommereceApi.Repo
             var result = await _db.Categories.AddAsync(new Category() { Name = category.Name });
             if (category.Image is not null)
             {
-                var imageresult = await UploadImage(category.Image);
-                if (imageresult.Error is null)
-                {
-                    result.Entity.ImageUri = imageresult?.Uri.ToString();
-                    result.Entity.ImageId = imageresult.PublicId;
-                }
+                //var imageresult = await UploadImage(category.Image);
+                var imageresult = await _fileCloudService.UploadImagesAsync(category.Image);
+                result.Entity.ImageId = imageresult;
             }
             foreach (var subId in category.SubCategoriesIds)
             {
@@ -128,15 +128,10 @@ namespace ECommereceApi.Repo
             {
                 var imageId = target.ImageId;
                 if (imageId is not null)
-                {
-                    DeleteImage(target.ImageId);
-                }
-                var imageresult = await UploadImage(category.Image);
-                if (imageresult.Error is null)
-                {
-                    target.ImageUri = imageresult?.Uri.ToString();
-                    target.ImageId = imageresult?.PublicId;
-                }
+                    _fileCloudService.DeleteImageAsync(imageId);
+                //var imageresult = await UploadImage(category.Image);
+                var imageresult = await _fileCloudService.UploadImagesAsync(category.Image);
+                target.ImageId = imageresult;
             }
             _db.Update(target);
             await _db.SaveChangesAsync();
@@ -149,7 +144,7 @@ namespace ECommereceApi.Repo
                 return Status.NotFound;
             target.Subs.Clear();
             if (target.ImageId is not null)
-                DeleteImage(target.ImageId);
+                _fileCloudService.DeleteImageAsync(target.ImageId);
             _db.Categories.Remove(target);
             await _db.SaveChangesAsync();
             return Status.Success;
@@ -204,64 +199,63 @@ namespace ECommereceApi.Repo
         //}
         public async Task<Status> AddProductPhotosAsync(ProductPictureDTO input)
         {
-            List<Task<ImageUploadResult>> operations = new();
+            List<Task<string>> operations = new();
             var product = await _db.Products.FindAsync(input.ProductId);
             if (product == null) return Status.Failed;
             foreach (var picture in input.Pictures)
             {
-                operations.Add(UploadImage(picture));
+                //operations.Add(UploadImage(picture));
+                operations.Add(_fileCloudService.UploadImagesAsync(picture));
             }
             //Task.WaitAll([..operations]);
             var operationsResult = await Task.WhenAll(operations);
             foreach (var operationResult in operationsResult)
             {
-                if (operationResult.Error is null)
+                var pictureObject = new ProductImage()
                 {
-                    var pictureObject = new ProductImage()
-                    {
-                        ProductId = input.ProductId,
-                        ImageUri = operationResult.Url.ToString(),
-                        ImageId = operationResult.PublicId
-                    };
-                    _db.ProductImages.Add(pictureObject);
-                }
+                    ProductId = input.ProductId,
+                    ImageId = operationResult
+                };
+                _db.ProductImages.Add(pictureObject);
+
             }
             await _db.SaveChangesAsync();
             return Status.Success;
         }
-        private async Task<ImageUploadResult> UploadImage(IFormFile file)
-        {
-            var fileName = Guid.NewGuid().ToString();
-            var uploadParams = new ImageUploadParams()
-            {
-                File = new FileDescription(fileName, file.OpenReadStream()),
-                PublicId = $"images/uploads/{fileName}"
-            };
-            return await _cloudinary.UploadAsync(uploadParams);
-        }
+        //private async Task<ImageUploadResult> UploadImage(IFormFile file)
+        //{
+        //    var fileName = Guid.NewGuid().ToString();
+        //    var uploadParams = new ImageUploadParams()
+        //    {
+        //        File = new FileDescription(fileName, file.OpenReadStream()),
+        //        PublicId = $"images/uploads/{fileName}"
+        //    };
+        //    return await _cloudinary.UploadAsync(uploadParams);
+        //}
         public async Task<List<string>> GetProductPicturesAsync(int ProductId)
         {
             var product = await _db.Products.Include(p => p.ProductImages).FirstOrDefaultAsync(p => p.ProductId == ProductId);
             if (product == null) return null;
-            return product.ProductImages.Select(p => p.ImageUri).ToList();
+            return product.ProductImages.Select(p => _fileCloudService.GetImageUrl(p.ImageId)).ToList();
         }
         public async Task<Status> RemoveProductPictureAsync(int productId, string picture)
         {
             Product product = await _db.Products.Include(p => p.ProductImages).FirstOrDefaultAsync(p => p.ProductId == productId);
             if (product == null)
                 return Status.NotFound;
-            ProductImage image = product.ProductImages.Where(image => image.ImageUri == picture).FirstOrDefault();
+            ProductImage image = product.ProductImages.Where(image => _fileCloudService.GetImageUrl(image.ImageId) == picture).FirstOrDefault();
             if (image == null)
                 return Status.NotFound;
             product.ProductImages.Remove(image);
-            await DeleteImage(image.ImageId);
+            //DeleteImage(image.ImageId);
+            _fileCloudService.DeleteImageAsync(image.ImageId);
             await _db.SaveChangesAsync();
             return Status.Success;
         }
-        public async Task DeleteImage(string ImageId)
-        {
-            await _cloudinary.DestroyAsync(new DeletionParams(ImageId));
-        }
+        //public async Task DeleteImage(string ImageId)
+        //{
+        //    await _cloudinary.DestroyAsync(new DeletionParams(ImageId));
+        //}
         public PagedResult<ProductDisplayDTO> RenderPagination(int page, int pageSize, List<Product> inputProducts)
         {
             PagedResult<ProductDisplayDTO> result = new PagedResult<ProductDisplayDTO>();
@@ -370,12 +364,9 @@ namespace ECommereceApi.Repo
             CategorySubCategoryValues newOne = new();
             if (input.Image is not null)
             {
-                var imageoutput = await UploadImage(input.Image);
-                if (imageoutput.Error is null)
-                {
-                    newOne.ImageUri = imageoutput.Uri.ToString();
-                    newOne.ImageId = imageoutput.PublicId;
-                }
+                //var imageoutput = await UploadImage(input.Image);
+                var imageoutput = await _fileCloudService.UploadImagesAsync(input.Image);
+                newOne.ImageId = imageoutput;
             }
             newOne.ProductId = input.ProductId;
             var CategorySubCategoryId = await _db.CategorySubCategory.FirstOrDefaultAsync(cs => cs.CategoryId == input.CategoryId && cs.SubCategoryId == input.SubCategoryId);
@@ -434,21 +425,27 @@ namespace ECommereceApi.Repo
             if (target is null)
                 return null;
             target.Value = newValue;
-            if(addDTO.Image is not null)
+
+            if (addDTO.Image is not null)
             {
-                var imageoutput = await UploadImage(addDTO.Image);
-                if (imageoutput.Error is null)
+                if (target.ImageId != null)
                 {
-                    target.ImageUri = imageoutput.Uri.ToString();
-                    target.ImageId = imageoutput.PublicId;
+                    var output = await _fileCloudService.UpdateImageAsync(addDTO.Image, target.ImageId);
+                    target.ImageId = output;
+                }
+                else
+                {
+                    var output = await _fileCloudService.UploadImagesAsync(addDTO.Image);
+                    target.ImageId = output;
                 }
             }
             else
             {
-                if(target.ImageId != null && target.ImageUri != null)
+                if (target.ImageId != null)
                 {
-                    DeleteImage(target.ImageId);
-                    target.ImageUri = target.ImageId = null;
+                    var result = await _fileCloudService.DeleteImageAsync(target.ImageId);
+                    if(result)
+                        target.ImageId = null;
                 }
             }
             _db.Update(target);

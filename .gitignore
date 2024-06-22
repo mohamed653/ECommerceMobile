@@ -362,4 +362,8 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /UnitTestProduct/
+/ECommereceApi/Migrations/
 /ECommereceApi/appsettings.json
+/UnitTestProduct/FileServiceTests.cs
+
+

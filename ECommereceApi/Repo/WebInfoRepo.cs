@@ -25,7 +25,7 @@ namespace ECommereceApi.Repo
                 throw new Exception("Web info already exist");
 
             var webInfo = _mapper.Map<WebInfo>(webInfoDTO);
-            webInfo.WebLogoImageUrl = await _fileCloudService.UploadImages(webInfoDTO.WebLogo);
+            webInfo.WebLogoImageUrl = _fileCloudService.GetImageUrl(await _fileCloudService.UploadImagesAsync(webInfoDTO.WebLogo));
             await _context.Web_Infos.AddAsync(webInfo);
             await _context.SaveChangesAsync();
 
@@ -50,7 +50,7 @@ namespace ECommereceApi.Repo
             webInfo = _mapper.Map(webInfoDTO, webInfo);
             if (webInfoDTO.WebLogo != null)
             {
-                webInfo.WebLogoImageUrl = await _fileCloudService.UpdateImage(webInfoDTO.WebLogo, oldImageUrl);
+                webInfo.WebLogoImageUrl = await _fileCloudService.UpdateImageAsync(webInfoDTO.WebLogo, oldImageUrl);
             }
             _context.Web_Infos.Update(webInfo);
             await _context.SaveChangesAsync();

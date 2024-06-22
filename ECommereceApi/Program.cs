@@ -138,6 +138,7 @@ builder.Services.AddScoped<IWebInfoRepo, WebInfoRepo>();
 builder.Services.AddScoped<IWishListRepo, WishListRepo>();
 builder.Services.AddScoped<IUserManagementRepo, UserManagementRepo>();
 builder.Services.AddScoped<IMailRepo, MailRepo>();
+builder.Services.AddScoped<IOrderRepo, OrderRepo>();
 builder.Services.AddScoped<ICartRepo, CartRepo>();
 
 // Global Exception Handling Service

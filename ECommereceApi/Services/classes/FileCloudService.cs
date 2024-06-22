@@ -17,11 +17,16 @@ namespace ECommereceApi.Services.classes
             var getParams = new GetResourceParams(publicId);
 
             var result = _cloudinary.GetResource(getParams);
-
             // Return the URL of the retrieved image
             return result.SecureUrl;
         }
-        public async Task<bool> DeleteImage(string publicId)
+        public string getPublicId(string url)
+        {
+            var uri = new Uri(url);
+            var publicId = uri.Segments[^1].Split('.')[0];
+            return publicId;
+        }
+        public async Task<bool> DeleteImageAsync(string publicId)
         {
             var delParams = new DeletionParams(publicId);
 
@@ -30,7 +35,7 @@ namespace ECommereceApi.Services.classes
             // Return true if deletion was successful, false otherwise
             return result.Result == "ok";
         }
-        public async Task<string> UploadImages(IFormFile picture)
+        public async Task<string> UploadImagesAsync(IFormFile picture)
         {
             if (picture == null || picture.Length == 0)
             {
@@ -45,11 +50,11 @@ namespace ECommereceApi.Services.classes
             var uploadResult = await _cloudinary.UploadAsync(uploadParams);
 
             // Handle the result as needed, e.g., save the image URL to your database
-            var imageUrl = uploadResult.Url.ToString();
+            var imagePublicId = uploadResult.PublicId;
 
-            return imageUrl;
+            return imagePublicId;
         }
-        public async Task<string> UpdateImage(IFormFile picture,string publicId)
+        public async Task<string> UpdateImageAsync(IFormFile picture,string publicId)
         {
             if (picture == null || picture.Length == 0)
             {

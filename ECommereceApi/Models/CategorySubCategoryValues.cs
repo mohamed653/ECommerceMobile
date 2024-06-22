@@ -15,7 +15,7 @@ namespace ECommereceApi.Models
         [ForeignKey("CategorySubCategory")]
         public int CategorySubCategoryId { get; set; }
         public string Value { get; set; }
-        public string? ImageUri { get; set; }
+        //public string? ImageUri { get; set; }
         public string? ImageId { get; set; }
         public virtual CategorySubCategory CategorySubCategory { get; set; }
         public virtual Product Product { get; set; }
