@@ -24,6 +24,17 @@ namespace ECommereceApi.Repo
             return _mapper.Map<List<UserDTO>>(users);
         }
 
+        public async Task<IEnumerable<UserDTO>> GetAdminsAsync()
+        {
+            var users = await _context.Users.Where(x=>x.Role==RoleType.Admin).ToListAsync();
+            return _mapper.Map<List<UserDTO>>(users);
+        }
+        public async Task<IEnumerable<UserDTO>> GetCustomersAsync()
+        {
+            var users = await _context.Users.Where(x => x.Role == RoleType.Customer).ToListAsync();
+            return _mapper.Map<List<UserDTO>>(users);
+        }
+
         public async Task<UserDTO> GetUserAsync(int id)
         {
             var user = await _context.Users.FindAsync(id);
@@ -43,15 +54,25 @@ namespace ECommereceApi.Repo
             if (userDto.Role == RoleType.Customer)
             {
                 await _context.Users.AddAsync(user);
+                var status = await SaveAsync();
+                if (status != Status.Success)
+                {
+                    return status;
+                }
                 await _context.Customers.AddAsync(new Customer { UserId = user.UserId});
+                return await SaveAsync();
             }
             else
             {
                 await _context.Users.AddAsync(user);
+                var status = await SaveAsync();
+                if (status != Status.Success)
+                {
+                    return status;
+                }
                 await _context.Admins.AddAsync(new Admin { UserId = user.UserId });
+                return await SaveAsync();
             }
-         
-            return await SaveAsync();
         }
 
         public async Task<Status> UpdateUserAsync(UserDTO userDto)

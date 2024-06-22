@@ -28,7 +28,7 @@ namespace ECommereceApi.DTOs.Account
         public string Street { get; set; }
         public string PostalCode { get; set; }
         public string Password { get; set; }
-        public bool IsDeleted { get; set; }
+        public bool IsDeleted { get; set; } = false;
         public RoleType Role { get; set; }
     }
 
