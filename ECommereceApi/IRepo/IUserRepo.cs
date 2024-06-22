@@ -1,4 +1,4 @@
-﻿using ECommereceApi.DTOs;
+﻿using ECommereceApi.DTOs.Account;
 using ECommereceApi.Models;
 using ECommereceApi.Repo;
 

@@ -1,6 +1,7 @@
 ﻿using ECommereceApi.DTOs.Account;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using System.Globalization;
 
 
 namespace ECommereceApi.Controllers
@@ -36,26 +37,24 @@ namespace ECommereceApi.Controllers
                 return BadRequest("No");
             }
 
-            string code = GenerateCode().ToString();
+            string code = GenerateCode();
 
-            bool isRegistered = await _userManagementRepo.TryRegisterUser(dto ,code);
-         
-            if (!isRegistered)
-                return BadRequest("Invalid Registry");
-
-            bool isValidEmail = _mailRepo.TrySendEmail(dto.Email,code);
+            bool isValidEmail = _mailRepo.TrySendEmail(dto.Email, code, "Email verification");
 
             if (!isValidEmail)
                 return BadRequest("Invalid Email");
 
 
-            string token = await GenerateToken(dto.Email);
+            bool isRegistered = await _userManagementRepo.TryRegisterUser(dto ,code);
+         
+            if (!isRegistered)
+                return BadRequest("Invalid Registry");   
 
-            return Created("",token);
-
+            return Created();
         }
 
-        [HttpGet("login")]
+
+        [HttpPost("login")]
         public async Task<IActionResult> Login(LoginUserDTO dto)
         {
             if (dto == null)
@@ -66,6 +65,10 @@ namespace ECommereceApi.Controllers
             if (user is null || user.Password != dto.Password)
                 return BadRequest("User name or password is incorrect");
 
+            bool isVerified = user?.IsVerified ?? false;
+            if (!isVerified)
+                return BadRequest("Email should be verified first!");
+
             string token =await GenerateToken(dto.Email);
 
             HttpContext.Response.Headers.Add("Bearer-Token", token);
@@ -73,8 +76,7 @@ namespace ECommereceApi.Controllers
             return Ok();
         }
 
-        [Authorize]
-        [HttpPost("verify")]
+        [HttpPost("verify-email")]
         public async Task<IActionResult> Verify(VerifyEmail verifyModel)
         {
             if (await _userManagementRepo.ConfirmEmail(verifyModel))
@@ -84,32 +86,62 @@ namespace ECommereceApi.Controllers
         }
 
 
-        [Authorize]
-        [HttpPatch("resetpassword")]
-        public async Task<IActionResult> ResetPassword(ResetPasswordDTO dto)
+        [HttpGet("forgot-password")]
+        public async Task<IActionResult> ForgotPassword(string email)
+        {
+            User? user =await _userManagementRepo.GetUserByEmail(email);
+            if (user is null)
+                return BadRequest("email isn't correct");
+
+            if (!(user.IsVerified ?? false))
+                return BadRequest("Email not verified! you should verify it first.");
+
+            string code = GenerateCode();
+
+            bool codeSent = _mailRepo.TrySendEmail(email, code, "Email verification to change password");
+            if (!codeSent)
+                return BadRequest();
+
+            bool verificationCodeChanged =await _userManagementRepo.TryChangeVerificationCode(email, code);
+            if (!verificationCodeChanged)
+                return BadRequest();
+
+            return Ok();
+
+        }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword(forgotPasswordDTO dto)
         {
             if (dto is null)
-                return BadRequest("Model Can't be null");
+                return BadRequest();
 
-            if(! ModelState.IsValid)
+            if(!ModelState.IsValid)
             {
-                List<string> errors = ModelState.Values.SelectMany(v => v.Errors)
-                                                        .Select(e => e.ErrorMessage)
-                                                        .ToList();
+                List<string> errors = ModelState.Values
+                                                .SelectMany(v => v.Errors)
+                                                .Select(error => error.ErrorMessage)
+                                                .ToList();
 
                 return BadRequest(errors);
             }
 
-            User? user =await _userManagementRepo.GetUserByEmail(dto.Email);
-            
-            if (user is null || user.Password != dto.Password)
-                return BadRequest("Invalid email or password!");
+            User? user = await _userManagementRepo.GetUserByEmail(dto.Email);
+            if (user is null)
+                return BadRequest("email isn't correct");
 
-            bool isPasswordReset =await _userManagementRepo.TryResetPassword(dto.Email, dto.NewPassword);
-            if (!isPasswordReset)
-                return BadRequest("invalid Password Reset!");
+            if (!(user.IsVerified ?? false))
+                return BadRequest("Email not verified! you should verify it first.");
 
+            if (!user.VertificationCode.Equals(dto.Code))
+                return BadRequest("Email or verification code is not correct!");
+
+
+            bool passwordChanged =await _userManagementRepo.TryResetPassword(dto.Email, dto.NewPassword);
+            if (!passwordChanged)
+                return BadRequest();
             return Ok();
+
         }
 
 
@@ -174,6 +206,7 @@ namespace ECommereceApi.Controllers
 
             List<Claim> claims = new List<Claim>()
             {
+                new Claim(ClaimTypes.NameIdentifier,user.UserId.ToString()),
                 new Claim(ClaimTypes.Email,user.Email),
                 new Claim(ClaimTypes.Role.ToString(), user.Role.ToString())
             };
@@ -189,9 +222,9 @@ namespace ECommereceApi.Controllers
             return token;
         }
 
-        private int GenerateCode()
+        private string GenerateCode()
         {
-            return new Random().Next(100000, 999999);
+            return new Random().Next(100000, 999999).ToString();
         }
 
 

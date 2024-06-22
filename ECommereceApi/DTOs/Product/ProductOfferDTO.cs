@@ -2,6 +2,8 @@
 
 namespace ECommereceApi.DTOs.Product
 {
+
+    // a DTO for the Offer model  GENERAL
     public class OfferDTO
     {
 
@@ -21,13 +23,39 @@ namespace ECommereceApi.DTOs.Product
         public IFormFile Image { get; set; }
     }
 
-    public class OfferProductsDTO
+
+    // a DTO for the OfferProducts when GET
+    public class OfferProductsDetailedDTO
     {
+
         public int ProductId { get; set; }
+
         public int ProductAmount { get; set; }
 
         public double? Discount { get; set; }
+
+        public string? Name { get; set; }
+
+        public string? Image { get; set; }
     }
+
+    // a DTO for OfferProducts when  POST
+    public class OffersDTOPost
+    {
+        public int ProductId { get; set; }
+        public int ProductAmount { get; set; }
+        public double? Discount { get; set; }
+    }
+
+    public class UpdateProdDTO
+    {
+        public string ProductName { get; set; }
+        public string ProductImage { get; set; }
+
+
+    }
+
+    // a DTO for OfferProducts List when  GET
     public class OffersDTOUI
     {
         public int OfferId { get; set; }
@@ -41,6 +69,6 @@ namespace ECommereceApi.DTOs.Product
         public string Image { get; set; }
 
         public decimal? PackageDiscount { get; set; }
-        public List<OfferProductsDTO> ProductOffers { get; set; } = new List<OfferProductsDTO>();
+        public List<OfferProductsDetailedDTO> ProductOffers { get; set; } = new List<OfferProductsDetailedDTO>();
     }
 }

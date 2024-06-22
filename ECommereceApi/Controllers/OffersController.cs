@@ -1,4 +1,5 @@
 ﻿using ECommereceApi.DTOs.Product;
+using ECommereceApi.Repo;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
@@ -9,13 +10,19 @@ namespace ECommereceApi.Controllers
     [ApiController]
     public class OffersController : ControllerBase
     {
+        #region Fields
         private readonly IOfferRepo offerRepo;
 
+        #endregion
+
+        #region Constructors
         public OffersController(IOfferRepo _offerRepo)
         {
             offerRepo = _offerRepo;
         }
+        #endregion
 
+        #region Get Methods
         /// <summary>
         /// Get all offers
         /// </summary>
@@ -26,12 +33,11 @@ namespace ECommereceApi.Controllers
             return Ok(await offerRepo.GetOffers());
         }
 
-
         /// <summary>
         /// returns all offers with their products
         /// </summary>
         /// <returns></returns>
-        [HttpGet("/withProducts")]
+        [HttpGet("withProducts")]
 
         public async Task<IActionResult> GetOffersWithProducts()
         {
@@ -39,7 +45,7 @@ namespace ECommereceApi.Controllers
         }
 
         /// <summary>
-        /// returns a specific offer by its ID
+        /// returns a specific offer by its ID with its products+ name and image (first default image)
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
@@ -56,16 +62,18 @@ namespace ECommereceApi.Controllers
             {
                 return BadRequest();
             }
-
         }
-
-        [HttpGet("/byProductId/{productId}")]
+        
+        [HttpGet("byProductId/{productId}")]
         public async Task<IActionResult> GetOffersByProductId(int productId)
         {
             var offers =await offerRepo.GetOffersByProductId(productId);
             if (offers == null) return NotFound();
             return Ok(offers);
         }
+        #endregion
+
+        #region Post Methods
 
         /// <summary>
         /// Add a new offer  the date should be in this format "2024-5-1"
@@ -83,26 +91,55 @@ namespace ECommereceApi.Controllers
         }
 
         /// <summary>
-        /// assign products to a specific offer
+        /// assign product to a specific offer
         /// </summary>
-        [HttpPost("{offerId}/products")]
-        public async Task<IActionResult> AddProductsToOffer(int offerId, List<OfferProductsDTO> offerProductsDTOs, decimal? PackageDiscount)
+        [HttpPost("{offerId}")]
+        public async Task<IActionResult> AddProductsToOffer(int offerId, OffersDTOPost offerProductsDTO)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            await offerRepo.AddProductsToOffer( offerId, offerProductsDTOs,PackageDiscount);
+            await offerRepo.AddProductsToOffer(offerId,offerProductsDTO);
             return Created();
         }
 
+        #endregion
+
+        #region Put Methods
         /// <summary>
         /// update an offer
         /// </summary>
         [HttpPut]
-        public async Task<IActionResult> UpdateOffer(OffersDTOUI offersDTOUI)  // adding new parameter which is new Image
+        public async Task<IActionResult> UpdateOffer(int offerId,OfferDTO offerDTO)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            await offerRepo.UpdateOffer(offersDTOUI);
+            await offerRepo.UpdateOffer(offerId,offerDTO);
             return NoContent();
         }
+
+        /// <summary>
+        /// update products from an offer
+        /// </summary>
+
+        [HttpPut("{offerId}/{oldProductId}")]
+        public async Task<IActionResult> UpdateProductsFromOffer(int offerId, int oldProductId ,OffersDTOPost offerProductsDTO)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            try
+            {
+                var status = await offerRepo.UpdateProductsFromOffer(offerId, oldProductId, offerProductsDTO);
+
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+
+            return Ok(new {StatusMessage="Updated Successfully",StatusCode= Status.Success.ToString() });
+        }
+
+        #endregion
+
+        #region Delete Methods
 
         /// <summary>
         /// delete an offer
@@ -115,6 +152,28 @@ namespace ECommereceApi.Controllers
             await offerRepo.DeleteOffer(offerId);
             return NoContent();
         }
+
+        /// <summary>
+        /// remove a product from an offer
+        ///  <param name="offerId"></param>
+        ///   <param name="productId"></param>
+        /// <returns>all offers with thier products</returns>
+        /// </summary>
+        [HttpDelete("{offerId}/products/{productId}")]
+        public async Task<IActionResult> RemoveProductFromOffer(int offerId, int productId)
+        {
+            try
+            {
+                var offers = await offerRepo.RemoveProductFromOffer(offerId, productId);
+                if(offers == null) return NotFound();
+                return Ok(offers);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+        #endregion
 
     }
 }

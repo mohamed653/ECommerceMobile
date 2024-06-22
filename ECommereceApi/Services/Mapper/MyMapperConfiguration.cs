@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using ECommereceApi.DTOs.Account;
 using ECommereceApi.DTOs.Product;
 using ECommereceApi.Models;
 
@@ -37,10 +38,14 @@ namespace ECommereceApi.Services.Mapper
 
             CreateMap<User, UserDTO>().ReverseMap();
             CreateMap<User, UserDTOUi>().ReverseMap();
+
+            // Offers
             CreateMap<Offer, OfferDTO>().ReverseMap();
             CreateMap<OffersDTOUI,Offer > ().ReverseMap();
-            CreateMap<OfferProductsDTO, ProductOffer>().ReverseMap();
-            CreateMap<ProductOffer, OfferProductsDTO>().ReverseMap();
+            CreateMap<ProductOffer, OfferProductsDetailedDTO>().ReverseMap();
+            CreateMap<OfferProductsDetailedDTO, ProductOffer>().ReverseMap();
+
+            //WebInfo
             CreateMap<ECommereceApi.Models.WebInfo, WebInfoDTO>().ReverseMap();
 
         }
