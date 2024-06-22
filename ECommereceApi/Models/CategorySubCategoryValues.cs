@@ -5,14 +5,19 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ECommereceApi.Models
 {
-    [PrimaryKey("CategorySubCategoryId", "Value")]
+    [Index(nameof(ProductId), nameof(CategorySubCategoryId), nameof(Value), IsUnique = true)]
     public class CategorySubCategoryValues
     {
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int Id { get; set; }
+        [ForeignKey(nameof(Product))]
+        public int ProductId { get; set; }
         [ForeignKey("CategorySubCategory")]
         public int CategorySubCategoryId { get; set; }
         public string Value { get; set; }
         public string? ImageUri { get; set; }
+        public string? ImageId { get; set; }
         public virtual CategorySubCategory CategorySubCategory { get; set; }
-        public virtual ICollection<Product> Products { get; set; } = new List<Product>();
+        public virtual Product Product { get; set; }
     }
 }

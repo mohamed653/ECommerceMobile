@@ -15,7 +15,7 @@ namespace ECommereceApi.DTOs.Product
         public string Description { get; set; }
 
         public int CategoryId { get; set; }
-        public HashSet<int> SubCategoriesIds { get; set; } = new HashSet<int>();
-        public List<string> SubCategoriesValues { get; set; } = new List<string>();
+        //public HashSet<int> SubCategoriesIds { get; set; } = new HashSet<int>();
+        //public List<string> SubCategoriesValues { get; set; } = new List<string>();
     }
 }

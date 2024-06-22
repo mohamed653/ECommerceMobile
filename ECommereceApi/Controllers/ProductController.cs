@@ -156,13 +156,64 @@ namespace ECommereceApi.Controllers
             return Ok(result);
         }
         [HttpGet]
-        [Route("/api/subCategory/filtered")]
-        public async Task<IActionResult> GetAllProductsForSubCategoryAsync(int subCategoryId, string value)
+        [Route("/api/CategorySubCategoryValues/{ProductId:int}/{categoryId:int}/{subCategoryId:int}")]
+        public async Task<IActionResult> GetCategorySubCategoryValuesAsync(int ProductId, int categoryId, int subCategoryId)
         {
-            var result = await productRepo.GetAllProductsForSubCategoryAsync(subCategoryId, value);
+            var result = await productRepo.GetProductCategorySubCategoryValuesAsync(ProductId, categoryId, subCategoryId);
             if (result == null) return NotFound();
             return Ok(result);
         }
+        [HttpGet]
+        [Route("/api/CategorySubCategoryValuesAll/{ProductId:int}")]
+        public async Task<IActionResult> GetAllCategorySubCategoryValuesAsync(int ProductId)
+        {
+            var result = await productRepo.GetAllProductCategorySubCategoryValuesAsync(ProductId);
+            if (result == null) return NotFound();
+            return Ok(result);
+        }
+        [HttpPost]
+        [Route("/api/CategorySubCategoryValues")]
+        public async Task<IActionResult> AssignValueForProductCategorySubCategoryAsync(ProductCategorySubCategoyValueAddDTO input)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            var result = await productRepo.AssignValueForProductCategorySubCategory(input);
+            if (result == null) return BadRequest();
+            return Created("", result);
+        }
+        [HttpDelete]
+        [Route("/api/CategorySubCategoryValues")]
+        public async Task<IActionResult> DeleteProductCategorySubCategoryValueAsync(int productId, int categoryId, int subCategoryId, string value)
+        {
+            var result = await productRepo.DeleteProductCategorySubCategoryValue(productId, categoryId, subCategoryId, value);
+            if (result == -1) return NotFound();
+            return Ok();
+        }
+        [HttpDelete]
+        [Route("/api/CategorySubCategoryValues/all")]
+        public async Task<IActionResult> DeleteProductCategorySubCategoryValueAllAsync(int productId, int categoryId, int subCategoryId)
+        {
+            var result = await productRepo.DeleteProductCategorySubCategoryValueAll(productId, categoryId, subCategoryId);  
+            if (result == -1) return NotFound();
+            return Ok();
+        }
+        [HttpPatch]
+        [Route("/api/CategorySubCategoryValues/{id:int}")]
+        public async Task<IActionResult> UpdateProductCategorySubCategoryValueAsync(int id, ProductCategorySubCategoyValueAddDTO input, string newValue)
+        {
+            if(!ModelState.IsValid || id != input.ProductId)
+                return BadRequest();
+            var result = await productRepo.UpdateProductCategorySubCategoryValue(input, newValue);
+            if (result == null) return NotFound();
+            return Ok(result);
+        }
+        //[HttpGet]
+        //[Route("/api/subCategory/filtered")]
+        //public async Task<IActionResult> GetAllProductsForSubCategoryAsync(int subCategoryId, string value)
+        //{
+        //    var result = await productRepo.GetAllProductsForSubCategoryAsync(subCategoryId, value);
+        //    if (result == null) return NotFound();
+        //    return Ok(result);
+        //}
         [HttpPost]
         [Route("/api/products/pictures")]
         public async Task<IActionResult> UploadProductPicturesAsync([Required] ProductPictureDTO input)
