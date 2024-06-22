@@ -116,6 +116,12 @@ Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .WriteTo.File("logs/eCommercelog-.txt", rollingInterval: RollingInterval.Day)
     .CreateLogger();
+
+//builder.Services.AddLogging(config =>
+//{
+//    config.AddSerilog();
+//});
+
 #endregion
 
 // Add AutoMapper Service

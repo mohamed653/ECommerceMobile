@@ -3,6 +3,7 @@ using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using ECommereceApi.DTOs.Product;
 using ECommereceApi.Services.Interfaces;
+using MethodTimer;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -27,6 +28,8 @@ namespace ECommereceApi.Repo
         #endregion
 
         #region Methods
+
+        [Time] //Testing the performance of the method using the MethodTimer library
         public async Task<List<Offer>> GetOffers()
         {
             return await _context.Offers.ToListAsync();
