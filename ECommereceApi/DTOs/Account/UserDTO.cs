@@ -1,10 +1,10 @@
 ﻿using ECommereceApi.Models;
 
-namespace ECommereceApi.DTOs
+namespace ECommereceApi.DTOs.Account
 {
     public class UserDTO
     {
-        
+
         public int UserId { get; set; }
         public string FName { get; set; }
         public string LName { get; set; }

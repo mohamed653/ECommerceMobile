@@ -27,6 +27,7 @@ namespace ECommereceApi.Repo
 
                 user.VerifiedAt = DateTime.UtcNow;
                 user.IsVerified = true;
+                user.VertificationCode = null;
                 _context.Users.Update(user);
                 await _context.SaveChangesAsync();
 
@@ -77,7 +78,6 @@ namespace ECommereceApi.Repo
                     return false;
                 }
 
-                //code = GenerateCode().ToString();
                 User user = new User()
                 {
                     FName = dto.FName,
@@ -101,17 +101,27 @@ namespace ECommereceApi.Repo
             
         }
 
-        public async Task<bool> TryResetPassword(string email, string newPassword)
+        public async Task<bool> TryChangeVerificationCode(string email, string code)
         {
-            User user = await GetUserByEmail(email);
-            if(user is null)
-                return false;
+            User? user = await GetUserByEmail(email);
+            if(user is null) return false;
 
-            user.Password = newPassword;
+            user.VertificationCode = code;
             await _context.SaveChangesAsync();
             return true;
         }
 
+        public async Task<bool> TryResetPassword(string email,string password)
+        {
+            User? user = await GetUserByEmail(email);
+            if (user is null) return false;
+
+            user.Password = password;
+            user.VertificationCode= null;
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
 
 
     }

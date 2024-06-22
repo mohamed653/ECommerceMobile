@@ -2,23 +2,24 @@
 
 namespace ECommereceApi.DTOs.Account;
 
-public class ResetPasswordDTO
+public class forgotPasswordDTO
 {
     [Required]
     [EmailAddress]
     [MaxLength(50)]
-    public string? Email { get; set; }
+    public string Email { get; set; }
 
     [Required]
-    [MaxLength(50)]
-    public string? Password { get; set; }
+    [StringLength(6)]
+    public string Code{ get; set; }
+
 
     [Required]
-    [MaxLength(50)]
+    [StringLength(50,MinimumLength =8)]
     public string? NewPassword { get; set; }
 
     [Required]
-    [MaxLength(50)]
+    [StringLength(50, MinimumLength = 8)]
     [Compare(nameof(NewPassword))]
     public string? ConfirmNewPassword { get; set; }
 

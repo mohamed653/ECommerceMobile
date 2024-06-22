@@ -3,21 +3,33 @@ using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using ECommereceApi.DTOs.Product;
 using ECommereceApi.Services.Interfaces;
+using MethodTimer;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace ECommereceApi.Repo
 {
     public class OfferRepo : IOfferRepo
     {
+        #region Fields
         private readonly ECommerceContext _context;
         private readonly IFileCloudService _fileCloudService;
         private readonly IMapper _mapper;
-        public OfferRepo(ECommerceContext context, IFileCloudService fileCloudService, IMapper mapper)
+        private readonly IProductRepo _productRepo;
+        #endregion
+        #region Constructors
+        public OfferRepo(ECommerceContext context, IFileCloudService fileCloudService, IMapper mapper, IProductRepo productRepo)
         {
             _context = context;
             _fileCloudService = fileCloudService;
             _mapper = mapper;
+            _productRepo = productRepo;
         }
+        #endregion
+
+        #region Methods
+
+        [Time] //Testing the performance of the method using the MethodTimer library
         public async Task<List<Offer>> GetOffers()
         {
             return await _context.Offers.ToListAsync();
@@ -34,12 +46,15 @@ namespace ECommereceApi.Repo
                 var offersDTO = _mapper.Map<List<OffersDTOUI>>(offers);
                 foreach (var offer in offersDTO)
                 {
-                    offer.ProductOffers = _mapper.Map<List<OfferProductsDTO>>(offers.FirstOrDefault(x => x.OfferId == offer.OfferId).ProductOffers);
+                    offer.ProductOffers = _mapper.Map<List<OfferProductsDetailedDTO>>(offers.FirstOrDefault(x => x.OfferId == offer.OfferId).ProductOffers);
+                    await LoadProductDetails(offer);
                 }
                 return offersDTO;
             }
             catch (Exception)
             {
+
+                Log.Error($"Error in GetOffersWithProducts");
                 throw;
             }
         }
@@ -73,10 +88,35 @@ namespace ECommereceApi.Repo
             }
             catch (Exception)
             {
+                Log.Error($"Error in AddOffer");
                 throw;
             }
         }
 
+        //public async Task<OffersDTOUI> GetOfferById(int id)
+        //{
+        //    try
+        //    {
+        //        var offer = await _context.Offers.Include(x => x.ProductOffers).FirstOrDefaultAsync(x => x.OfferId == id);
+        //        if (offer == null)
+        //            throw new Exception("Offer not found");
+        //        if (OfferExpiredOrInActive(offer))
+        //            throw new Exception("Offer is expired or inactive");
+
+        //        var offerDTO = _mapper.Map<OffersDTOUI>(offer);
+        //        offerDTO.ProductOffers = _mapper.Map<List<OfferProductsDTO>>(offer.ProductOffers);
+
+
+        //        return offerDTO;
+        //    }
+        //    catch (Exception)
+        //    {
+        //        throw;
+        //    }
+
+        //}
+
+ 
         public async Task<OffersDTOUI> GetOfferById(int id)
         {
             try
@@ -88,75 +128,149 @@ namespace ECommereceApi.Repo
                     throw new Exception("Offer is expired or inactive");
 
                 var offerDTO = _mapper.Map<OffersDTOUI>(offer);
-                offerDTO.ProductOffers = _mapper.Map<List<OfferProductsDTO>>(offer.ProductOffers);
-
+                offerDTO.ProductOffers = _mapper.Map<List<OfferProductsDetailedDTO>>(offer.ProductOffers);
+                await LoadProductDetails(offerDTO);
 
                 return offerDTO;
             }
             catch (Exception)
             {
+                Log.Error($"Error in GetOfferById");
                 throw;
             }
 
         }
-        public async Task AddProductsToOffer(int offerId, List<OfferProductsDTO> offerProductsDTOs, decimal? PackageDiscount)
+
+        private async Task LoadProductDetails(OffersDTOUI offersDTOUI)
+        {
+            foreach (var item in offersDTOUI.ProductOffers)
+            {
+                var product = await _context.Products.Include(p=>p.ProductImages).FirstOrDefaultAsync(p=>p.ProductId==item.ProductId);
+                if (product == null)
+                    throw new Exception("Product not found");
+                item.Name = product.Name;
+                if(product.ProductImages.Count>0)
+                    item.Image = product.ProductImages.FirstOrDefault().ImageId;
+            }
+        }   
+        public async Task AddProductsToOffer(int offerId, OffersDTOPost offerProductsDTO)
         {
             try
             {
-                
+               
                 var offer = await _context.Offers.Include(x => x.ProductOffers).FirstOrDefaultAsync(x => x.OfferId == offerId);
                 if (offer == null)
                     throw new Exception("Offer not found");
+                
+                var product = await _context.Products.FindAsync(offerProductsDTO.ProductId);
+                if (product == null)
+                    throw new Exception("Product not found");
 
-                var productOffer = _mapper.Map<List<ProductOffer>>(offerProductsDTOs);
-                if (PackageDiscount != null)
-                    offer.PackageDiscount = PackageDiscount;
+                if (offer.ProductOffers.Any(x => x.ProductId == offerProductsDTO.ProductId))
+                    throw new Exception("Product already exists in the offer");
 
-                foreach (var item in productOffer)
+                var productOffer = new ProductOffer()
                 {
-                    item.OfferId = offerId;
-                    offer.ProductOffers.Add(item);
-                }
+                    OfferId = offerId,
+                    ProductId = offerProductsDTO.ProductId,
+                    ProductAmount = offerProductsDTO.ProductAmount,
+                    Discount = offerProductsDTO.Discount
+                };
+
+                offer.ProductOffers.Add(productOffer);
                 await _context.SaveChangesAsync();
+
             }
             catch (Exception)
             {
+                Log.Error($"Error in AddProductsToOffer");
                 throw;
             }
         }
 
 
-        public async Task UpdateOffer(OffersDTOUI offersDTOUI)
+        public async Task UpdateOffer(int offerId, OfferDTO offerDTO)
         {
             try
             {
-                var offer = await _context.Offers.Include(x => x.ProductOffers).FirstOrDefaultAsync(x => x.OfferId == offersDTOUI.OfferId);
+                var offer = await _context.Offers.FindAsync(offerId);
                 if (offer == null)
                     throw new Exception("Offer not found");
-                //update the offerProducts
-                _context.ProductOffers.RemoveRange(offer.ProductOffers);
-                var offerProducts = _mapper.Map<List<ProductOffer>>(offersDTOUI.ProductOffers);
-    
 
-                foreach (var item in offerProducts)
+                offer.Title = offerDTO.Title;
+                offer.Description = offerDTO.Description;
+                offer.OfferDate = offerDTO.OfferDate;
+                offer.Duration = offerDTO.Duration;
+                offer.PackageDiscount = offerDTO.PackageDiscount;
+                if (offerDTO.Image != null)
                 {
-                    item.OfferId = offersDTOUI.OfferId;
-                    offer.ProductOffers.Add(item);
+                    // delete the old image from cloudinary
+                    var publicId = offer.Image.Split("/").Last().Split(".")[0];
+                    await _fileCloudService.DeleteImage(publicId);
+
+                    // upload the new image
+                    offer.Image = await UploadImages(offerDTO.Image);
+                   
                 }
 
-
-                //update the offer
-                _mapper.Map(offersDTOUI, offer);
-
- 
-               
                 await _context.SaveChangesAsync();
+
             }
             catch (Exception)
             {
                 throw;
             }
         }
+
+        public async Task<Status> UpdateProductsFromOffer(int offerId, int oldProductId, OffersDTOPost offerProductsDTO)
+        {
+            try
+            {
+                var offer = await _context.Offers.Include(x => x.ProductOffers).FirstOrDefaultAsync(x => x.OfferId == offerId);
+
+                if (offer == null)
+                    throw new Exception("Offer not found");
+
+                var product = await _context.Products.FirstOrDefaultAsync(x => x.ProductId == oldProductId); 
+
+                if (product == null)
+                    throw new Exception("Product not found");
+
+                // check if the product is already in the offer
+                if (!offer.ProductOffers.Any(x => x.ProductId == oldProductId))
+                    throw new Exception("Product doesn't exist in the offer");
+
+                // remove the productOffer and add it again with the new values
+
+                var productOffer = offer.ProductOffers.FirstOrDefault(x => x.ProductId == oldProductId);
+
+                // Remove the productOffer from the Offer's collection
+                offer.ProductOffers.Remove(productOffer);
+
+                // Create a new ProductOffer with the updated values
+                var newProductOffer = new ProductOffer
+                {
+                    OfferId = offerId,
+                    ProductId = offerProductsDTO.ProductId,
+                    ProductAmount = offerProductsDTO.ProductAmount,
+                    Discount = offerProductsDTO.Discount
+                };
+
+                // Add the new ProductOffer to the Offer's collection
+                offer.ProductOffers.Add(newProductOffer);
+
+                // Save changes to the context
+                await _context.SaveChangesAsync();
+                return Status.Success;
+            }
+            catch (Exception)
+            {
+                Log.Error($"Error in UpdateProductsFromOffer");
+                throw;
+            }
+
+        }
+
         public async Task DeleteOffer(int offerId)
         {
             try
@@ -186,8 +300,29 @@ namespace ECommereceApi.Repo
             }
         }
 
+        public async Task<List<OffersDTOUI>> RemoveProductFromOffer(int offerId, int productId)
+        {
+            try
+            {
+                var offer = await _context.Offers.Include(x => x.ProductOffers).FirstOrDefaultAsync(x => x.OfferId == offerId);
+                if (offer == null)
+                    throw new Exception("Offer not found");
 
+                var productOffer = offer.ProductOffers.FirstOrDefault(x => x.ProductId == productId);
+                if (productOffer == null)
+                    throw new Exception("Product not found in the offer");
 
+                offer.ProductOffers.Remove(productOffer);
+                await _context.SaveChangesAsync();
+
+                return await GetOffersWithProducts();
+            }
+            catch (Exception)
+            {
+                Log.Error($"Error in RemoveProductFromOffer");
+                throw;
+            }
+        }
 
 
         public async Task<string> UploadImages(IFormFile picture)
@@ -220,8 +355,8 @@ namespace ECommereceApi.Repo
             // Calculate the end date of the offer
             var startDate = offer.OfferDate;
             int durationInDays = offer.Duration ?? 0; // Assuming a duration of 0 if it is null
-
-            if (DateTime.Now > startDate.ToDateTime(TimeOnly.MinValue).AddDays(durationInDays))
+            var _date = startDate.ToDateTime(TimeOnly.MinValue).AddDays(durationInDays);
+            if (DateTime.Now < _date)
                 return false;
 
             return true;
@@ -237,12 +372,14 @@ namespace ECommereceApi.Repo
             var startDate = offer.OfferDate;
             int durationInDays = offer.Duration ?? 0; // Assuming a duration of 0 if it is null
 
-            if (DateTime.Now > startDate.ToDateTime(TimeOnly.MinValue).AddDays(durationInDays))
+            var _date = startDate.ToDateTime(TimeOnly.MinValue).AddDays(durationInDays);
+            if (DateTime.Now < _date )
                 return false;
 
             return true;
         }
 
+        #endregion
 
 
     }

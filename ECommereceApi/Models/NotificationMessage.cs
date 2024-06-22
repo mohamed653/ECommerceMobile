@@ -21,7 +21,7 @@ public partial class NotificationMessage
 
     public string MsgContent { get; set; }
 
-    public DateOnly SendingDate { get; set; }
+    public DateTime SendingDate { get; set; }
 
     public bool Seen { get; set; }
 

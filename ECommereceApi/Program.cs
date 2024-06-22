@@ -1,20 +1,14 @@
-using ECommereceApi.Data;
-using ECommereceApi.IRepo;
-using ECommereceApi.Models;
 using ECommereceApi.Repo;
 using ECommereceApi.Services.classes;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using CloudinaryDotNet;
-using CloudinaryDotNet.Actions;
 using Microsoft.OpenApi.Models;
-using System.Text.Unicode;
 using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Models;
 using System.Globalization;
-using ECommereceApi.Extensions;
 using ECommereceApi.Services.Interfaces;
+using Serilog;
+using ECommereceApi.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,38 +18,19 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
 var webHostEnvironment = builder.Services.BuildServiceProvider().GetRequiredService<IWebHostEnvironment>();
-//builder.Services.AddSwaggerGen(c =>
-//{
-//    c.SwaggerDoc("v2", new OpenApiInfo
-//    {
-//        Title = "Mobile ECommerce API",
-//        Version = "v1",
-//        Description = "Mobile ECommerce ASP.NET Core Web API",
-//        Contact = new OpenApiContact
-//        {
-//            Name = "Mohamed_Hamed",
-//            Email = "mohamedHamed@gmail.com"
-//        }
-
-//    });
-//    c.IncludeXmlComments(webHostEnvironment.WebRootPath + "\\mydoc.xml");
-//});
-
-
-builder.Services.AddCors(corsOptions =>
-{
-    corsOptions.AddPolicy("myPolicy", corsPolicyBuilder =>
-    {
-        corsPolicyBuilder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
-    });
-});
 
 builder.Services.AddDbContext<ECommerceContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
     .AddInterceptors(new SoftDeleteInterceptor());
 });
-
+builder.Services.AddCors(corsOptions =>
+{
+    corsOptions.AddPolicy("myPolicy", corsPolicyBuilder =>
+    {
+        corsPolicyBuilder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod().WithExposedHeaders("Bearer-Token");
+    });
+});
 
 #region FileServer
 
@@ -89,20 +64,20 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
 builder.Services.AddScoped<ILanguageRepo, LanguageRepo>();
 #endregion
 
-builder.Services.AddAutoMapper(typeof(Program));
+#region JWT Service
 
-//builder.Services.AddAuthentication(options =>
-//{
-//    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-//}).AddJwtBearer(o =>
-//{
-//    o.TokenValidationParameters = new TokenValidationParameters()
-//    {
-//        ValidateIssuer = false,
-//        ValidateAudience = false,
-//        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetValue<string>("JWT:secretkey"))),
-//    };
-//});
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(o =>
+{
+    o.TokenValidationParameters = new TokenValidationParameters()
+    {
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetValue<string>("JWT:secretkey"))),
+    };
+});
 
 builder.Services.AddSwaggerGen(c =>
 {
@@ -132,24 +107,45 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
+#endregion
 
+#region Logging Service
+
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Debug()
+    .WriteTo.Console()
+    .WriteTo.File("logs/eCommercelog-.txt", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+
+//builder.Services.AddLogging(config =>
+//{
+//    config.AddSerilog();
+//});
+
+#endregion
+
+// Add AutoMapper Service
+builder.Services.AddAutoMapper(typeof(Program));
 
 //File Server Service
 builder.Services.AddScoped<IFileCloudService, FileCloudService>();
-
 
 //builder.Services.AddScoped(typeof(IGenericRepo<>), typeof(GenericRepo<>));
 builder.Services.AddScoped<IProductRepo, ProductRepo>();
 builder.Services.AddScoped<IUserRepo, UserRepo>();
 builder.Services.AddScoped<IOfferRepo, OfferRepo>();
 builder.Services.AddScoped<IWebInfoRepo, WebInfoRepo>();
-
 builder.Services.AddScoped<IWishListRepo, WishListRepo>();
 builder.Services.AddScoped<IUserManagementRepo, UserManagementRepo>();
 builder.Services.AddScoped<IMailRepo, MailRepo>();
 builder.Services.AddScoped<IOrderRepo, OrderRepo>();
-
 builder.Services.AddScoped<ICartRepo, CartRepo>();
+
+// Global Exception Handling Service
+builder.Services.AddTransient<GlobalExceptionHandlingMiddleware>();
+
+builder.Services.AddTransient<NotificationService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -158,6 +154,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+// Global Exception Handling Middleware
+app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 
 app.UseCors("myPolicy");
 app.UseAuthentication();
