@@ -16,7 +16,7 @@ public partial class Category
     [Required]
     [StringLength(50)]
     public string Name { get; set; }
-    public string ImageUri { get; set; }
+    //public string ImageUri { get; set; }
     public string ImageId { get; set; }
 
     [InverseProperty("Category")]

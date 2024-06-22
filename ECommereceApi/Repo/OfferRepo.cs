@@ -169,7 +169,7 @@ namespace ECommereceApi.Repo
 
                 // remove image from cloudinary
                 var publicId = offer.Image.Split("/").Last().Split(".")[0];
-                await _fileCloudService.DeleteImage(publicId);
+                await _fileCloudService.DeleteImageAsync(publicId);
 
 
                 //remove the products assigned to the offer
@@ -202,10 +202,10 @@ namespace ECommereceApi.Repo
                 File = new FileDescription(picture.FileName, picture.OpenReadStream())
             };
 
-            var uploadResult = await _fileCloudService.UploadImages(picture);
+            var uploadResult = await _fileCloudService.UploadImagesAsync(picture);
 
             // Handle the result as needed, e.g., save the image URL to your database
-            return uploadResult;
+            return _fileCloudService.GetImageUrl(uploadResult);
 
         }
 

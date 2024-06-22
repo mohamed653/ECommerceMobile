@@ -3,8 +3,9 @@
     public interface IFileCloudService
     {
         string GetImageUrl(string publicId);
-        Task<bool> DeleteImage(string publicId);
-        Task<string> UploadImages(IFormFile picture);
-        Task<string> UpdateImage(IFormFile picture,string publicId);
+        string getPublicId(string url);
+        Task<bool> DeleteImageAsync(string publicId);
+        Task<string> UploadImagesAsync(IFormFile picture);
+        Task<string> UpdateImageAsync(IFormFile picture,string publicId);
     }
 }
