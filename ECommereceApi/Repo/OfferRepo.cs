@@ -206,7 +206,7 @@ namespace ECommereceApi.Repo
                 {
                     // delete the old image from cloudinary
                     var publicId = offer.Image.Split("/").Last().Split(".")[0];
-                    await _fileCloudService.DeleteImage(publicId);
+                    await _fileCloudService.DeleteImageAsync(publicId);
 
                     // upload the new image
                     offer.Image = await UploadImages(offerDTO.Image);
