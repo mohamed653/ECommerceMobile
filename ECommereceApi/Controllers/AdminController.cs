@@ -2,11 +2,13 @@
 using ECommereceApi.IRepo;
 using ECommereceApi.Models;
 using ECommereceApi.Repo;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ECommereceApi.Controllers
 {
+   // [Authorize(Roles="Admin")]
     [Route("api/[controller]")]
     [ApiController]
     public class AdminController : ControllerBase
@@ -188,6 +190,8 @@ namespace ECommereceApi.Controllers
             }
             return NotFound();
         }
+
+
     }
 
 }

@@ -41,6 +41,25 @@ namespace ECommereceApi.Repo
             return _mapper.Map<UserDTO>(user);
         }
 
+        public async Task<UserDTO?> GetSuperAdminAsync()
+        {
+            var super = _context.Users.First(x => x.Role == RoleType.Admin);
+            if(super == null)
+                return null;
+            return _mapper.Map<UserDTO>(super);
+        }
+
+        private async Task<bool> IsSuperAdmin(int id)
+        {
+            var user = _context.Users.FirstOrDefault(x=>x.UserId==id);
+            if(user == null) return false;
+
+            if(user.UserId==GetSuperAdminAsync().Id)
+                return true;
+            return false;
+
+        }
+
         public async Task<Status> AddUserAsync(UserDTOUi userDto)
         {
             if (await _context.Users.AnyAsync(u => u.Email == userDto.Email))
@@ -158,6 +177,11 @@ namespace ECommereceApi.Repo
             if (user == null)
             {
                 return Status.NotFound;
+            }
+            // checking if the user is superAdmin you can't delete him
+            if (IsSuperAdmin(user.UserId).Result)
+            {
+                return Status.Failed;
             }
             user.IsDeleted = true;
             return await SaveAsync();
