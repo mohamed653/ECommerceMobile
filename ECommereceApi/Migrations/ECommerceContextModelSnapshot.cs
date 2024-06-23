@@ -17,7 +17,7 @@ namespace ECommereceApi.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.4")
+                .HasAnnotation("ProductVersion", "8.0.6")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -132,8 +132,8 @@ namespace ECommereceApi.Migrations
                     b.Property<bool>("Seen")
                         .HasColumnType("bit");
 
-                    b.Property<DateOnly>("SendingDate")
-                        .HasColumnType("date");
+                    b.Property<DateTime>("SendingDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Title")
                         .HasMaxLength(50)
@@ -443,6 +443,9 @@ namespace ECommereceApi.Migrations
                         .HasColumnType("nvarchar(8)");
 
                     b.HasKey("UserId");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
 
                     b.ToTable("User");
                 });

@@ -25,15 +25,17 @@ namespace ECommereceApi.Controllers
 
         }
         [HttpGet("{userId}")]
-        public async Task<IActionResult> GetWishListByUserId(int userId)
+        public async Task<IActionResult> GetWishListProductsByUserId(int userId)
         {
-            var wishList = await _wishListRepo.GetWishListByUserId(userId);
-            if (wishList.Count == 0)
+            var products = await _wishListRepo.GetWishListProducts(userId);
+            if (products.Count == 0)
             {
                 return Ok("No product found in your wishlist");
             }
-            return Ok(wishList);
+            return Ok(products);
         }
+
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteWishList(int id)
         {
