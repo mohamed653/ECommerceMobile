@@ -1,13 +1,20 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using ECommereceApi.DTOs.Product;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 
 namespace ECommereceApi.Repo
 {
     public class WishListRepo: IWishListRepo
     {
         private readonly ECommerceContext _context;
-        public WishListRepo(ECommerceContext context)
+        private readonly IProductRepo _productRepo;
+        private readonly IMapper _mapper;
+        public WishListRepo(ECommerceContext context, IProductRepo productRepo,IMapper mapper)
         {
             _context = context;
+            _productRepo = productRepo;
+            _mapper = mapper;
         }
         public async Task<WishList> AddWishList(WishListDTO wishListDTO)
         {
@@ -59,7 +66,23 @@ namespace ECommereceApi.Repo
 
         public async Task<List<WishList>> GetWishListByUserId(int userId)
         {
-            return await _context.WishLists.Where(x => x.UserId == userId).ToListAsync();
+            return await _context.WishLists.Include(x=>x.Product).Where(x => x.UserId == userId).ToListAsync();
+        }
+
+        public async Task<List<ProductDisplayDTO>> GetWishListProducts(int userId)
+        {
+            var wishLists = GetWishListByUserId(userId);
+            List<ProductDisplayDTO> products = new List<ProductDisplayDTO>();
+
+            foreach(var wishList in wishLists.Result)
+            {
+                var product = await _productRepo.GetProductByIdAsync(wishList.ProductId);
+                if(product.ProductImages.Count > 1)
+                    product.ProductImages = product.ProductImages.Take(1).ToList();
+                products.Add(product);
+            }
+
+            return products;
         }
 
         public async Task<int> GetWishListCount(int userId)
@@ -67,17 +90,17 @@ namespace ECommereceApi.Repo
             return await _context.WishLists.Where(x => x.UserId == userId).CountAsync();
         }
 
-        public async Task<List<Product>> GetTopWishlistedProducts()
+        public async Task<List<ProductDisplayDTO>> GetTopWishlistedProducts()
         {
             var products = await _context.WishLists.GroupBy(x => x.ProductId)
                 .Select(x => new { ProductId = x.Key, Count = x.Count() })
                 .OrderByDescending(x => x.Count)
                 .Take(5)
                 .ToListAsync();
-            List<Product> topProducts = new List<Product>();
+            List<ProductDisplayDTO> topProducts = new List<ProductDisplayDTO>();
             foreach (var product in products)
             {
-                var p = await _context.Products.FindAsync(product.ProductId);
+                var p = await _productRepo.GetProductByIdAsync(product.ProductId);
                 topProducts.Add(p);
             }
             return topProducts;
