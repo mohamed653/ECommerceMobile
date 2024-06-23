@@ -40,7 +40,7 @@ namespace ECommereceApi.Controllers
         public async Task<IActionResult> GetWishListProductsByUserId(int userId)
         {
             var products = await _wishListRepo.GetWishListProducts(userId);
-            if(products is not null)
+            if(products is null)
             {
                 return BadRequest();
             }

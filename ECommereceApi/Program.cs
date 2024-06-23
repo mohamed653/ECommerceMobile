@@ -144,6 +144,7 @@ builder.Services.AddScoped<ICartRepo, CartRepo>();
 // Global Exception Handling Service
 builder.Services.AddTransient<GlobalExceptionHandlingMiddleware>();
 
+builder.Services.AddSignalR();
 builder.Services.AddTransient<NotificationService>();
 
 var app = builder.Build();
