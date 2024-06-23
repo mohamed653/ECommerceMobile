@@ -16,18 +16,26 @@ namespace ECommereceApi.Repo
             _productRepo = productRepo;
             _mapper = mapper;
         }
-        public async Task<WishList> AddWishList(WishListDTO wishListDTO)
+        public async Task<Status> AddWishList(WishListDTO wishListDTO)
         {
             var product = await _context.Products.FindAsync(wishListDTO.ProductId);
             if (product == null)
             {
-                return null;
+                return Status.NotFound;
             }
             var user = await _context.Users.FindAsync(wishListDTO.UserId);
             if (user == null)
             {
-                return null;
+                return Status.NotFound;
             }
+            var isExistingWishlist = await _context.WishLists.Where(x => x.UserId == wishListDTO.UserId && x.ProductId == wishListDTO.ProductId).FirstOrDefaultAsync();
+
+            if(isExistingWishlist != null)
+            {
+                return Status.ExistedBefore;
+            }
+
+           
             var wishList = new WishList
             {
                 UserId = wishListDTO.UserId,
@@ -37,7 +45,7 @@ namespace ECommereceApi.Repo
             };
             await _context.WishLists.AddAsync(wishList);
             await _context.SaveChangesAsync();
-            return wishList;
+            return Status.Success;
         }
 
         public async Task<List<WishList>> DeleteWishListItem(int userId, int productId)
@@ -72,6 +80,10 @@ namespace ECommereceApi.Repo
         public async Task<List<ProductDisplayDTO>> GetWishListProducts(int userId)
         {
             var wishLists = GetWishListByUserId(userId);
+            if(wishLists.Result.Count == 0)
+            {
+               return null;
+            }
             List<ProductDisplayDTO> products = new List<ProductDisplayDTO>();
 
             foreach(var wishList in wishLists.Result)
