@@ -172,13 +172,21 @@ namespace ECommereceApi.Controllers
             return Ok(result);
         }
         [HttpPost]
-        [Route("/api/CategorySubCategoryValues")]
+        [Route("/api/ProductCategorySubCategoryValues")]
         public async Task<IActionResult> AssignValueForProductCategorySubCategoryAsync(ProductCategorySubCategoyValueAddDTO input)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
             var result = await productRepo.AssignValueForProductCategorySubCategory(input);
             if (result == null) return BadRequest();
             return Created("", result);
+        }
+        [HttpPost]
+        [Route("/api/CategorySubCategoryValues")]
+        public async Task<IActionResult> AddSubCategoryValue(CategorySubCategoryValuesAddDTO input)
+        {
+            var output = productRepo.AddSubCategoryValueAsync(input);
+            if (output == null) return BadRequest();
+            return Created("", output);
         }
         [HttpDelete]
         [Route("/api/CategorySubCategoryValues")]
