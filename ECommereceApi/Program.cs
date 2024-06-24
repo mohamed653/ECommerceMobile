@@ -9,6 +9,7 @@ using System.Globalization;
 using ECommereceApi.Services.Interfaces;
 using Serilog;
 using ECommereceApi.Middlewares;
+using ECommereceApi.HubConfig;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -141,28 +142,35 @@ builder.Services.AddScoped<IMailRepo, MailRepo>();
 builder.Services.AddScoped<IOrderRepo, OrderRepo>();
 builder.Services.AddScoped<ICartRepo, CartRepo>();
 
+builder.Services.AddSignalR();
+
 // Global Exception Handling Service
 builder.Services.AddTransient<GlobalExceptionHandlingMiddleware>();
 
-builder.Services.AddSignalR();
 builder.Services.AddTransient<NotificationService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-// Global Exception Handling Middleware
-app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 
+app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 app.UseCors("myPolicy");
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+app.UseRouting();
 app.UseAuthentication();
 app.UseRequestLocalization(app.Services.GetRequiredService<IOptions<RequestLocalizationOptions>>().Value);
 app.UseAuthorization();
-app.UseStaticFiles();
-app.MapControllers();
+
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapControllers();
+    endpoints.MapHub<NotificationHub>("/NotificationHub");
+});
 
 app.Run();

@@ -27,7 +27,7 @@ namespace ECommereceApi.Repo
 
                 user.VerifiedAt = DateTime.UtcNow;
                 user.IsVerified = true;
-                user.VertificationCode = null;
+                user.VertificationCode = "";
                 _context.Users.Update(user);
                 await _context.SaveChangesAsync();
 

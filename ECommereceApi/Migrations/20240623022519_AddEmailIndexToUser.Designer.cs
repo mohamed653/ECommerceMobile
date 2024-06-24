@@ -4,16 +4,19 @@ using ECommereceApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace ECommereceApi.Migrations
+namespace DataBase.Migrations
 {
     [DbContext(typeof(ECommerceContext))]
-    partial class ECommerceContextModelSnapshot : ModelSnapshot
+    [Migration("20240623022519_AddEmailIndexToUser")]
+    partial class AddEmailIndexToUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -29,7 +32,7 @@ namespace ECommereceApi.Migrations
 
                     b.HasKey("UserId");
 
-                    b.ToTable("Admin", (string)null);
+                    b.ToTable("Admin");
                 });
 
             modelBuilder.Entity("ECommereceApi.Models.Category", b =>
@@ -50,7 +53,7 @@ namespace ECommereceApi.Migrations
 
                     b.HasKey("CategoryId");
 
-                    b.ToTable("Category", (string)null);
+                    b.ToTable("Category");
                 });
 
             modelBuilder.Entity("ECommereceApi.Models.CategorySubCategory", b =>
@@ -74,7 +77,7 @@ namespace ECommereceApi.Migrations
                     b.HasIndex("CategoryId", "SubCategoryId")
                         .IsUnique();
 
-                    b.ToTable("CategorySubCategory", (string)null);
+                    b.ToTable("CategorySubCategory");
                 });
 
             modelBuilder.Entity("ECommereceApi.Models.CategorySubCategoryValues", b =>
@@ -105,7 +108,7 @@ namespace ECommereceApi.Migrations
                     b.HasIndex("ProductId", "CategorySubCategoryId", "Value")
                         .IsUnique();
 
-                    b.ToTable("CategorySubCategoryValues", (string)null);
+                    b.ToTable("CategorySubCategoryValues");
                 });
 
             modelBuilder.Entity("ECommereceApi.Models.Customer", b =>
@@ -115,7 +118,7 @@ namespace ECommereceApi.Migrations
 
                     b.HasKey("UserId");
 
-                    b.ToTable("Customer", (string)null);
+                    b.ToTable("Customer");
                 });
 
             modelBuilder.Entity("ECommereceApi.Models.NotificationMessage", b =>
@@ -146,7 +149,7 @@ namespace ECommereceApi.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("NotificationMessage", (string)null);
+                    b.ToTable("NotificationMessage");
                 });
 
             modelBuilder.Entity("ECommereceApi.Models.Offer", b =>
@@ -179,7 +182,7 @@ namespace ECommereceApi.Migrations
 
                     b.HasKey("OfferId");
 
-                    b.ToTable("Offer", (string)null);
+                    b.ToTable("Offer");
                 });
 
             modelBuilder.Entity("ECommereceApi.Models.Order", b =>
@@ -219,7 +222,7 @@ namespace ECommereceApi.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Order", (string)null);
+                    b.ToTable("Order");
                 });
 
             modelBuilder.Entity("ECommereceApi.Models.Product", b =>
@@ -260,7 +263,7 @@ namespace ECommereceApi.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Product", (string)null);
+                    b.ToTable("Product");
                 });
 
             modelBuilder.Entity("ECommereceApi.Models.ProductCart", b =>
@@ -280,7 +283,7 @@ namespace ECommereceApi.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ProductCart", (string)null);
+                    b.ToTable("ProductCart");
                 });
 
             modelBuilder.Entity("ECommereceApi.Models.ProductImage", b =>
@@ -294,7 +297,7 @@ namespace ECommereceApi.Migrations
 
                     b.HasKey("ProductId", "ImageId");
 
-                    b.ToTable("ProductImages", (string)null);
+                    b.ToTable("ProductImages");
                 });
 
             modelBuilder.Entity("ECommereceApi.Models.ProductOffer", b =>
@@ -315,7 +318,7 @@ namespace ECommereceApi.Migrations
 
                     b.HasIndex("OfferId");
 
-                    b.ToTable("ProductOffer", (string)null);
+                    b.ToTable("ProductOffer");
                 });
 
             modelBuilder.Entity("ECommereceApi.Models.ProductOrder", b =>
@@ -330,7 +333,7 @@ namespace ECommereceApi.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("ProductOrder", (string)null);
+                    b.ToTable("ProductOrder");
                 });
 
             modelBuilder.Entity("ECommereceApi.Models.Rate", b =>
@@ -354,7 +357,7 @@ namespace ECommereceApi.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.ToTable("Rates", (string)null);
+                    b.ToTable("Rates");
                 });
 
             modelBuilder.Entity("ECommereceApi.Models.SubCategory", b =>
@@ -371,7 +374,7 @@ namespace ECommereceApi.Migrations
 
                     b.HasKey("SubId");
 
-                    b.ToTable("SubCategory", (string)null);
+                    b.ToTable("SubCategory");
                 });
 
             modelBuilder.Entity("ECommereceApi.Models.User", b =>
@@ -447,7 +450,7 @@ namespace ECommereceApi.Migrations
                     b.HasIndex("Email")
                         .IsUnique();
 
-                    b.ToTable("User", (string)null);
+                    b.ToTable("User");
                 });
 
             modelBuilder.Entity("ECommereceApi.Models.WebInfo", b =>
@@ -480,7 +483,7 @@ namespace ECommereceApi.Migrations
 
                     b.HasKey("WebInfoId");
 
-                    b.ToTable("Web_Info", (string)null);
+                    b.ToTable("Web_Info");
                 });
 
             modelBuilder.Entity("ECommereceApi.Models.WishList", b =>
@@ -495,7 +498,7 @@ namespace ECommereceApi.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("WishList", (string)null);
+                    b.ToTable("WishList");
                 });
 
             modelBuilder.Entity("ECommereceApi.Models.Admin", b =>

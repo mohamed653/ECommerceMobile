@@ -11,11 +11,13 @@ namespace ECommereceApi.Repo
         private readonly ECommerceContext _context;
         private readonly IMapper _mapper;
         private readonly IFileCloudService _fileCloudService;
-        public WebInfoRepo(ECommerceContext context, IMapper mapper, IFileCloudService fileCloudService)
+        private readonly IConfiguration _configuration;
+        public WebInfoRepo(ECommerceContext context, IMapper mapper, IFileCloudService fileCloudService, IConfiguration configuration)
         {
             _context = context;
             _mapper = mapper;
             _fileCloudService = fileCloudService;
+            _configuration = configuration;
         }
         public async Task AddWebInfo(WebInfoDTO webInfoDTO)
         {
@@ -33,9 +35,31 @@ namespace ECommereceApi.Repo
 
         public async Task<WebInfo> GetWebInfo()
         {
-            var webInfo = await _context.Web_Infos.FindAsync(1);
+            var webInfo = await _context.Web_Infos.FirstOrDefaultAsync();
             if (webInfo == null)
-                throw new Exception("Web info not found");
+            {
+                // add new web info with default values  get the values from appsettings.json
+
+                var config = _configuration.GetSection("defaultWebInfo").Get<WebInfo>();
+
+                if (config == null)
+                    throw new Exception("Web info not found in the database and no default values found in appsettings.json");
+
+                var newWebInfo = new WebInfo
+                {
+                    WebPhone = config.WebPhone,
+                    WebLogoImageUrl =config.WebLogoImageUrl,
+                    WebName= config.WebName,
+                    InstagramAccount = config.InstagramAccount,
+                    FacebookAccount = config.FacebookAccount,
+                };
+
+                _context.Web_Infos.Add(newWebInfo);
+                await _context.SaveChangesAsync();
+                
+                var _webInfo = await _context.Web_Infos.FirstOrDefaultAsync();
+                return _webInfo;
+            }
 
             return webInfo;
         }
