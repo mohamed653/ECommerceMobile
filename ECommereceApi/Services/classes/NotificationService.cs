@@ -1,5 +1,4 @@
 ﻿using ECommereceApi.HubConfig;
-using ECommereceApi.Services.Interfaces;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,73 +6,98 @@ namespace ECommereceApi.Services.classes
 {
     public class NotificationService
     {
-        //private readonly IHubContext<NotificationHub> _hubContext;
+        private readonly IHubContext<NotificationHub> _hubContext;
+        private readonly IUserRepo _userRepo;
         private readonly ECommerceContext _context;
 
-        public NotificationService(/*IHubContext<NotificationHub> hubContext,*/ ECommerceContext context)
+        public NotificationService(IHubContext<NotificationHub> hubContext, IUserRepo userRepo, ECommerceContext context)
         {
-            //_hubContext = hubContext;
+            _hubContext = hubContext;
+            _userRepo = userRepo;
             _context = context;
         }
 
-        public async Task SendNotification(string userId, string message)
+        public async Task AddNotificationToAllCustomers(string message)
         {
-            //await _hubContext.Clients.User(userId).SendAsync("ReceiveNotification", message);
-        }
-        public async Task<List<NotificationMessage>> GetAllMessagesForUser(int userId)
-        {
-            return await _context.NotificationMessages
-                .Where(n => n.UserId == userId)
-                .OrderByDescending(n => n.SendingDate)
-                .ToListAsync();
-        }
 
-        public async Task<int> GetNumberOfNotificationsForUser(int userId)
-        {
-            return await _context.NotificationMessages
-                .Where(n => n.UserId == userId && !n.Seen)
-                .CountAsync();
-        }
+            await _hubContext.Clients.Group("Users").SendAsync("ReceiveNotification", message);
+            // you can add a new table to store clients notifications  because it will be a lot of data
 
-        public async Task MarkMessageAsRead(int msgId)
-        {
-            var message = await _context.NotificationMessages.FindAsync(msgId);
-            if (message != null)
+            var users = await _userRepo.GetCustomersAsync();
+            foreach (var user in users)
             {
-                message.Seen = true;
-                await _context.SaveChangesAsync();
+                var notification = new NotificationMessage
+                {
+                    UserId = user.UserId,
+                    Title = "Notification",
+                    MsgContent = message,
+                    SendingDate = DateTime.Now,
+                    Seen = false
+                };
+                _context.NotificationMessages.Add(notification);
             }
+            await _context.SaveChangesAsync();
         }
 
-        public async Task<int> SendNotification(int userId, string title, string content)
+        public async Task AddNotificationToAllAdmins( string message)
         {
+            await _hubContext.Clients.Group("Admins").SendAsync("ReceiveNotification", message);
+
+            var users = await _userRepo.GetAdminsAsync();
+            foreach (var user in users)
+            {
+                var notification = new NotificationMessage
+                {
+                    UserId = user.UserId,
+                    Title = "Notification",
+                    MsgContent = message,
+                    SendingDate = DateTime.Now,
+                    Seen = false
+                };
+                _context.NotificationMessages.Add(notification);
+            }
+            await _context.SaveChangesAsync();
+
+        }
+        public async Task AddNotificationToCaller(int userId, string message)
+        {
+            await _hubContext.Clients.User(userId.ToString()).SendAsync("ReceiveNotification", message);
+
             var notification = new NotificationMessage
             {
                 UserId = userId,
-                Title = title,
-                MsgContent = content,
+                Title = "Notification",
+                MsgContent = message,
                 SendingDate = DateTime.Now,
                 Seen = false
             };
-
             _context.NotificationMessages.Add(notification);
             await _context.SaveChangesAsync();
-            return notification.MsgId;
 
-            //await _hubContext.Clients.User(userId.ToString()).SendAsync("ReceiveNotification", title, content);
         }
-        public async Task SendMessagesToAllClients()
+        public async Task<List<NotificationMessage>> GetAllMessages()
         {
+            return await _context.NotificationMessages.Include(x => x.User).ToListAsync();
+        }
+        public async Task<List<NotificationMessage>> GetAllMessagesForUser(int userId)
+        {
+            return await _context.NotificationMessages.Include(x => x.User).Where(s => s.UserId == userId).ToListAsync();
+        }
 
-               //await _hubContext.Clients.All.SendAsync("ReceiveNotification", "Admin", "Hello from Admin");
+
+        public async Task MarkAllAsRead(int userId)
+        {
+            var notifications = await _context.NotificationMessages.Where(s => s.UserId == userId).ToListAsync();
+            foreach (var notification in notifications)
+            {
+                notification.Seen = true;
+            }
+            await _context.SaveChangesAsync();
         }
-        public async Task SendMessagesToAllAdmins(string message) 
-        { 
-            await _context.Users.Where(u => u.Role == RoleType.Admin).ForEachAsync(async user => 
-            { 
-                await SendNotification(user.UserId.ToString(), message); 
-            });
+
+        public async Task<int> GetUnreadCount(int userId)
+        {
+            return await _context.NotificationMessages.CountAsync(s => s.UserId == userId && s.Seen == false);
         }
-        
     }
 }

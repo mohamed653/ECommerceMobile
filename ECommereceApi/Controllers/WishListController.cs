@@ -20,20 +20,38 @@ namespace ECommereceApi.Controllers
         public async Task<IActionResult> AddWishList(WishListDTO wishListDTO)
         {
             
-            await _wishListRepo.AddWishList(wishListDTO);
-            return Ok();
-
+            Status status = await _wishListRepo.AddWishList(wishListDTO);
+            if (status == Status.NotFound)
+            {
+                return NotFound();
+            }
+            else if (status == Status.ExistedBefore)
+            {
+                return BadRequest("Product already exists in your wishlist");
+            }
+            else if (status == Status.Success)
+            {
+                return Ok();
+            }
+            return BadRequest();
+         
         }
         [HttpGet("{userId}")]
-        public async Task<IActionResult> GetWishListByUserId(int userId)
+        public async Task<IActionResult> GetWishListProductsByUserId(int userId)
         {
-            var wishList = await _wishListRepo.GetWishListByUserId(userId);
-            if (wishList.Count == 0)
+            var products = await _wishListRepo.GetWishListProducts(userId);
+            if(products is null)
+            {
+                return BadRequest();
+            }
+            if (products.Count == 0)
             {
                 return Ok("No product found in your wishlist");
             }
-            return Ok(wishList);
+            return Ok(products);
         }
+
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteWishList(int id)
         {

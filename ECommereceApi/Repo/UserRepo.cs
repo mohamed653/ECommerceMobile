@@ -24,10 +24,40 @@ namespace ECommereceApi.Repo
             return _mapper.Map<List<UserDTO>>(users);
         }
 
+        public async Task<IEnumerable<UserDTO>> GetAdminsAsync()
+        {
+            var users = await _context.Users.Where(x=>x.Role==RoleType.Admin).ToListAsync();
+            return _mapper.Map<List<UserDTO>>(users);
+        }
+        public async Task<IEnumerable<UserDTO>> GetCustomersAsync()
+        {
+            var users = await _context.Users.Where(x => x.Role == RoleType.Customer).ToListAsync();
+            return _mapper.Map<List<UserDTO>>(users);
+        }
+
         public async Task<UserDTO> GetUserAsync(int id)
         {
             var user = await _context.Users.FindAsync(id);
             return _mapper.Map<UserDTO>(user);
+        }
+
+        public async Task<UserDTO?> GetSuperAdminAsync()
+        {
+            var super = _context.Users.First(x => x.Role == RoleType.Admin);
+            if(super == null)
+                return null;
+            return _mapper.Map<UserDTO>(super);
+        }
+
+        private async Task<bool> IsSuperAdmin(int id)
+        {
+            var user = _context.Users.FirstOrDefault(x=>x.UserId==id);
+            if(user == null) return false;
+
+            if(user.UserId==GetSuperAdminAsync().Id)
+                return true;
+            return false;
+
         }
 
         public async Task<Status> AddUserAsync(UserDTOUi userDto)
@@ -43,15 +73,25 @@ namespace ECommereceApi.Repo
             if (userDto.Role == RoleType.Customer)
             {
                 await _context.Users.AddAsync(user);
+                var status = await SaveAsync();
+                if (status != Status.Success)
+                {
+                    return status;
+                }
                 await _context.Customers.AddAsync(new Customer { UserId = user.UserId});
+                return await SaveAsync();
             }
             else
             {
                 await _context.Users.AddAsync(user);
+                var status = await SaveAsync();
+                if (status != Status.Success)
+                {
+                    return status;
+                }
                 await _context.Admins.AddAsync(new Admin { UserId = user.UserId });
+                return await SaveAsync();
             }
-         
-            return await SaveAsync();
         }
 
         public async Task<Status> UpdateUserAsync(UserDTO userDto)
@@ -137,6 +177,11 @@ namespace ECommereceApi.Repo
             if (user == null)
             {
                 return Status.NotFound;
+            }
+            // checking if the user is superAdmin you can't delete him
+            if (IsSuperAdmin(user.UserId).Result)
+            {
+                return Status.Failed;
             }
             user.IsDeleted = true;
             return await SaveAsync();

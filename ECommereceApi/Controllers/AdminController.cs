@@ -2,11 +2,13 @@
 using ECommereceApi.IRepo;
 using ECommereceApi.Models;
 using ECommereceApi.Repo;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ECommereceApi.Controllers
 {
+   // [Authorize(Roles="Admin")]
     [Route("api/[controller]")]
     [ApiController]
     public class AdminController : ControllerBase
@@ -21,13 +23,25 @@ namespace ECommereceApi.Controllers
         /// Get all Users
         /// </summary>
         /// <returns></returns>
-        [HttpGet]
+        [HttpGet("GetUsers")]
         public async Task<IActionResult> GetUsers()
         {
             var users = await _userRepo.GetUsersAsync();
             return Ok(users);
         }
 
+        [HttpGet("GetAdmins")]
+        public async Task<IActionResult> GetAdmins()
+        {
+            var users = await _userRepo.GetAdminsAsync();
+            return Ok(users);
+        }
+        [HttpGet("GetCustomers")]
+        public async Task<IActionResult> GetCustomers()
+        {
+            var users = await _userRepo.GetCustomersAsync();
+            return Ok(users);
+        }
         /// <summary>
         /// Get User by Id
         /// </summary>
@@ -176,6 +190,8 @@ namespace ECommereceApi.Controllers
             }
             return NotFound();
         }
+
+
     }
 
 }

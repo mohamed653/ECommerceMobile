@@ -1,41 +1,62 @@
-﻿using ECommereceApi.Services.classes;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using ECommereceApi.Services.classes;
 
-namespace ECommereceApi.Controllers
+[ApiController]
+[Route("api/[controller]")]
+public class NotificationController : ControllerBase
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class NotificationsController : ControllerBase
+    private readonly ILogger<NotificationController> _logger;
+    private readonly NotificationService _notificationService;
+
+    public NotificationController(ILogger<NotificationController> logger, NotificationService notificationService)
     {
-        private readonly NotificationService _notificationService;
-
-        public NotificationsController(NotificationService notificationService)
-        {
-            _notificationService = notificationService;
-        }
-
-        [HttpGet("{userId}")]
-        public async Task<IActionResult> GetAllMessagesForUser(int userId)
-        {
-            var messages = await _notificationService.GetAllMessagesForUser(userId);
-            return Ok(messages);
-        }
-
-        [HttpPost("markAsRead/{msgId}")]
-        public async Task<IActionResult> MarkMessageAsRead(int msgId)
-        {
-            await _notificationService.MarkMessageAsRead(msgId);
-            return NoContent();
-        }
-
-        [HttpPost("SendNotification")]
-        public async Task<IActionResult> SendNotification(int userId, string title, string content)
-        {
-            var messageId = await _notificationService.SendNotification(userId, title, content);
-
-            return Ok(new {MsgId = messageId});
-        }
-
+        _logger = logger;
+        _notificationService = notificationService;
     }
+
+
+    [HttpGet("GetAllNotifications/{userId}")]
+    public async Task<IActionResult> GetAllNotifications(int userId)
+    {
+        var notifications = await _notificationService.GetAllMessagesForUser(userId);
+        return Ok(notifications);
+    }
+
+    [HttpPost("addForCaller/{message}")]
+    public async Task<IActionResult> AddNotificationToCaller([FromBody] NotificationMessage message)
+    {
+        await _notificationService.AddNotificationToCaller(message.UserId, message.MsgContent);
+        return Ok();
+    }
+    // add notification to all customers
+    [HttpPost("addForCustomers/{message}")]
+    public async Task<IActionResult> AddNotificationToAllCustomers([FromBody] NotificationMessage message)
+    {
+        await _notificationService.AddNotificationToAllCustomers(message.MsgContent);
+        return Ok();
+    }
+    // add notification to all admins
+    [HttpPost("addForAdmins/{message}")]
+    public async Task<IActionResult> AddNotificationToAllAdmins([FromBody] NotificationMessage message)
+    {
+        await _notificationService.AddNotificationToAllAdmins(message.MsgContent);
+        return Ok();
+    }
+
+    [HttpPost("{userId}")]
+    public async Task<IActionResult> MarkAllAsRead(int userId)
+    {
+        await _notificationService.MarkAllAsRead(userId);
+        return Ok();
+    }
+
+    [HttpGet("GetUnreadCount/{userId}")]
+    public async Task<IActionResult> GetUnreadCount(int userId)
+    {
+        var count = await _notificationService.GetUnreadCount(userId);
+        return Ok(count);
+    }
+
 }
