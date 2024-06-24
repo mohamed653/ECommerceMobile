@@ -33,6 +33,20 @@ namespace ECommereceApi.Repo
             output.ApplicableOffers = await GetApplicableOffersForCartAsync(cartProductsDTO, offers);
             return output;
         }
+        public async Task<OrderPreviewWithoutOffersDTO> AddOrderWithoutOfferAsync(CartProductsDTO cartProductsDTO, AddOrderWithoutOfferDTO addOrderWithoutOfferDTO)
+        {
+            //var newOrder = _mapper.Map<Order>(addOrderWithoutOfferDTO);
+            //var addedRecord = 
+            //foreach(var product in cartProductsDTO.ProductsAmounts)
+            //{
+            //    newOrder.ProductOrders.Add(new ProductOrder()
+            //    {
+            //        ProductId = product.ProductId,
+                    
+            //    })
+            //}
+            return null;
+        }
         public async Task<List<OfferDisplayDTO>> GetApplicableOffersForCartAsync(CartProductsDTO cartProductsDTO, List<Offer> offers)
         {
             List<OfferDisplayDTO> applicableOffers = new List<OfferDisplayDTO>();
@@ -78,5 +92,6 @@ namespace ECommereceApi.Repo
         {
             return await _db.Offers.Include(o => o.ProductOffers).Where(o => o.OfferDate.AddDays(o.Duration.Value) >= DateOnly.FromDateTime(DateTime.Now) && o.OfferDate <= DateOnly.FromDateTime(DateTime.Now)).ToListAsync();
         }
+
     }
 }

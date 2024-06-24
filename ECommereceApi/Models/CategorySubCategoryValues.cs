@@ -17,6 +17,6 @@ namespace ECommereceApi.Models
         //public string? ImageUri { get; set; }
         public string? ImageId { get; set; }
         public virtual CategorySubCategory CategorySubCategory { get; set; }
-        public virtual Product Product { get; set; }
+        public virtual ICollection<ProductCategorySubCategoryValues> ProductCategorySubCategoryValues { get; set; } = new List<ProductCategorySubCategoryValues>();
     }
 }

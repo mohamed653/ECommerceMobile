@@ -55,7 +55,7 @@ public partial class Product : ISoftDeletable
 	[InverseProperty("Product")]
 	public virtual ICollection<ProductOrder> ProductOrders { get; set; } = new List<ProductOrder>();
     
-    public ICollection<CategorySubCategoryValues> CategorySubCategoryValues = new List<CategorySubCategoryValues>();
+    public ICollection<ProductCategorySubCategoryValues> ProductCategorySubCategoryValues = new List<ProductCategorySubCategoryValues>();
 	// Computed properties
 	[NotMapped]
 	public double? FinalPrice => OriginalPrice - Discount;

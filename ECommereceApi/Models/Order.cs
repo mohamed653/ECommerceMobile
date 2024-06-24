@@ -12,8 +12,9 @@ namespace ECommereceApi.Models;
 [Table("Order")]
 public partial class Order
 {
+
     [Key]
-    public int OrderId { get; set; }
+    public Guid OrderId { get; set; }
 
     [StringLength(50)]
     public string Governerate { get; set; }
@@ -37,12 +38,12 @@ public partial class Order
     [InverseProperty("Orders")]
     public virtual User User { get; set; }
 
-	[InverseProperty("Order")]
-	public virtual ICollection<ProductOrder> ProductOrders { get; set; }
+    [InverseProperty("Order")]
+    public virtual ICollection<ProductOrder> ProductOrders { get; set; }
 
 
-	// Computed properties
-	[NotMapped]
+    // Computed properties
+    [NotMapped]
 	public DateOnly? ResponseDate { get; set; }
 
 	[NotMapped]
