@@ -362,7 +362,7 @@ namespace ECommereceApi.Repo
                 .Where(c => c.ProductId == productId).ToListAsync();
             return _mapper.Map<List<ProductCategorySubCategoryValuesDTO>>(result);
         }
-        public async Task<ProductCategorySubCategoryValuesDTO> AssignValueForProductCategorySubCategory(CategorySubCategoyValueAddDTO input)
+        public async Task<ProductCategorySubCategoryValuesDTO> AssignValueForProductCategorySubCategory(ProductCategorySubCategoyValueAddDTO input)
         {
             var product = await _db.Products.FirstOrDefaultAsync(p => p.ProductId == input.ProductId);
             if(product is null)

@@ -1,6 +1,6 @@
 ﻿namespace ECommereceApi.DTOs.Product
 {
-    public class CategorySubCategoyValueAddDTO
+    public class ProductCategorySubCategoyValueAddDTO
     {
         public int ProductId { get; set; }
         public int CategoryId { get; set; }
