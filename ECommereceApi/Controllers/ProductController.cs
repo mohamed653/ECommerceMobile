@@ -184,7 +184,14 @@ namespace ECommereceApi.Controllers
         [Route("/api/CategorySubCategoryValues")]
         public async Task<IActionResult> AddSubCategoryValue(CategorySubCategoryValuesAddDTO input)
         {
-            var output = productRepo.AddSubCategoryValueAsync(input);
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            if(!await productRepo.IsCategoryExistsAsync(input.CategoryId))
+                return NotFound("Category Not Found");
+            if(!await productRepo.IsSubCategoryExistsAsync(input.SubCategoryId))
+                return NotFound("Sub Category Not Found");
+            if(!await productRepo.IsCategorySubCategoryExistsAsync(input.CategoryId, input.SubCategoryId))
+                return NotFound("Category and Sub Category Not Related");
+            var output = await productRepo.AddSubCategoryValueAsync(input);
             if (output == null) return BadRequest();
             return Created("", output);
         }

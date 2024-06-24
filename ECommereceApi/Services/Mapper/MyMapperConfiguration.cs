@@ -43,6 +43,9 @@ namespace ECommereceApi.Services.Mapper
                 .ForMember(d => d.CategoryName, opt => opt.MapFrom(s => s.CategorySubCategory.Category.Name))
                 .ForMember(d => d.SubCategoryName, opt => opt.MapFrom(s => s.CategorySubCategory.SubCategory.Name))
                 .ReverseMap();
+            
+            CreateMap<CategorySubCategoryValueDTO, CategorySubCategoryValuesAddDTO>()
+                .ReverseMap();
 
             CreateMap<User, UserDTO>().ReverseMap();
             CreateMap<User, UserDTOUi>().ReverseMap();

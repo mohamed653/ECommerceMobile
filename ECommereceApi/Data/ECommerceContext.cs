@@ -122,8 +122,8 @@ public partial class ECommerceContext : DbContext
                 .HasKey(wl => new { wl.UserId, wl.ProductId });
 
 
-            modelBuilder.Entity<ProductOrder>()
-                .HasKey(po => new { po.OrderId, po.ProductId });
+            //modelBuilder.Entity<ProductOrder>()
+            //    .HasKey(po => new { po.OrderId, po.ProductId });
 
         });
 

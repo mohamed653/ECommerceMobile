@@ -2,10 +2,11 @@
 {
     public class CategorySubCategoryValueDTO
     {
-        public string CategoryName { get; set; }
-        public string SubCategoryName { get; set; }
+        public int Id { get; set; }
+        public int CategoryId { get; set; }
+        public int SubCategoryId { get; set; }
         public string Value { get; set; }
         public string ImageId { get; set; }
-        public string ImageUri { get; set; }
+        public string? ImageUrl { get; set; }
     }
 }
