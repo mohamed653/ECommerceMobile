@@ -4,16 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using ECommereceApi.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace ECommereceApi.Models;
-
-public enum OrderStatus
-{
-	Pending,
-	Shipped,
-	Delivered
-}
 
 [Table("Order")]
 public partial class Order

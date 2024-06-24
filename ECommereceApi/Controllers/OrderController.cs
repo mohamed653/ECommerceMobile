@@ -6,19 +6,26 @@ namespace ECommereceApi.Controllers
     public class OrderController : Controller
     {
         private readonly IOrderRepo _orderRepo;
-        public OrderController(IOrderRepo orderRepo)
+        private readonly ICartRepo _cartRepo;
+        public OrderController(IOrderRepo orderRepo, ICartRepo cartRepo)
         {
             _orderRepo = orderRepo;
+            _cartRepo = cartRepo;
         }
         [HttpGet]
-        public async Task<IActionResult> GetOrder(int userId)
+        public async Task<IActionResult> PreviewOrder(int userId)
         {
-            var result = await _orderRepo.GetOrderAsync(userId);
-            if (result is null)
+            var user = await _cartRepo.GetUserByIdAsync(userId);
+            if (user is null)
             {
-                return NotFound();
+                return NotFound("user doesn't have cart / not exist");
             }
-            return Ok(result);
+            var cartProductsDTO = await _cartRepo.GetCartProductsAsync(user);
+            if(!await _orderRepo.IsAllCartItemsAvailableAsync(cartProductsDTO))
+            {
+                return BadRequest("some products are not available");
+            }
+            return Ok(await _orderRepo.GetOrderPreviewAsync(cartProductsDTO));
         }
     }
 }

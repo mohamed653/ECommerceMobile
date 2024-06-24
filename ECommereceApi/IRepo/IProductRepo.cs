@@ -25,7 +25,7 @@ namespace ECommereceApi.IRepo
         //Task<IEnumerable<ProductDisplayDTO>> GetAllProductsForSubCategoryAsync(int subId, string value);
         Task<ProductCategorySubCategoryValuesDTO> GetProductCategorySubCategoryValuesAsync(int productId, int CategoryId, int SubCategoryId);
         Task<List<ProductCategorySubCategoryValuesDTO>> GetAllProductCategorySubCategoryValuesAsync(int productId);
-        Task<ProductCategorySubCategoryValuesDTO> AssignValueForProductCategorySubCategory(ProductCategorySubCategoyValueAddDTO input);
+        Task<ProductCategorySubCategoryValuesDTO> AssignValueForProductCategorySubCategory(CategorySubCategoyValueAddDTO input);
         Task<int> DeleteProductCategorySubCategoryValue(int productId, int categoryId, int subCategoryId, string value);
         Task<int> DeleteProductCategorySubCategoryValueAll(int productId, int categoryId, int subCategoryId);
         Task<Status> AddProductPhotosAsync(ProductPictureDTO input);
@@ -36,6 +36,6 @@ namespace ECommereceApi.IRepo
         Task<List<ProductDisplayDTO>> GetAllProductsSearchAsync(string? Name, double? MinOriginalPrice, double? MaxOriginalPrice, int? MinAmount, int? MaxAmount, List<int>? CategoriesIds);
         Task<PagedResult<ProductDisplayDTO>> GetAllProductsSearchPaginatedAsync(string? Name, double? MinOriginalPrice, double? MaxOriginalPrice, int? MinAmount, int? MaxAmount, List<int>? CategoriesIds, int page, int pageSize);
         Task<bool> IsAllProductsExistsAsync(HashSet<int> productsIds);
-        Task<ProductCategorySubCategoryValuesDTO> UpdateProductCategorySubCategoryValue(ProductCategorySubCategoyValueAddDTO addDTO, string newValue);
+        Task<ProductCategorySubCategoryValuesDTO> UpdateCategorySubCategoryValue(CategorySubCategoryValuesAddDTO addDTO, string newValue);
     }
 }

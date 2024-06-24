@@ -61,7 +61,7 @@ namespace ECommereceApi.Repo
 
         public async Task<List<Offer>> GetOffersByProductId(int productId)
         {
-            if(!_context.Products.Any(x => x.ProductId == productId))
+            if (!_context.Products.Any(x => x.ProductId == productId))
                 throw new Exception("Product not found");
 
             // get offers that have the product and not expired  then include the productoffer 
@@ -70,7 +70,7 @@ namespace ECommereceApi.Repo
             _offers = _offers.Where(x => !OfferExpiredOrInActive(x)).ToList();
 
             return _offers;
-           
+
         }
 
         public async Task<int> AddOffer(OfferDTO offerDTO)
@@ -116,7 +116,7 @@ namespace ECommereceApi.Repo
 
         //}
 
- 
+
         public async Task<OffersDTOUI> GetOfferById(int id)
         {
             try
@@ -145,23 +145,23 @@ namespace ECommereceApi.Repo
         {
             foreach (var item in offersDTOUI.ProductOffers)
             {
-                var product = await _context.Products.Include(p=>p.ProductImages).FirstOrDefaultAsync(p=>p.ProductId==item.ProductId);
+                var product = await _context.Products.Include(p => p.ProductImages).FirstOrDefaultAsync(p => p.ProductId == item.ProductId);
                 if (product == null)
                     throw new Exception("Product not found");
                 item.Name = product.Name;
-                if(product.ProductImages.Count>0)
+                if (product.ProductImages.Count > 0)
                     item.Image = product.ProductImages.FirstOrDefault().ImageId;
             }
-        }   
+        }
         public async Task AddProductsToOffer(int offerId, OffersDTOPost offerProductsDTO)
         {
             try
             {
-               
+
                 var offer = await _context.Offers.Include(x => x.ProductOffers).FirstOrDefaultAsync(x => x.OfferId == offerId);
                 if (offer == null)
                     throw new Exception("Offer not found");
-                
+
                 var product = await _context.Products.FindAsync(offerProductsDTO.ProductId);
                 if (product == null)
                     throw new Exception("Product not found");
@@ -206,11 +206,11 @@ namespace ECommereceApi.Repo
                 {
                     // delete the old image from cloudinary
                     var publicId = offer.Image.Split("/").Last().Split(".")[0];
-                    await _fileCloudService.DeleteImage(publicId);
+                    await _fileCloudService.DeleteImageAsync(publicId);
 
                     // upload the new image
                     offer.Image = await UploadImages(offerDTO.Image);
-                   
+
                 }
 
                 await _context.SaveChangesAsync();
@@ -231,7 +231,7 @@ namespace ECommereceApi.Repo
                 if (offer == null)
                     throw new Exception("Offer not found");
 
-                var product = await _context.Products.FirstOrDefaultAsync(x => x.ProductId == oldProductId); 
+                var product = await _context.Products.FirstOrDefaultAsync(x => x.ProductId == oldProductId);
 
                 if (product == null)
                     throw new Exception("Product not found");
@@ -361,9 +361,9 @@ namespace ECommereceApi.Repo
 
             return true;
         }
-        public  bool OfferExpiredOrInActive(Offer offer)
+        public bool OfferExpiredOrInActive(Offer offer)
         {
-            
+
             // Check if the offer is null
             if (offer == null)
                 return true;
@@ -373,7 +373,7 @@ namespace ECommereceApi.Repo
             int durationInDays = offer.Duration ?? 0; // Assuming a duration of 0 if it is null
 
             var _date = startDate.ToDateTime(TimeOnly.MinValue).AddDays(durationInDays);
-            if (DateTime.Now < _date )
+            if (DateTime.Now < _date)
                 return false;
 
             return true;

@@ -5,13 +5,12 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ECommereceApi.Models
 {
-    [Index(nameof(ProductId), nameof(CategorySubCategoryId), nameof(Value), IsUnique = true)]
+    [Index(nameof(CategorySubCategoryId), nameof(Value), IsUnique = true)]
     public class CategorySubCategoryValues
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
-        [ForeignKey(nameof(Product))]
-        public int ProductId { get; set; }
+
         [ForeignKey("CategorySubCategory")]
         public int CategorySubCategoryId { get; set; }
         public string Value { get; set; }

@@ -9,6 +9,8 @@ using System.Globalization;
 using ECommereceApi.Services.Interfaces;
 using Serilog;
 using ECommereceApi.Middlewares;
+using ECommereceApi.Services.Mapper;
+using Microsoft.AspNetCore.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -71,12 +73,12 @@ builder.Services.AddAuthentication(options =>
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
 }).AddJwtBearer(o =>
 {
-    o.TokenValidationParameters = new TokenValidationParameters()
-    {
-        ValidateIssuer = false,
-        ValidateAudience = false,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetValue<string>("JWT:secretkey"))),
-    };
+    //o.TokenValidationParameters = new TokenValidationParameters()
+    //{
+    //    ValidateIssuer = false,
+    //    ValidateAudience = false,
+    //    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetValue<string>("JWT:secretkey"))),
+    //};
 });
 
 builder.Services.AddSwaggerGen(c =>
@@ -124,16 +126,21 @@ Log.Logger = new LoggerConfiguration()
 
 #endregion
 
-// Add AutoMapper Service
-builder.Services.AddAutoMapper(typeof(Program));
-
 //File Server Service
 builder.Services.AddScoped<IFileCloudService, FileCloudService>();
+
+// Add AutoMapper Service
+builder.Services.AddAutoMapper(typeof(Program));
+//builder.Services.AddAutoMapper((serviceProvider, cfg) =>
+//{
+//    cfg.AddProfile(new MyMapperConfiguration(serviceProvider.GetService<IFileCloudService>()));
+//}, typeof(Program).Assembly);
+
 
 //builder.Services.AddScoped(typeof(IGenericRepo<>), typeof(GenericRepo<>));
 builder.Services.AddScoped<IProductRepo, ProductRepo>();
 builder.Services.AddScoped<IUserRepo, UserRepo>();
-builder.Services.AddScoped<IOfferRepo, OfferRepo>();
+//builder.Services.AddScoped<IOfferRepo, OfferRepo>();
 builder.Services.AddScoped<IWebInfoRepo, WebInfoRepo>();
 builder.Services.AddScoped<IWishListRepo, WishListRepo>();
 builder.Services.AddScoped<IUserManagementRepo, UserManagementRepo>();
@@ -148,14 +155,18 @@ builder.Services.AddTransient<NotificationService>();
 
 var app = builder.Build();
 
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-// Global Exception Handling Middleware
-app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
+else
+{
+    // Global Exception Handling Middleware
+    app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
+}
 
 app.UseCors("myPolicy");
 app.UseAuthentication();
