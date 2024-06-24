@@ -364,5 +364,6 @@ FodyWeavers.xsd
 /UnitTestProduct/
 /ECommereceApi/Migrations/
 /ECommereceApi/appsettings.json
-/ECommereceApi/appsettings.json
 /UnitTestProduct/FileServiceTests.cs
+
+
