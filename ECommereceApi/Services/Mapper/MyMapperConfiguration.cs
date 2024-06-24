@@ -53,7 +53,7 @@ namespace ECommereceApi.Services.Mapper
             CreateMap<ProductOffer, OfferProductsDetailedDTO>().ReverseMap();
             CreateMap<OfferProductsDetailedDTO, ProductOffer>().ReverseMap();
 
-            //WebInfo
+            // WebInfo
             CreateMap<ECommereceApi.Models.WebInfo, WebInfoDTO>().ReverseMap();
 
             #region Orders

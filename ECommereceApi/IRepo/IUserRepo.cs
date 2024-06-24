@@ -8,6 +8,9 @@ namespace ECommereceApi.IRepo
     {
         Task<IEnumerable<UserDTO>> GetUsersAsync();
 
+        Task<IEnumerable<UserDTO>> GetCustomersAsync();
+        Task<IEnumerable<UserDTO>> GetAdminsAsync();
+
         Task<IEnumerable<UserDTO>> SearchUserByEmailAsync(string email);
         Task<IEnumerable<UserDTO>> SearchUserByNameAsync(string name);
         Task<IEnumerable<UserDTO>> GetUserPaginationAsync(int pageNumber, int pageSize);

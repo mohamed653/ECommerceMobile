@@ -7,6 +7,7 @@
 		NotFound,
         EmailExistsBefore,
         Deleted,
+        ExistedBefore
     }
 
 	public enum SortType
