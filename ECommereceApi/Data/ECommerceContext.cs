@@ -23,7 +23,7 @@ public partial class ECommerceContext : DbContext
 
     public virtual DbSet<CategorySubCategory> CategorySubCategory { get; set; }
     public virtual DbSet<CategorySubCategoryValues> CategorySubCategoryValues {get; set;}
-
+    public virtual DbSet<ProductCategorySubCategoryValues> ProductCategorySubCategoryValues {get; set;}
     public virtual DbSet<Customer> Customers { get; set; }
 
     public virtual DbSet<NotificationMessage> NotificationMessages { get; set; }

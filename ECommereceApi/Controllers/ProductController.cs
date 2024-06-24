@@ -173,7 +173,7 @@ namespace ECommereceApi.Controllers
         }
         [HttpPost]
         [Route("/api/CategorySubCategoryValues")]
-        public async Task<IActionResult> AssignValueForProductCategorySubCategoryAsync(ProductCategorySubCategoyValueAddDTO input)
+        public async Task<IActionResult> AssignValueForProductCategorySubCategoryAsync(CategorySubCategoyValueAddDTO input)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
             var result = await productRepo.AssignValueForProductCategorySubCategory(input);
@@ -198,11 +198,11 @@ namespace ECommereceApi.Controllers
         }
         [HttpPatch]
         [Route("/api/CategorySubCategoryValues/{id:int}")]
-        public async Task<IActionResult> UpdateProductCategorySubCategoryValueAsync(int id, ProductCategorySubCategoyValueAddDTO input, string newValue)
+        public async Task<IActionResult> UpdateCategorySubCategoryValueAsync(CategorySubCategoryValuesAddDTO input, string newValue)
         {
-            if(!ModelState.IsValid || id != input.ProductId)
+            if(!ModelState.IsValid)
                 return BadRequest();
-            var result = await productRepo.UpdateProductCategorySubCategoryValue(input, newValue);
+            var result = await productRepo.UpdateCategorySubCategoryValue(input, newValue);
             if (result == null) return NotFound();
             return Ok(result);
         }
