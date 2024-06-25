@@ -42,6 +42,8 @@ namespace ECommereceApi.Services.Mapper
 
             CreateMap<SubCategoryValuesDetailsDTO, CategorySubCategoryValues>().ReverseMap();
 
+            
+
             CreateMap<CategorySubCategoryValues, ProductCategorySubCategoryValuesDTO>()
                 .ForMember(d => d.CategoryName, opt => opt.MapFrom(s => s.CategorySubCategory.Category.Name))
                 .ForMember(d => d.SubCategoryName, opt => opt.MapFrom(s => s.CategorySubCategory.SubCategory.Name))
@@ -49,7 +51,11 @@ namespace ECommereceApi.Services.Mapper
             
             CreateMap<SubCategoriesValuesForCategoryDTO, Category>().ReverseMap();
 
+            CreateMap<CategoriesValuesForSubCategoryDTO, SubCategory>().ReverseMap();
+
             CreateMap<SubCategoryValuesDTO, SubCategory>().ReverseMap();
+
+            CreateMap<CategoryValuesDTO, Category>().ReverseMap();
 
             CreateMap<CategorySubCategoryValueDTO, CategorySubCategoryValuesAddDTO>()
                 .ReverseMap();

@@ -16,4 +16,5 @@ namespace ECommereceApi.Services.Mapper
                 return _fileCloudService.GetImageUrl(source.ImageId);
         }
     }
+
 }

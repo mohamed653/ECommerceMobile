@@ -185,8 +185,13 @@ namespace ECommereceApi.Repo
         }
         public async Task<SubCategoriesValuesForCategoryDTO> GetCategoryDetails(int categoryId)
         {
-            var category = await GetCategoryWithSubCategoryWithValues(categoryId);
+            var category = await GetCategoryWithSubCategoryWithValuesAsync(categoryId);
             return await MapSubCategoriesValuesForCategory(category);
+        }
+        public async Task<CategoriesValuesForSubCategoryDTO> GetSubCategoryDetails(int subCategoryId)
+        {
+            var subCategory = await GetSubCategoryWithCategoryValuesAsync(subCategoryId);
+            return await MapCategoriesValuesForSubCategory(subCategory);
         }
         public async Task<SubCategoriesValuesForCategoryDTO> MapSubCategoriesValuesForCategory(Category category)
         {
@@ -201,16 +206,40 @@ namespace ECommereceApi.Repo
             }
             return output;
         }
+        public async Task<CategoriesValuesForSubCategoryDTO> MapCategoriesValuesForSubCategory(SubCategory subCategory)
+        {
+            var categories = await GetCategoriesForSubCategoryAsync(subCategory);
+            var output = _mapper.Map<CategoriesValuesForSubCategoryDTO>(subCategory);
+            output.Categories = _mapper.Map<List<CategoryValuesDTO>>(categories);
+            foreach(var category in output.Categories)
+            {
+                var categorySubCategoryId = await GetCategorySubCategoryIdFromSeparateIds(category.CategoryId, subCategory.SubCategoryId);
+                var categoryValues = _db.CategorySubCategoryValues.Where(sc => sc.CategorySubCategoryId == categorySubCategoryId);
+                category.Values = _mapper.Map<ICollection<SubCategoryValuesDetailsDTO>>(categoryValues);
+            }
+            return output;
+        }
         public async Task<ICollection<SubCategory>> GetSubCategoriesForCategoryAsync(Category category)
         {
             return category.CategorySubCategory.Select(c => c.SubCategory).ToList();
         }
-        public async Task<Category> GetCategoryWithSubCategoryWithValues(int categoryId)
+        public async Task<ICollection<Category>> GetCategoriesForSubCategoryAsync(SubCategory subCategory)
+        {
+            return subCategory.CategorySubCategories.Select(c => c.Category).ToList();
+        }
+        public async Task<Category> GetCategoryWithSubCategoryWithValuesAsync(int categoryId)
         {
             return await _db.Categories
                 .Include(c => c.CategorySubCategory).ThenInclude(c => c.SubCategory)
                 .Include(c => c.CategorySubCategory).ThenInclude(c => c.CategorySubCategoryValues)
                 .FirstOrDefaultAsync(c => c.CategoryId == categoryId);
+        }
+        public async Task<SubCategory> GetSubCategoryWithCategoryValuesAsync(int subCategoryId)
+        {
+            return await _db.SubCategories
+                .Include(sc => sc.CategorySubCategories).ThenInclude(c => c.Category)
+                .Include(c => c.CategorySubCategories).ThenInclude(c => c.CategorySubCategoryValues)
+                .FirstOrDefaultAsync(c => c.SubCategoryId == subCategoryId);
         }
         public async Task<int> AssignSubCategoryToCategoryAsync(int categoryId, int subCategoryId)
         {

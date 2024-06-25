@@ -33,7 +33,8 @@ public partial class Order
     public int UserId { get; set; }
 
     public OrderStatus Status { get; set; }
-
+    [ForeignKey(nameof(Offer))]
+    public int? OfferId { get; set; }
     [ForeignKey("UserId")]
     [InverseProperty("Orders")]
     public virtual User User { get; set; }
@@ -41,6 +42,7 @@ public partial class Order
     [InverseProperty("Order")]
     public virtual ICollection<ProductOrder> ProductOrders { get; set; }
 
+    public virtual Offer Offer { get; set; }
 
     // Computed properties
     [NotMapped]

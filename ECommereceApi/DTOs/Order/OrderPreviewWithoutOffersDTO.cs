@@ -5,6 +5,7 @@ namespace ECommereceApi.DTOs.Order
     public class OrderPreviewWithoutOffersDTO
     {
         public int UserId { get; set; }
+        public Guid OrderId { get; set; }
         public List<ProductDisplayInCartDTO> ProductsAmounts { get; set; } = new();
         public double FinalPrice { get; set; }
         public int numberOfUniqueProducts { get; set; } = 0;
