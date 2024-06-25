@@ -12,9 +12,9 @@ namespace ECommereceApi.Models;
 public partial class SubCategory
 {
     [Key]
-    public int SubId { get; set; }
+    public int SubCategoryId { get; set; }
 
     [StringLength(50)]
     public string Name { get; set; }
-    public virtual ICollection<CategorySubCategory> Categories { get; set; } = new List<CategorySubCategory>();
+    public virtual ICollection<CategorySubCategory> CategorySubCategories { get; set; } = new List<CategorySubCategory>();
 }

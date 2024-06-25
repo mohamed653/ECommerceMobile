@@ -21,5 +21,5 @@ public partial class Category
 
     [InverseProperty("Category")]
     public virtual ICollection<Product> Products { get; set; } = new List<Product>();
-    public virtual ICollection<CategorySubCategory> Subs { get; set; } = new List<CategorySubCategory>();
+    public virtual ICollection<CategorySubCategory> CategorySubCategory { get; set; } = new List<CategorySubCategory>();
 }

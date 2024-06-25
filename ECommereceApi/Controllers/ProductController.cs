@@ -48,7 +48,7 @@ namespace ECommereceApi.Controllers
             return Ok();
         }
         [HttpGet]
-        [Route("/api/{id:int}")]
+        [Route("/api/product/{id:int}")]
         public async Task<IActionResult> GetProductByIdAsync(int id)
         {
             var result = await productRepo.GetProductByIdAsync(id);
@@ -190,10 +190,17 @@ namespace ECommereceApi.Controllers
             if(!await productRepo.IsSubCategoryExistsAsync(input.SubCategoryId))
                 return NotFound("Sub Category Not Found");
             if(!await productRepo.IsCategorySubCategoryExistsAsync(input.CategoryId, input.SubCategoryId))
-                return NotFound("Category and Sub Category Not Related");
+                await productRepo.AssignSubCategoryToCategoryAsync(input.CategoryId, input.SubCategoryId);
             var output = await productRepo.AddSubCategoryValueAsync(input);
             if (output == null) return BadRequest();
             return Created("", output);
+        }
+        [HttpGet]
+        [Route("/api/CategoryDetails/{categoryId:int}")]
+        public async Task<IActionResult> GetCategoryDetailsAsync([Required] int categoryId)
+        {
+            if (!await productRepo.IsCategoryExistsAsync(categoryId)) return NotFound("Category Not Found");
+            return Ok(await productRepo.GetCategoryDetails(categoryId));
         }
         [HttpDelete]
         [Route("/api/CategorySubCategoryValues")]
