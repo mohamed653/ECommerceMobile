@@ -117,7 +117,7 @@ namespace ECommereceApi.Repo
             if (user is null) return false;
 
             user.Password = password;
-            user.VertificationCode= null;
+            user.VertificationCode= string.Empty;
 
             await _context.SaveChangesAsync();
             return true;
