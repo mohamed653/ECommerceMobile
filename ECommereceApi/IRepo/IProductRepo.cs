@@ -37,6 +37,8 @@ namespace ECommereceApi.IRepo
         Task<PagedResult<ProductDisplayDTO>> GetAllProductsSearchPaginatedAsync(string? Name, double? MinOriginalPrice, double? MaxOriginalPrice, int? MinAmount, int? MaxAmount, List<int>? CategoriesIds, int page, int pageSize);
         Task<bool> IsAllProductsExistsAsync(HashSet<int> productsIds);
         Task<CategorySubCategoryValueDTO> AddSubCategoryValueAsync(CategorySubCategoryValuesAddDTO input);
+        Task<int> AssignSubCategoryToCategoryAsync(int categoryId, int subCategoryId);
+        Task<SubCategoriesValuesForCategoryDTO> GetCategoryDetails(int categoryId);
         Task<ProductCategorySubCategoryValuesDTO> UpdateCategorySubCategoryValue(CategorySubCategoryValuesAddDTO addDTO, string newValue);
         Task<bool> IsCategorySubCategoryExistsAsync(int categoryId, int subCategoryId);
         Task<bool> IsCategoryExistsAsync(int id);
