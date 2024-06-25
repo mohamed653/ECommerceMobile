@@ -12,10 +12,14 @@ namespace ECommereceApi.Services.classes
         {
             _cloudinary = cloudinary;
         }
-        public string GetImageUrl(string publicId)
+        public string GetImageUrl(string? publicId)
         {
-            var url = _cloudinary.Api.UrlImgUp.BuildUrl(publicId);
-            return url;
+            if(publicId is null) return null;
+            var getParams = new GetResourceParams(publicId);
+
+            var result = _cloudinary.GetResource(getParams);
+            // Return the URL of the retrieved image
+            return result.SecureUrl;
         }
 
         public string getPublicId(string url)

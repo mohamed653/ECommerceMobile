@@ -29,21 +29,28 @@ namespace ECommereceApi.Services.Mapper
             CreateMap<Product, ProductAddDTO>().ReverseMap();
 
             CreateMap<Category, CategoryDTO>()
-                .ForMember(c => c.SubCategories, opt => opt.MapFrom(sc => sc.Subs.Select(s => s.SubCategory)))
+                .ForMember(c => c.SubCategories, opt => opt.MapFrom(sc => sc.CategorySubCategory.Select(s => s.SubCategory)))
+                .ForMember(c => c.ImageUri, option => option.MapFrom<CategoryImageuriCustomResolver>())
                 .ReverseMap();
 
             CreateMap<SubCategory, SubCategoryDTO>()
-                .ForMember(dest => dest.SubCategoryId, option => option.MapFrom(src => src.SubId))
+                .ForMember(dest => dest.SubCategoryId, option => option.MapFrom(src => src.SubCategoryId))
                 .ReverseMap();
 
             CreateMap<SubCategoryAddDTO, SubCategory>()
                 .ReverseMap();
+
+            CreateMap<SubCategoryValuesDetailsDTO, CategorySubCategoryValues>().ReverseMap();
 
             CreateMap<CategorySubCategoryValues, ProductCategorySubCategoryValuesDTO>()
                 .ForMember(d => d.CategoryName, opt => opt.MapFrom(s => s.CategorySubCategory.Category.Name))
                 .ForMember(d => d.SubCategoryName, opt => opt.MapFrom(s => s.CategorySubCategory.SubCategory.Name))
                 .ReverseMap();
             
+            CreateMap<SubCategoriesValuesForCategoryDTO, Category>().ReverseMap();
+
+            CreateMap<SubCategoryValuesDTO, SubCategory>().ReverseMap();
+
             CreateMap<CategorySubCategoryValueDTO, CategorySubCategoryValuesAddDTO>()
                 .ReverseMap();
 
@@ -62,6 +69,8 @@ namespace ECommereceApi.Services.Mapper
             #region Orders
             CreateMap<OrderPreviewDTO, CartProductsDTO>().ReverseMap();
             CreateMap<OfferDisplayDTO, Offer>().ReverseMap();
+            CreateMap<OrderPreviewWithoutOffersDTO, AddOrderWithoutOfferDTO>().ReverseMap();
+            CreateMap<Order, AddOrderWithoutOfferDTO>().ReverseMap();
             #endregion
 
         }
