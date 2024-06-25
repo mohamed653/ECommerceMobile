@@ -146,6 +146,34 @@ namespace ECommereceApi.Controllers
 
 
         [Authorize]
+        [HttpPatch("resetpassword")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordDTO dto)
+        {
+            if (dto is null)
+                return BadRequest("Model Can't be null");
+
+            if (!ModelState.IsValid)
+            {
+                List<string> errors = ModelState.Values.SelectMany(v => v.Errors)
+                                                        .Select(e => e.ErrorMessage)
+                                                        .ToList();
+
+                return BadRequest(errors);
+            }
+
+            User? user = await _userManagementRepo.GetUserByEmail(dto.Email);
+
+            if (user is null || user.Password != dto.Password)
+                return BadRequest("Invalid email or password!");
+
+            bool isPasswordReset = await _userManagementRepo.TryResetPassword(dto.Email, dto.NewPassword);
+            if (!isPasswordReset)
+                return BadRequest("invalid Password Reset!");
+
+            return Ok();
+        }
+
+        [Authorize]
         [HttpGet("userInfo")]
         public async Task<IActionResult> GetUserData(string email)
         {
