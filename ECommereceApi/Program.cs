@@ -9,8 +9,6 @@ using System.Globalization;
 using ECommereceApi.Services.Interfaces;
 using Serilog;
 using ECommereceApi.Middlewares;
-using ECommereceApi.Services.Mapper;
-using Microsoft.AspNetCore.Hosting;
 using ECommereceApi.HubConfig;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -74,12 +72,12 @@ builder.Services.AddAuthentication(options =>
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
 }).AddJwtBearer(o =>
 {
-    //o.TokenValidationParameters = new TokenValidationParameters()
-    //{
-    //    ValidateIssuer = false,
-    //    ValidateAudience = false,
-    //    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetValue<string>("JWT:secretkey"))),
-    //};
+    o.TokenValidationParameters = new TokenValidationParameters()
+    {
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetValue<string>("JWT:secretkey"))),
+    };
 });
 
 builder.Services.AddSwaggerGen(c =>
@@ -141,7 +139,7 @@ builder.Services.AddAutoMapper(typeof(Program));
 //builder.Services.AddScoped(typeof(IGenericRepo<>), typeof(GenericRepo<>));
 builder.Services.AddScoped<IProductRepo, ProductRepo>();
 builder.Services.AddScoped<IUserRepo, UserRepo>();
-//builder.Services.AddScoped<IOfferRepo, OfferRepo>();
+builder.Services.AddScoped<IOfferRepo, OfferRepo>();
 builder.Services.AddScoped<IWebInfoRepo, WebInfoRepo>();
 builder.Services.AddScoped<IWishListRepo, WishListRepo>();
 builder.Services.AddScoped<IUserManagementRepo, UserManagementRepo>();

@@ -7,7 +7,7 @@
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
 
-  <ItemGroup>
+	<ItemGroup>
     <None Include="efpt.config.json.user" />
     <None Include="wwwroot\Images\dotnetworld.jpg" />
   </ItemGroup>
