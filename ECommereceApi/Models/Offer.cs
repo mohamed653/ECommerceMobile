@@ -31,7 +31,5 @@ public partial class Offer
 
     [InverseProperty("Offer")]
     public virtual ICollection<ProductOffer> ProductOffers { get; set; } = new List<ProductOffer>();
-
-
-
+    public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 }

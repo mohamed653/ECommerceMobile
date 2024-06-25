@@ -202,6 +202,13 @@ namespace ECommereceApi.Controllers
             if (!await productRepo.IsCategoryExistsAsync(categoryId)) return NotFound("Category Not Found");
             return Ok(await productRepo.GetCategoryDetails(categoryId));
         }
+        [HttpGet]
+        [Route("/api/SubCategoryDetails/{subCategoryId:int}")]
+        public async Task<IActionResult> GetSubCategoryDetailsAsync([Required] int subCategoryId)
+        {
+            if(!await productRepo.IsSubCategoryExistsAsync(subCategoryId)) return NotFound("SubCategory Not Found");
+            return Ok(await productRepo.GetSubCategoryDetails(subCategoryId));
+        }
         [HttpDelete]
         [Route("/api/CategorySubCategoryValues")]
         public async Task<IActionResult> DeleteProductCategorySubCategoryValueAsync(int productId, int categoryId, int subCategoryId, string value)

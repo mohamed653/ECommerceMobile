@@ -1,4 +1,5 @@
 ﻿using ECommereceApi.DTOs.Order;
+using ECommereceApi.Enums;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ECommereceApi.Controllers
@@ -42,9 +43,57 @@ namespace ECommereceApi.Controllers
             {
                 return BadRequest("some products are not available");
             }
-            //var order = await _orderRepo.AddOrderWithoutOfferAsync(cartProductsDTO, addOrderWithoutOfferDTO);
-            return Ok(null);
-            //return Ok(order);
+            var order = await _orderRepo.AddOrderWithoutOfferAsync(cartProductsDTO, addOrderWithoutOfferDTO);
+            return Ok(order);
         }
+        [HttpPost]
+        [Route("ChangeStatusShipped")]
+        public async Task<IActionResult> ChangeStatusShipped(Guid orderId)
+        {
+            var order = await _orderRepo.GetOrderByIdAsync(orderId);
+            if (order is null)
+            {
+                return NotFound("order not found");
+            }
+            if (order.Status != OrderStatus.Pending)
+            {
+                return BadRequest("order is not in Pending state");
+            }
+            await _orderRepo.ChangeOrderStatusAsync(orderId, OrderStatus.Shipped);
+            return Ok();
+        }
+        [HttpPost]
+        [Route("ChangeStatusDelivered")]
+        public async Task<IActionResult> ChangeStatusDelivered(Guid orderId)
+        {
+            var order = await _orderRepo.GetOrderByIdAsync(orderId);
+            if (order is null)
+            {
+                return NotFound("order not found");
+            }
+            if (order.Status != OrderStatus.Shipped)
+            {
+                return BadRequest("order is not in Shipped state");
+            }
+            await _orderRepo.ChangeOrderStatusAsync(orderId, OrderStatus.Delivered);
+            return Ok();
+        }
+        [HttpPost]
+        [Route("ChangeStatusCancelled")]
+        public async Task<IActionResult> ChangeStatusCancelled(Guid orderId)
+        {
+            var order = await _orderRepo.GetOrderByIdAsync(orderId);
+            if (order is null)
+            {
+                return NotFound("order not found");
+            }
+            if (order.Status == OrderStatus.Delivered)
+            {
+                return BadRequest("order has been delivered");
+            }
+            await _orderRepo.ChangeOrderStatusAsync(orderId, OrderStatus.Cancelled);
+            return Ok();
+        }
+
     }
 }

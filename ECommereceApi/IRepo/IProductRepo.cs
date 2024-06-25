@@ -39,6 +39,7 @@ namespace ECommereceApi.IRepo
         Task<CategorySubCategoryValueDTO> AddSubCategoryValueAsync(CategorySubCategoryValuesAddDTO input);
         Task<int> AssignSubCategoryToCategoryAsync(int categoryId, int subCategoryId);
         Task<SubCategoriesValuesForCategoryDTO> GetCategoryDetails(int categoryId);
+        Task<CategoriesValuesForSubCategoryDTO> GetSubCategoryDetails(int subCategoryId);
         Task<ProductCategorySubCategoryValuesDTO> UpdateCategorySubCategoryValue(CategorySubCategoryValuesAddDTO addDTO, string newValue);
         Task<bool> IsCategorySubCategoryExistsAsync(int categoryId, int subCategoryId);
         Task<bool> IsCategoryExistsAsync(int id);
