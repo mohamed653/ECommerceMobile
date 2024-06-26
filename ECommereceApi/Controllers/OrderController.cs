@@ -1,6 +1,10 @@
 ﻿using ECommereceApi.DTOs.Order;
+using ECommereceApi.DTOs.Product;
 using ECommereceApi.Enums;
+using ECommereceApi.Repo;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using System.ComponentModel.DataAnnotations;
 
 namespace ECommereceApi.Controllers
 {
@@ -34,15 +38,25 @@ namespace ECommereceApi.Controllers
 
         [HttpGet]
         [Route("GetUserOrdersPaginated")]
-        public async Task<IActionResult> GetUserOrdersPaginated(int userId)
+        public async Task<IActionResult> GetUserOrdersPaginated(int userId,int page, [Required] int pageSize)
         {
-            var orders = await _orderRepo.GetUserOrdersPaginatedAsync(userId);
-            if(orders.Count>0)
-                return Ok(orders);
+            if (page <= 0 || pageSize <= 0)
+                return BadRequest();
+            try
+            {
+                var orders = await _orderRepo.GetUserOrdersPaginatedAsync(userId, page, pageSize);
+                if (orders.Items.Count > 0)
+                    return Ok(orders);
 
-            return NotFound("No orders found for this user");
+                return NotFound("No orders found for this user");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+                throw;
+            }
         }
-
+       
         // **************************************** End Of Hamed ****************************************
         [HttpPost]
         [Route("ConfirmWithoutOffer")]

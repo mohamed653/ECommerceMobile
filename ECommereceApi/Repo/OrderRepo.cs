@@ -136,9 +136,33 @@ namespace ECommereceApi.Repo
         //    // 
         //}
 
-        public async Task<List<Order>> GetUserOrdersPaginatedAsync(int userId)
+        public async Task<PagedResult<OrderDisplayDTO>> GetUserOrdersPaginatedAsync(int userId,int page, int pageSize)
         {
-            return await _db.Orders.Where(o => o.UserId == userId).ToListAsync();
+            var user = await _db.Users.FindAsync(userId);
+            if (user is null)
+            {
+                throw new Exception("No User Found");
+            }
+            var orders = await _db.Orders.Where(o => o.UserId == userId).ToListAsync();
+            return RenderPagination(page, pageSize, orders);
+        }
+        public PagedResult<OrderDisplayDTO> RenderPagination(int page, int pageSize, List<Order> inputOrders)
+        {
+            PagedResult<OrderDisplayDTO> result = new PagedResult<OrderDisplayDTO>();
+            int totalCount = inputOrders.Count;
+            result.TotalItems = totalCount;
+            result.TotalPages = totalCount / pageSize;
+            if (totalCount % pageSize > 0)
+                result.TotalPages++;
+            result.PageSize = pageSize;
+            result.PageNumber = page;
+            result.HasPrevious = page != 1;
+            result.HasNext = page != result.TotalPages;
+
+            var orders = inputOrders.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+            result.Items = _mapper.Map<List<OrderDisplayDTO>>(orders);
+
+            return result;
         }
 
         // **************************************** End Of Hamed ****************************************

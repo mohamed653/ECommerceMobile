@@ -79,6 +79,8 @@ namespace ECommereceApi.Services.Mapper
             CreateMap<OfferDisplayDTO, Offer>().ReverseMap();
             CreateMap<OrderPreviewWithoutOffersDTO, AddOrderWithoutOfferDTO>().ReverseMap();
             CreateMap<Order, AddOrderWithoutOfferDTO>().ReverseMap();
+            CreateMap<OrderDisplayDTO, Order>().ReverseMap();
+
             #endregion
 
         }
