@@ -30,7 +30,14 @@ namespace ECommereceApi.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllOffers()
         {
-            return Ok(await offerRepo.GetOffers());
+            try
+            {
+                return Ok(await offerRepo.GetOffers());
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
         }
 
         /// <summary>
@@ -67,9 +74,16 @@ namespace ECommereceApi.Controllers
         [HttpGet("byProductId/{productId}")]
         public async Task<IActionResult> GetOffersByProductId(int productId)
         {
-            var offers =await offerRepo.GetOffersByProductId(productId);
-            if (offers == null) return NotFound();
-            return Ok(offers);
+            try
+            {
+                var offers = await offerRepo.GetOffersByProductId(productId);
+                if (offers == null) return NotFound();
+                return Ok(offers);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
         }
         #endregion
 
@@ -84,10 +98,16 @@ namespace ECommereceApi.Controllers
         public async Task<IActionResult> AddOffer(OfferDTO offerDTO)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            int createdOfferId= await offerRepo.AddOffer(offerDTO);
-            //return the created offer ID 
-            return CreatedAtAction(nameof(GetOfferById), new { id = createdOfferId }, createdOfferId);
-
+            try
+            {
+                int createdOfferId = await offerRepo.AddOffer(offerDTO);
+                // return the created offer ID 
+                return CreatedAtAction(nameof(GetOfferById), new { id = createdOfferId }, createdOfferId);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
         }
 
         /// <summary>
@@ -97,8 +117,15 @@ namespace ECommereceApi.Controllers
         public async Task<IActionResult> AddProductsToOffer(int offerId, OffersDTOPost offerProductsDTO)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            await offerRepo.AddProductsToOffer(offerId,offerProductsDTO);
-            return Created();
+            try
+            {
+                await offerRepo.AddProductsToOffer(offerId, offerProductsDTO);
+                return Created();
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
         }
 
         #endregion
@@ -111,8 +138,16 @@ namespace ECommereceApi.Controllers
         public async Task<IActionResult> UpdateOffer(int offerId,OfferDTO offerDTO)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            await offerRepo.UpdateOffer(offerId,offerDTO);
-            return NoContent();
+            try
+            {
+                await offerRepo.UpdateOffer(offerId, offerDTO);
+                return NoContent();
+
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
         }
 
         /// <summary>
@@ -149,8 +184,16 @@ namespace ECommereceApi.Controllers
         [HttpDelete("{offerId}")]
         public async Task<IActionResult> DeleteOffer(int offerId)
         {
-            await offerRepo.DeleteOffer(offerId);
-            return NoContent();
+            try
+            {
+                await offerRepo.DeleteOffer(offerId);
+                return NoContent();
+            }
+            catch (Exception e)
+            {
+
+                throw;
+            }
         }
 
         /// <summary>

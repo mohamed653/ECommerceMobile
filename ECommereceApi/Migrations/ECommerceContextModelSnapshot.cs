@@ -194,9 +194,15 @@ namespace ECommereceApi.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<int?>("OfferId")
+                        .HasColumnType("int");
+
                     b.Property<string>("PostalCode")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateOnly?>("ResponseDate")
+                        .HasColumnType("date");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -205,10 +211,18 @@ namespace ECommereceApi.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<int?>("TotalAmount")
+                        .HasColumnType("int");
+
+                    b.Property<double?>("TotalPrice")
+                        .HasColumnType("float");
+
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("OrderId");
+
+                    b.HasIndex("OfferId");
 
                     b.HasIndex("UserId");
 
@@ -370,17 +384,17 @@ namespace ECommereceApi.Migrations
 
             modelBuilder.Entity("ECommereceApi.Models.SubCategory", b =>
                 {
-                    b.Property<int>("SubId")
+                    b.Property<int>("SubCategoryId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SubId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SubCategoryId"));
 
                     b.Property<string>("Name")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.HasKey("SubId");
+                    b.HasKey("SubCategoryId");
 
                     b.ToTable("SubCategory");
                 });
@@ -523,13 +537,13 @@ namespace ECommereceApi.Migrations
             modelBuilder.Entity("ECommereceApi.Models.CategorySubCategory", b =>
                 {
                     b.HasOne("ECommereceApi.Models.Category", "Category")
-                        .WithMany("Subs")
+                        .WithMany("CategorySubCategory")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("ECommereceApi.Models.SubCategory", "SubCategory")
-                        .WithMany("Categories")
+                        .WithMany("CategorySubCategories")
                         .HasForeignKey("SubCategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -574,11 +588,17 @@ namespace ECommereceApi.Migrations
 
             modelBuilder.Entity("ECommereceApi.Models.Order", b =>
                 {
+                    b.HasOne("ECommereceApi.Models.Offer", "Offer")
+                        .WithMany("Orders")
+                        .HasForeignKey("OfferId");
+
                     b.HasOne("ECommereceApi.Models.User", "User")
                         .WithMany("Orders")
                         .HasForeignKey("UserId")
                         .IsRequired()
                         .HasConstraintName("FK_Order_User");
+
+                    b.Navigation("Offer");
 
                     b.Navigation("User");
                 });
@@ -721,9 +741,9 @@ namespace ECommereceApi.Migrations
 
             modelBuilder.Entity("ECommereceApi.Models.Category", b =>
                 {
-                    b.Navigation("Products");
+                    b.Navigation("CategorySubCategory");
 
-                    b.Navigation("Subs");
+                    b.Navigation("Products");
                 });
 
             modelBuilder.Entity("ECommereceApi.Models.CategorySubCategory", b =>
@@ -743,6 +763,8 @@ namespace ECommereceApi.Migrations
 
             modelBuilder.Entity("ECommereceApi.Models.Offer", b =>
                 {
+                    b.Navigation("Orders");
+
                     b.Navigation("ProductOffers");
                 });
 
@@ -768,7 +790,7 @@ namespace ECommereceApi.Migrations
 
             modelBuilder.Entity("ECommereceApi.Models.SubCategory", b =>
                 {
-                    b.Navigation("Categories");
+                    b.Navigation("CategorySubCategories");
                 });
 
             modelBuilder.Entity("ECommereceApi.Models.User", b =>

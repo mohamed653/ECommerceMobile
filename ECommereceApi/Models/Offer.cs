@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace ECommereceApi.Models;
 
 [Table("Offer")]
+[Index(nameof(Title), IsUnique = true)] // Adding Index to Title for searching and uniqueness
 public partial class Offer
 {
     [Key]
@@ -24,7 +25,7 @@ public partial class Offer
 
     public DateOnly OfferDate { get; set; }
 
-    public int? Duration { get; set; }
+    public int Duration { get; set; }
 
     public decimal? PackageDiscount { get; set; } = 0;
 

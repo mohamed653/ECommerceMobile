@@ -36,5 +36,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-
+	<PropertyGroup>
+		<NoWarn>1591</NoWarn>
+	</PropertyGroup>
 </Project>

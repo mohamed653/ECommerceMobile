@@ -44,13 +44,8 @@ public partial class Order
 
     public virtual Offer Offer { get; set; }
 
-    // Computed properties
-    [NotMapped]
 	public DateOnly? ResponseDate { get; set; }
 
-	[NotMapped]
 	public double? TotalPrice { get; set; }
-
-	[NotMapped]
 	public int? TotalAmount { get; set; }
 }

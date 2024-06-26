@@ -32,7 +32,12 @@ namespace ECommereceApi.Repo
         [Time] //Testing the performance of the method using the MethodTimer library
         public async Task<List<Offer>> GetOffers()
         {
-            return await _context.Offers.ToListAsync();
+            // return all offer that are not expired or inactive
+            var offers = await _context.Offers.ToListAsync();
+            if (offers == null)
+                throw new Exception("No offers found");
+            offers = offers.Where(x => !OfferExpiredOrInActive(x)).ToList();
+            return offers;
         }
         public async Task<List<OffersDTOUI>> GetOffersWithProducts()
         {
@@ -77,6 +82,13 @@ namespace ECommereceApi.Repo
         {
             try
             {
+                // check if the offer date is in the future
+                if (offerDTO.OfferDate.AddDays(offerDTO.Duration) < DateOnly.FromDateTime(DateTime.Now))
+                    throw new Exception("Offer date should be in the future");
+
+                // check if title is unique
+                if (_context.Offers.Any(x => x.Title == offerDTO.Title))
+                    throw new Exception("Title should be unique");
 
                 var offer = _mapper.Map<Offer>(offerDTO);
                 offer.Image = await UploadImages(offerDTO.Image);
@@ -86,9 +98,9 @@ namespace ECommereceApi.Repo
                 //return the created offer ID
                 return offer.OfferId;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                Log.Error($"Error in AddOffer");
+                Log.Error($"Error in AddOffer: {ex.Message}");
                 throw;
             }
         }
@@ -133,12 +145,11 @@ namespace ECommereceApi.Repo
 
                 return offerDTO;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                Log.Error($"Error in GetOfferById");
+                Log.Error($"Error in GetOfferById {ex.Message}");
                 throw;
             }
-
         }
 
         private async Task LoadProductDetails(OffersDTOUI offersDTOUI)
@@ -168,6 +179,10 @@ namespace ECommereceApi.Repo
 
                 if (offer.ProductOffers.Any(x => x.ProductId == offerProductsDTO.ProductId))
                     throw new Exception("Product already exists in the offer");
+                
+                // Checking if the offer Total Price is reasonable
+                if(!await IsOfferReasonable(offer, offerProductsDTO))
+                    throw new Exception("Offer Total Price is not reasonable");
 
                 var productOffer = new ProductOffer()
                 {
@@ -188,6 +203,66 @@ namespace ECommereceApi.Repo
             }
         }
 
+        // Total Price after Discount should be Positive or Zero
+        private async Task<bool> IsOfferReasonable(Offer offer, OffersDTOPost offerProductsDTO)=> await CalculateTotalOfferPrice(offer, offerProductsDTO) >= 0;
+
+
+        /// <summary>
+        /// Calculate the total price for existing product offers before the new offer:
+        ///     Calculate the total price before discount.
+        ///     Calculate the discount amount and subtract it from the total price.
+        ///     
+        /// Calculate the total price after adding the new product offer:
+        ///     Calculate the total price before discount including the new product.
+        ///     Calculate the discount amount and subtract it from the total price.
+        ///     Apply the package discount if applicable.
+        ///     
+        /// </summary>
+        /// <param name="offer"></param>
+        /// <param name="offerProductsDTO"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        private async Task<double> CalculateTotalOfferPrice(Offer offer, OffersDTOPost offerProductsDTO)
+        {
+            double totalPriceBeforeDiscount = 0;
+            double totalPriceAfterDiscount = 0;
+
+            // Calculate the Total Price of the existing Offer
+            foreach (var productOffer in offer.ProductOffers)
+            {
+                var product = await _context.Products.FindAsync(productOffer.ProductId);
+                if (product == null)
+                    throw new Exception("Product not found");
+
+                double productPrice = product.FinalPrice ?? 0;
+                int productAmount = productOffer.ProductAmount;
+                double productDiscount = productOffer.Discount.HasValue ? productOffer.Discount.Value : 0;
+
+                totalPriceBeforeDiscount += productPrice * productAmount;
+                totalPriceAfterDiscount += productPrice * productAmount * (1 - productDiscount / 100);
+            }
+
+            // Calculate the Total Price after adding the new ProductOffer
+            var productToAdd = await _context.Products.FindAsync(offerProductsDTO.ProductId);
+            if (productToAdd == null)
+                throw new Exception("Product to add not found");
+
+            double newProductPrice = productToAdd.FinalPrice ?? 0;
+            int newProductAmount = offerProductsDTO.ProductAmount;
+            double newProductDiscount = offerProductsDTO.Discount.HasValue ? offerProductsDTO.Discount.Value : 0;
+
+            totalPriceBeforeDiscount += newProductPrice * newProductAmount;
+            totalPriceAfterDiscount += newProductPrice * newProductAmount * (1 - newProductDiscount / 100);
+
+            // Apply package discount if applicable
+            if (offer.PackageDiscount.HasValue && offer.PackageDiscount.Value > 0)
+            {
+                double packageDiscount = (double)offer.PackageDiscount.Value;
+                totalPriceAfterDiscount -= packageDiscount;
+            }
+
+            return totalPriceAfterDiscount;
+        }
 
         public async Task UpdateOffer(int offerId, OfferDTO offerDTO)
         {
@@ -196,6 +271,13 @@ namespace ECommereceApi.Repo
                 var offer = await _context.Offers.FindAsync(offerId);
                 if (offer == null)
                     throw new Exception("Offer not found");
+
+                if (offer.OfferDate.AddDays(offer.Duration) < DateOnly.FromDateTime(DateTime.Now))
+                    throw new Exception("Offer date should be in the future");
+
+                // check if title is unique
+                if (_context.Offers.Any(x => x.Title == offer.Title))
+                    throw new Exception("Title should be unique");
 
                 offer.Title = offerDTO.Title;
                 offer.Description = offerDTO.Description;
@@ -218,6 +300,7 @@ namespace ECommereceApi.Repo
             }
             catch (Exception)
             {
+                Log.Error($"Error in UpdateOffer");
                 throw;
             }
         }
@@ -239,6 +322,11 @@ namespace ECommereceApi.Repo
                 // check if the product is already in the offer
                 if (!offer.ProductOffers.Any(x => x.ProductId == oldProductId))
                     throw new Exception("Product doesn't exist in the offer");
+
+                // Check if the offer Total Price is reasonable
+                if (!await IsOfferReasonable(offer, offerProductsDTO))
+                    throw new Exception("this offerTotalPrice is not reasonable");
+
 
                 // remove the productOffer and add it again with the new values
 
@@ -290,12 +378,11 @@ namespace ECommereceApi.Repo
                 var offerProducts = await _context.ProductOffers.Where(x => x.OfferId == offerId).ToListAsync();
                 _context.ProductOffers.RemoveRange(offerProducts);
 
-
-
                 await _context.SaveChangesAsync();
             }
             catch (Exception)
             {
+                Log.Error($"Error in DeleteOffer");
                 throw;
             }
         }
@@ -354,7 +441,7 @@ namespace ECommereceApi.Repo
 
             // Calculate the end date of the offer
             var startDate = offer.OfferDate;
-            int durationInDays = offer.Duration ?? 0; // Assuming a duration of 0 if it is null
+            int durationInDays = offer.Duration; // Assuming a duration of 0 if it is null
             var _date = startDate.ToDateTime(TimeOnly.MinValue).AddDays(durationInDays);
             if (DateTime.Now < _date)
                 return false;
@@ -370,7 +457,7 @@ namespace ECommereceApi.Repo
 
             // Calculate the end date of the offer
             var startDate = offer.OfferDate;
-            int durationInDays = offer.Duration ?? 0; // Assuming a duration of 0 if it is null
+            int durationInDays = offer.Duration; // Assuming a duration of 0 if it is null
 
             var _date = startDate.ToDateTime(TimeOnly.MinValue).AddDays(durationInDays);
             if (DateTime.Now < _date)
