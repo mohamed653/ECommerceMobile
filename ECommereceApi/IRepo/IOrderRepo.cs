@@ -11,5 +11,6 @@ namespace ECommereceApi.IRepo
         Task<OrderPreviewWithoutOffersDTO> AddOrderWithoutOfferAsync(CartProductsDTO cartProductsDTO, AddOrderWithoutOfferDTO addOrderWithoutOfferDTO);
         Task<Order> GetOrderByIdAsync(Guid orderId);
         Task ChangeOrderStatusAsync(Guid orderId, OrderStatus newStatus);
+        Task<List<Order>> GetUserOrdersPaginatedAsync(int userId);
     }
 }

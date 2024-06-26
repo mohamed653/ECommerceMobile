@@ -29,6 +29,21 @@ namespace ECommereceApi.Controllers
             }
             return Ok(await _orderRepo.GetOrderPreviewAsync(cartProductsDTO));
         }
+
+        // **************************************** Hamed **************************************** 
+
+        [HttpGet]
+        [Route("GetUserOrdersPaginated")]
+        public async Task<IActionResult> GetUserOrdersPaginated(int userId)
+        {
+            var orders = await _orderRepo.GetUserOrdersPaginatedAsync(userId);
+            if(orders.Count>0)
+                return Ok(orders);
+
+            return NotFound("No orders found for this user");
+        }
+
+        // **************************************** End Of Hamed ****************************************
         [HttpPost]
         [Route("ConfirmWithoutOffer")]
         public async Task<IActionResult> ConfirmOrderWithoutOffer([FromBody] AddOrderWithoutOfferDTO addOrderWithoutOfferDTO)
@@ -46,6 +61,9 @@ namespace ECommereceApi.Controllers
             var order = await _orderRepo.AddOrderWithoutOfferAsync(cartProductsDTO, addOrderWithoutOfferDTO);
             return Ok(order);
         }
+
+
+
         [HttpPost]
         [Route("ChangeStatusShipped")]
         public async Task<IActionResult> ChangeStatusShipped(Guid orderId)

@@ -126,10 +126,21 @@ namespace ECommereceApi.Repo
             return await _db.Offers.Include(o => o.ProductOffers).Where(o => o.OfferDate.AddDays(o.Duration) >= DateOnly.FromDateTime(DateTime.Now) && o.OfferDate <= DateOnly.FromDateTime(DateTime.Now)).ToListAsync();
         }
 
+
+        // **************************************** Hamed ****************************************
+
+
         // Getting the Final total Order Price From the Cart
         //public async Task<decimal> GetFinalTotalPriceFromCart(int offerId,CartProductsDTO cartProductsDTO, )
         //{
         //    // 
         //}
+
+        public async Task<List<Order>> GetUserOrdersPaginatedAsync(int userId)
+        {
+            return await _db.Orders.Where(o => o.UserId == userId).ToListAsync();
+        }
+
+        // **************************************** End Of Hamed ****************************************
     }
 }

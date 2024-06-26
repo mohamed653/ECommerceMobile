@@ -68,20 +68,37 @@ namespace ECommereceApi.Repo
 
         public async Task UpdateWebInfo(WebInfoDTO webInfoDTO)
         {
+            if (webInfoDTO == null)
+            {
+                throw new ArgumentNullException(nameof(webInfoDTO), "WebInfoDTO cannot be null");
+            }
 
             var oldWebInfo = await _context.Web_Infos.FirstOrDefaultAsync();
 
             if (oldWebInfo == null)
+            {
                 throw new Exception("Web info not found");
-            
+            }
 
-            var newPublicId = _fileCloudService.UpdateImageAsync(webInfoDTO.WebLogo, oldWebInfo.WebLogoImageUrl);
+            if (webInfoDTO.WebLogo != null)
+            {
+                var newPublicId = await _fileCloudService.UpdateImageAsync(webInfoDTO.WebLogo, oldWebInfo.WebLogoImageUrl);
 
-            oldWebInfo.WebName = webInfoDTO.WebName;
-            oldWebInfo.WebPhone = webInfoDTO.WebPhone;
-            oldWebInfo.InstagramAccount = webInfoDTO.InstagramAccount;
-            oldWebInfo.FacebookAccount = webInfoDTO.FacebookAccount;
-            oldWebInfo.WebLogoImageUrl = newPublicId.Result;
+                if (newPublicId != null)
+                {
+                    oldWebInfo.WebLogoImageUrl = newPublicId;
+                }
+                else
+                {
+                    throw new Exception("Failed to update web logo");
+                }
+            }
+
+            oldWebInfo.WebName = webInfoDTO.WebName ?? oldWebInfo.WebName;
+            oldWebInfo.WebPhone = webInfoDTO.WebPhone ?? oldWebInfo.WebPhone;
+            oldWebInfo.InstagramAccount = webInfoDTO.InstagramAccount ?? oldWebInfo.InstagramAccount;
+            oldWebInfo.FacebookAccount = webInfoDTO.FacebookAccount ?? oldWebInfo.FacebookAccount;
+
             _context.Web_Infos.Update(oldWebInfo);
             await _context.SaveChangesAsync();
         }
