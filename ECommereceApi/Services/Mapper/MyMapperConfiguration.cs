@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using ECommereceApi.DTOs.Account;
+using ECommereceApi.DTOs.Offer;
 using ECommereceApi.DTOs.Order;
 using ECommereceApi.DTOs.Product;
 using ECommereceApi.Models;

@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
-using ECommereceApi.DTOs.Product;
+using ECommereceApi.DTOs.Offer;
 using ECommereceApi.Services.Interfaces;
 using MethodTimer;
 using Microsoft.EntityFrameworkCore;

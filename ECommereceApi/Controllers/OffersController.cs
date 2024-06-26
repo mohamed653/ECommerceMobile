@@ -1,4 +1,4 @@
-﻿using ECommereceApi.DTOs.Product;
+﻿using ECommereceApi.DTOs.Offer;
 using ECommereceApi.Repo;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

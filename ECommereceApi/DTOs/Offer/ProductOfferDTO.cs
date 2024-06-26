@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace ECommereceApi.DTOs.Product
+namespace ECommereceApi.DTOs.Offer
 {
 
     // a DTO for the Offer model  GENERAL
@@ -21,7 +21,7 @@ namespace ECommereceApi.DTOs.Product
         public DateOnly OfferDate { get; set; }
 
         [Required(ErrorMessage = "Duration is required")]
-        [Range(1, 365, ErrorMessage = "Duration should be between 1 and 365")] 
+        [Range(1, 365, ErrorMessage = "Duration should be between 1 and 365")]
         public int Duration { get; set; }
 
         // min value is 0 and max value unrestricted
@@ -40,7 +40,7 @@ namespace ECommereceApi.DTOs.Product
     {
         public int ProductId { get; set; }
         [DefaultValue(1)]
-        [Range(1,int.MaxValue, ErrorMessage = "Product Amount should be more than 0")]
+        [Range(1, int.MaxValue, ErrorMessage = "Product Amount should be more than 0")]
         public int ProductAmount { get; set; }
 
         [DefaultValue(0)]
