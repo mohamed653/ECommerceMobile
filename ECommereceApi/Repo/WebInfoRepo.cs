@@ -25,9 +25,10 @@ namespace ECommereceApi.Repo
                 throw new Exception("Web info is null");
             if (_context.Web_Infos.Any())
                 throw new Exception("Web info already exist");
+            var publicId = await _fileCloudService.UploadImagesAsync(webInfoDTO.WebLogo);
 
             var webInfo = _mapper.Map<WebInfo>(webInfoDTO);
-            webInfo.WebLogoImageUrl = _fileCloudService.GetImageUrl(await _fileCloudService.UploadImagesAsync(webInfoDTO.WebLogo));
+            webInfo.WebLogoImageUrl = publicId;
             await _context.Web_Infos.AddAsync(webInfo);
             await _context.SaveChangesAsync();
 
@@ -60,6 +61,7 @@ namespace ECommereceApi.Repo
                 var _webInfo = await _context.Web_Infos.FirstOrDefaultAsync();
                 return _webInfo;
             }
+            webInfo.WebLogoImageUrl = _fileCloudService.GetImageUrl(webInfo.WebLogoImageUrl);
 
             return webInfo;
         }
@@ -67,16 +69,20 @@ namespace ECommereceApi.Repo
         public async Task UpdateWebInfo(WebInfoDTO webInfoDTO)
         {
 
-            var webInfo = await _context.Web_Infos.FindAsync(1);
-            var oldImageUrl = webInfo.WebLogoImageUrl;
-            if (webInfo == null)
+            var oldWebInfo = await _context.Web_Infos.FirstOrDefaultAsync();
+
+            if (oldWebInfo == null)
                 throw new Exception("Web info not found");
-            webInfo = _mapper.Map(webInfoDTO, webInfo);
-            if (webInfoDTO.WebLogo != null)
-            {
-                webInfo.WebLogoImageUrl = await _fileCloudService.UpdateImageAsync(webInfoDTO.WebLogo, oldImageUrl);
-            }
-            _context.Web_Infos.Update(webInfo);
+            
+
+            var newPublicId = _fileCloudService.UpdateImageAsync(webInfoDTO.WebLogo, oldWebInfo.WebLogoImageUrl);
+
+            oldWebInfo.WebName = webInfoDTO.WebName;
+            oldWebInfo.WebPhone = webInfoDTO.WebPhone;
+            oldWebInfo.InstagramAccount = webInfoDTO.InstagramAccount;
+            oldWebInfo.FacebookAccount = webInfoDTO.FacebookAccount;
+            oldWebInfo.WebLogoImageUrl = newPublicId.Result;
+            _context.Web_Infos.Update(oldWebInfo);
             await _context.SaveChangesAsync();
         }
 

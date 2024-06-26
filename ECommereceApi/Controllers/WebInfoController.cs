@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using ECommereceApi.Services.Interfaces;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ECommereceApi.Controllers
@@ -9,6 +10,7 @@ namespace ECommereceApi.Controllers
     {
 
         private readonly IWebInfoRepo _webInfoRepo;
+        private readonly IFileCloudService _fileCloudService;
         public WebInfoController(IWebInfoRepo webInfoRepo)
         {
             _webInfoRepo = webInfoRepo;
@@ -18,7 +20,7 @@ namespace ECommereceApi.Controllers
         /// </summary>
         [HttpGet]
         public async Task<IActionResult> GetWebInfo()
-        {
+        { 
             try
             {
                 var webInfo = await _webInfoRepo.GetWebInfo();
@@ -35,6 +37,7 @@ namespace ECommereceApi.Controllers
         [HttpPut]
         public async Task<IActionResult> UpdateWebInfo(WebInfoDTO webInfoDTO)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
             try
             {
                 await _webInfoRepo.UpdateWebInfo(webInfoDTO);
@@ -52,9 +55,17 @@ namespace ECommereceApi.Controllers
         [HttpPost]
         public async Task<IActionResult> AddWebInfo(WebInfoDTO webInfoDTO)
         {
-
-            await _webInfoRepo.AddWebInfo(webInfoDTO);
-            return Ok();
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            try
+            {
+                await _webInfoRepo.AddWebInfo(webInfoDTO);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+                throw;
+            }
 
         }
 

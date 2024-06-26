@@ -23,7 +23,6 @@ namespace ECommereceApi.Middlewares
             }
             catch (Exception ex)
             {
-                
 
                 context.Response.ContentType = "application/json";
                 context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;

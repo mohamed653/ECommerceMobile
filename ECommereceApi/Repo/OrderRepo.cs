@@ -78,7 +78,6 @@ namespace ECommereceApi.Repo
             output.FinalPrice = output.ProductsAmounts.Sum(p => p.FinalPrice.Value * p.Amount);
             output.numberOfProducts = output.ProductsAmounts.Sum(p => p.Amount);
             output.numberOfUniqueProducts = output.ProductsAmounts.Count;
-            
         }
 
         public async Task<List<OfferDisplayDTO>> GetApplicableOffersForCartAsync(CartProductsDTO cartProductsDTO, List<Offer> offers)
