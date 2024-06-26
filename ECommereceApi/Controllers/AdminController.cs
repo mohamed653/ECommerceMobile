@@ -52,8 +52,9 @@ namespace ECommereceApi.Controllers
             var user = await _userRepo.GetUserAsync(id);
             if (user == null)
             {
-                return NotFound();
+                return NotFound("User Doesn't Exist or Deleted ");
             }
+         
             return Ok(user);
         }
 
