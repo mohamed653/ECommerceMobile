@@ -97,21 +97,25 @@ namespace ECommereceApi.Repo
             }
         }
 
-        public async Task<Status> UpdateUserAsync(int userId, UserDTOUi userDtoUi)
+        public async Task<Status> UpdateUserAsync(int userId, UserUpdateDTO userUpdateDTO)
         {
             var user = await _context.Users.FindAsync(userId);
             if (user == null)
             {
                 return Status.NotFound;
             }
-            if (await EmailExistedBeforeExceptCurrent(userDtoUi.Email, userId))
+            if (await EmailExistedBeforeExceptCurrent(userUpdateDTO.Email, userId))
             {
                 return Status.EmailExistsBefore;
             }
 
-            _context.Update(user);
+            // Map the properties from UserDTOUi to the existing User entity
+            _mapper.Map(userUpdateDTO, user);
+            //user.VertificationCode = string.Empty;
+
             try
             {
+                _context.Update(user);
                 await _context.SaveChangesAsync();
                 return Status.Success;
             }
@@ -120,6 +124,7 @@ namespace ECommereceApi.Repo
                 return Status.Failed;
             }
         }
+
 
         private Task<bool> EmailExistedBeforeExceptCurrent(string email, int id)
         {
@@ -137,8 +142,26 @@ namespace ECommereceApi.Repo
             {
                 return Status.SuperAdminConstraint;
             }
-            _context.Users.Remove(user);
-            return await SaveAsync();
+            try
+            {
+                if (user.Role == RoleType.Customer)
+                {
+                    var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == id);
+                    _context.Customers.Remove(customer);
+                }
+                else
+                {
+                    var admin = await _context.Admins.FirstOrDefaultAsync(a => a.UserId == id);
+                    _context.Admins.Remove(admin);
+                }
+                _context.Users.Remove(user);
+                await _context.SaveChangesAsync();
+                return Status.Success;
+            }
+            catch (DbUpdateException ex) when ((ex.InnerException as SqlException)?.Number == 547)
+            {
+                return Status.ForeignKeyConstraint;
+            }
         }
 
         public async Task<bool> UserExistsAsync(int id)

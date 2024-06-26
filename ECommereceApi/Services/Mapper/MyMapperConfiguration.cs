@@ -62,8 +62,10 @@ namespace ECommereceApi.Services.Mapper
             CreateMap<CategorySubCategoryValueDTO, CategorySubCategoryValuesAddDTO>()
                 .ReverseMap();
 
+            // Users
             CreateMap<User, UserDTO>().ReverseMap();
             CreateMap<User, UserDTOUi>().ReverseMap();
+            CreateMap<User,UserUpdateDTO>().ReverseMap();
 
             // Offers
             CreateMap<Offer, OfferDTO>().ReverseMap();

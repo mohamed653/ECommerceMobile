@@ -16,6 +16,7 @@ namespace ECommereceApi.DTOs.Account
         public string City { get; set; }
         public string Street { get; set; }
         public string PostalCode { get; set; }
+        public string Password { get; set; }
         public bool IsDeleted { get; set; }
         public RoleType Role { get; set; }
     }
@@ -42,6 +43,26 @@ namespace ECommereceApi.DTOs.Account
         [DefaultValue(false)]
         public bool IsDeleted { get; set; } = false;
         public RoleType Role { get; set; }
+    }
+
+    public class UserUpdateDTO
+    {
+        [StringLength(50)]
+        public string FName { get; set; }
+        [StringLength(50)]
+        public string LName { get; set; }
+        // Note: Changing Email needs verification
+        [EmailAddress]
+        public string Email { get; set; }
+        [Phone]
+        public string Phone { get; set; }
+        [StringLength(50)]
+        public string? Governorate { get; set; }
+        [StringLength(50)]
+        public string? City { get; set; }
+        [StringLength(50)]
+        public string? Street { get; set; }
+        public string? PostalCode { get; set; }
     }
 
 }

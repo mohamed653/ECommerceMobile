@@ -8,7 +8,8 @@
         EmailExistsBefore,
         Deleted,
         ExistedBefore,
-        SuperAdminConstraint
+        SuperAdminConstraint,
+        ForeignKeyConstraint
     }
 
 	public enum SortType

@@ -161,14 +161,14 @@ namespace ECommereceApi.Controllers
         /// <param name="userDto"></param>
         /// <returns></returns>
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser(int id, [FromBody] UserDTOUi userDTOUi)
+        public async Task<IActionResult> UpdateUser(int id, UserUpdateDTO userUpdateDTO)
         {
             var _user = await _userRepo.GetUserAsync(id);
             if (_user is null || id != _user.UserId)
             {
                 return BadRequest();
             }
-            var status = await _userRepo.UpdateUserAsync(id, userDTOUi);
+            var status = await _userRepo.UpdateUserAsync(id, userUpdateDTO);
             if (status == Status.Success)
             {
                 return Ok("Updated Successfully");
@@ -197,7 +197,7 @@ namespace ECommereceApi.Controllers
             {
                 return BadRequest("User Doesn't Exist or Already Deleted");
             }
-            var status = await _userRepo.DeleteUserAsync(id);
+            var status = await _userRepo.SoftDeleteAsync(id);
             if (status == Status.Success)
             {
                 return Ok("Deleted Successfully");
