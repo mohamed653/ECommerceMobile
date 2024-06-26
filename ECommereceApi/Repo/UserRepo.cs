@@ -3,6 +3,7 @@ using ECommereceApi.Data;
 using ECommereceApi.DTOs.Account;
 using ECommereceApi.IRepo;
 using ECommereceApi.Models;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
@@ -62,12 +63,14 @@ namespace ECommereceApi.Repo
 
         public async Task<Status> AddUserAsync(UserDTOUi userDto)
         {
+
             if (await _context.Users.AnyAsync(u => u.Email == userDto.Email))
             {
                 return Status.EmailExistsBefore;
             }
             userDto.Email = userDto.Email.ToLower().Trim();
             var user = _mapper.Map<User>(userDto);
+            user.IsVerified = true;
             user.VertificationCode = "adminver"; //  Generate Random Code
           
             if (userDto.Role == RoleType.Customer)

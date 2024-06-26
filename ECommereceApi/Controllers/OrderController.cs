@@ -27,7 +27,7 @@ namespace ECommereceApi.Controllers
                 return NotFound("user doesn't have cart / not exist");
             }
             var cartProductsDTO = await _cartRepo.GetCartProductsAsync(user);
-            if(!await _orderRepo.IsAllCartItemsAvailableAsync(cartProductsDTO))
+            if (!await _orderRepo.IsAllCartItemsAvailableAsync(cartProductsDTO))
             {
                 return BadRequest("some products are not available");
             }
@@ -38,25 +38,33 @@ namespace ECommereceApi.Controllers
 
         [HttpGet]
         [Route("GetUserOrdersPaginated")]
-        public async Task<IActionResult> GetUserOrdersPaginated(int userId,int page, [Required] int pageSize)
+        public async Task<IActionResult> GetUserOrdersPaginated(int userId, int page, [Required] int pageSize)
         {
+            var user = await _cartRepo.GetUserByIdAsync(userId);
+            if (user is null)
+            {
+                return NotFound("No User Found!");
+            }
             if (page <= 0 || pageSize <= 0)
                 return BadRequest();
-            try
-            {
-                var orders = await _orderRepo.GetUserOrdersPaginatedAsync(userId, page, pageSize);
-                if (orders.Items.Count > 0)
-                    return Ok(orders);
 
-                return NotFound("No orders found for this user");
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-                throw;
-            }
+            var orders = await _orderRepo.GetUserOrdersPaginatedAsync(userId, page, pageSize);
+            if (orders.Items.Count > 0)
+                return Ok(orders);
+
+            return NotFound("No orders found for this user");
         }
-       
+
+        // Calculated The Final Total Price Of The Order
+        [HttpGet]
+        [Route("GetFinalOfferPrice")]
+        public async Task<IActionResult> GetFinalOfferPrice(int offerId, int userId)
+        {
+           double final =  await _orderRepo.GetFinalOfferPriceAsync(offerId, userId);
+            return Ok(final);
+
+        }
+
         // **************************************** End Of Hamed ****************************************
         [HttpPost]
         [Route("ConfirmWithoutOffer")]

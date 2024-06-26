@@ -12,5 +12,6 @@ namespace ECommereceApi.IRepo
         Task<Order> GetOrderByIdAsync(Guid orderId);
         Task ChangeOrderStatusAsync(Guid orderId, OrderStatus newStatus);
         Task<PagedResult<OrderDisplayDTO>> GetUserOrdersPaginatedAsync(int userId, int page, int pageSize);
+        Task<double> GetFinalOfferPriceAsync(int offerId, int userId);
     }
 }

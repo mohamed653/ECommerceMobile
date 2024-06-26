@@ -20,13 +20,15 @@ namespace ECommereceApi.Repo
         private readonly IWebHostEnvironment _env;
         private readonly IFileCloudService _fileCloudService;
         private readonly ICartRepo _cartRepo;
-        public OrderRepo(IWebHostEnvironment env, ECommerceContext db, IMapper mapper, IFileCloudService fileCloudService, ICartRepo cartRepo)
+        private readonly IOfferRepo _offerRepo;
+        public OrderRepo(IWebHostEnvironment env, ECommerceContext db, IMapper mapper, IFileCloudService fileCloudService, ICartRepo cartRepo,IOfferRepo offerRepo)
         {
             _db = db;
             _mapper = mapper;
             _env = env;
             _fileCloudService = fileCloudService;
             _cartRepo = cartRepo;
+            _offerRepo = offerRepo;
         }
         public async Task<OrderPreviewDTO> GetOrderPreviewAsync(CartProductsDTO cartProductsDTO)
         {
@@ -138,11 +140,6 @@ namespace ECommereceApi.Repo
 
         public async Task<PagedResult<OrderDisplayDTO>> GetUserOrdersPaginatedAsync(int userId,int page, int pageSize)
         {
-            var user = await _db.Users.FindAsync(userId);
-            if (user is null)
-            {
-                throw new Exception("No User Found");
-            }
             var orders = await _db.Orders.Where(o => o.UserId == userId).ToListAsync();
             return RenderPagination(page, pageSize, orders);
         }
@@ -163,6 +160,17 @@ namespace ECommereceApi.Repo
             result.Items = _mapper.Map<List<OrderDisplayDTO>>(orders);
 
             return result;
+        }
+        public async Task<double> GetFinalOfferPriceAsync(int offerId, int userId)
+        {
+            var offer = _offerRepo.GetOfferById(offerId);
+
+            // Get Cart items
+
+            //
+
+            return 0;
+
         }
 
         // **************************************** End Of Hamed ****************************************
