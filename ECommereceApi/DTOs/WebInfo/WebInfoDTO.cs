@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ECommereceApi.DTOs
+namespace ECommereceApi.DTOs.WebInfo
 {
     public class WebInfoDTO
     {

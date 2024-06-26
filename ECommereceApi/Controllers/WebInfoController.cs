@@ -1,4 +1,5 @@
-﻿using ECommereceApi.Services.Interfaces;
+﻿using ECommereceApi.DTOs.WebInfo;
+using ECommereceApi.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 

@@ -3,6 +3,7 @@ using ECommereceApi.DTOs.Account;
 using ECommereceApi.DTOs.Offer;
 using ECommereceApi.DTOs.Order;
 using ECommereceApi.DTOs.Product;
+using ECommereceApi.DTOs.WebInfo;
 using ECommereceApi.Models;
 using ECommereceApi.Services.classes;
 using ECommereceApi.Services.Interfaces;

@@ -1,4 +1,5 @@
 ﻿using ECommereceApi.DTOs.Product;
+using ECommereceApi.DTOs.Wishlist;
 using ECommereceApi.Repo;
 
 namespace ECommereceApi.IRepo

@@ -1,4 +1,5 @@
-﻿using ECommereceApi.Repo;
+﻿using ECommereceApi.DTOs.Wishlist;
+using ECommereceApi.Repo;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 

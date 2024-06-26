@@ -1,4 +1,4 @@
-﻿namespace ECommereceApi.DTOs.Product
+﻿namespace ECommereceApi.DTOs
 {
     public class PagedResult<T> where T : class
     {

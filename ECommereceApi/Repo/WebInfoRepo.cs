@@ -1,6 +1,7 @@
 ﻿
 using AutoMapper;
 using ECommereceApi.Data;
+using ECommereceApi.DTOs.WebInfo;
 using ECommereceApi.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 

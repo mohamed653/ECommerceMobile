@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using ECommereceApi.DTOs.Product;
+using ECommereceApi.DTOs.Wishlist;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 

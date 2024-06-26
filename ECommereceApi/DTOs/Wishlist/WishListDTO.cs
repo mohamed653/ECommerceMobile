@@ -1,4 +1,4 @@
-﻿namespace ECommereceApi.DTOs
+﻿namespace ECommereceApi.DTOs.Wishlist
 {
     public class WishListDTO
     {

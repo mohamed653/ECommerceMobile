@@ -1,4 +1,5 @@
-﻿using ECommereceApi.Models;
+﻿using ECommereceApi.DTOs.WebInfo;
+using ECommereceApi.Models;
 
 namespace ECommereceApi.IRepo
 {
