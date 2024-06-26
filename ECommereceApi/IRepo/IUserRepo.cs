@@ -19,7 +19,7 @@ namespace ECommereceApi.IRepo
         Task<IEnumerable<UserDTO>> SortUsersAsync(UserOrderBy userOrderBy, SortType sortType = SortType.ASC);
         Task<UserDTO> GetUserAsync(int id);
         Task<Status> AddUserAsync(UserDTOUi userDto);
-        Task<Status> UpdateUserAsync(UserDTO userDto);
+        Task<Status> UpdateUserAsync(int userId, UserDTOUi userDtoUi);
         Task<Status> DeleteUserAsync(int id);
         Task<bool> UserExistsAsync(int id);
         Task<Status> SaveAsync();

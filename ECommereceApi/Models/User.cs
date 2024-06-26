@@ -15,7 +15,7 @@ public enum RoleType
 	Customer
 }
 
-[Index(nameof(Email), IsUnique = true)] // Adding Index to Email for searching
+//[Index(nameof(Email), IsUnique = true)] // Adding Index to Email for searching
 [Table("User")]
 public partial class User : ISoftDeletable
 {

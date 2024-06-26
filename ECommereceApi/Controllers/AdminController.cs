@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ECommereceApi.Controllers
 {
-   // [Authorize(Roles="Admin")]
+    // [Authorize(Roles="Admin")]
     [Route("api/[controller]")]
     [ApiController]
     public class AdminController : ControllerBase
@@ -161,16 +161,25 @@ namespace ECommereceApi.Controllers
         /// <param name="userDto"></param>
         /// <returns></returns>
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser(int id, [FromBody] UserDTO userDto)
+        public async Task<IActionResult> UpdateUser(int id, [FromBody] UserDTOUi userDTOUi)
         {
-            if (id != userDto.UserId)
+            var _user = await _userRepo.GetUserAsync(id);
+            if (_user is null || id != _user.UserId)
             {
                 return BadRequest();
             }
-            var status = await _userRepo.UpdateUserAsync(userDto);
+            var status = await _userRepo.UpdateUserAsync(id, userDTOUi);
             if (status == Status.Success)
             {
                 return Ok("Updated Successfully");
+            }
+            else if (status == Status.EmailExistsBefore)
+            {
+                return BadRequest("Email Exists Before");
+            }
+            else if (status == Status.NotFound)
+            {
+                return NotFound();
             }
             return BadRequest();
         }
@@ -183,10 +192,23 @@ namespace ECommereceApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
+            var user = await _userRepo.GetUserAsync(id);
+            if(user==null)
+            {
+                return BadRequest("User Doesn't Exist or Already Deleted");
+            }
             var status = await _userRepo.DeleteUserAsync(id);
             if (status == Status.Success)
             {
                 return Ok("Deleted Successfully");
+            }
+            else if(status == Status.NotFound)
+            {
+                return NotFound();
+            }
+            else if(status == Status.SuperAdminConstraint)
+            {
+                return BadRequest("Super Admin Can't Be Deleted");
             }
             return NotFound();
         }

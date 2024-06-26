@@ -7,7 +7,8 @@
 		NotFound,
         EmailExistsBefore,
         Deleted,
-        ExistedBefore
+        ExistedBefore,
+        SuperAdminConstraint
     }
 
 	public enum SortType

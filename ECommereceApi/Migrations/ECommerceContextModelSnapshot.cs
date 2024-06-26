@@ -155,7 +155,7 @@ namespace ECommereceApi.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("Duration")
+                    b.Property<int>("Duration")
                         .HasColumnType("int");
 
                     b.Property<string>("Image")
@@ -173,6 +173,10 @@ namespace ECommereceApi.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.HasKey("OfferId");
+
+                    b.HasIndex("Title")
+                        .IsUnique()
+                        .HasFilter("[Title] IS NOT NULL");
 
                     b.ToTable("Offer");
                 });
@@ -468,9 +472,6 @@ namespace ECommereceApi.Migrations
                         .HasColumnType("nvarchar(8)");
 
                     b.HasKey("UserId");
-
-                    b.HasIndex("Email")
-                        .IsUnique();
 
                     b.ToTable("User");
                 });
