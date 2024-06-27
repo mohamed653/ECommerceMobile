@@ -72,20 +72,13 @@ namespace ECommereceApi.Controllers
             }
         }
 
-        [HttpPost]
-        [Route("ConfirmOrder")]
-        public async Task<IActionResult> ConfirmOrder([FromBody] OrderPostDTO orderPostDTO)
-        {
-            await _orderRepo.ConfirmOrder(orderPostDTO);
-            return Ok();
-        }
 
         // **************************************** End Of Hamed ****************************************
         [HttpPost]
-        [Route("ConfirmWithoutOffer")]
-        public async Task<IActionResult> ConfirmOrderWithoutOffer([FromBody] AddOrderWithoutOfferDTO addOrderWithoutOfferDTO)
+        [Route("ConfirmOrder")] // ** Updated By Hamed**
+        public async Task<IActionResult> ConfirmOrder([FromBody] AddOrderOfferDTO addOrderOfferDTO)
         {
-            var user = await _cartRepo.GetUserByIdAsync(addOrderWithoutOfferDTO.UserId);
+            var user = await _cartRepo.GetUserByIdAsync(addOrderOfferDTO.UserId);
             if (user is null)
             {
                 return NotFound("user doesn't have cart / not exist");
@@ -95,11 +88,18 @@ namespace ECommereceApi.Controllers
             {
                 return BadRequest("some products are not available");
             }
-            var order = await _orderRepo.AddOrderWithoutOfferAsync(cartProductsDTO, addOrderWithoutOfferDTO);
-            return Ok(order);
+            try
+            {
+                var orderId = await _orderRepo.ConfirmOrder(addOrderOfferDTO);
+                return Ok(new {OrderId = orderId});
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Order Operation Failed");
+                throw;
+            }
+        
         }
-
-
 
         [HttpPost]
         [Route("ChangeStatusShipped")]

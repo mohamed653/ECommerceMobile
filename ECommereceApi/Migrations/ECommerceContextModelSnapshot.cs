@@ -201,6 +201,9 @@ namespace ECommereceApi.Migrations
                     b.Property<int?>("OfferId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("PaymentMethod")
+                        .HasColumnType("int");
+
                     b.Property<string>("PostalCode")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
