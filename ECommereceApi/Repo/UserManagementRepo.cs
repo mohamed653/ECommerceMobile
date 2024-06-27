@@ -93,6 +93,8 @@ namespace ECommereceApi.Repo
 
                 await _context.Users.AddAsync(user);
                 await _context.SaveChangesAsync();
+                await  _context.Customers.AddAsync(new Customer { UserId = user.UserId });
+                await _context.SaveChangesAsync();
                 return true;
             }catch
             {
