@@ -21,7 +21,7 @@ namespace ECommereceApi.Repo
         private readonly IFileCloudService _fileCloudService;
         private readonly ICartRepo _cartRepo;
         private readonly IOfferRepo _offerRepo;
-        public OrderRepo(IWebHostEnvironment env, ECommerceContext db, IMapper mapper, IFileCloudService fileCloudService, ICartRepo cartRepo,IOfferRepo offerRepo)
+        public OrderRepo(IWebHostEnvironment env, ECommerceContext db, IMapper mapper, IFileCloudService fileCloudService, ICartRepo cartRepo, IOfferRepo offerRepo)
         {
             _db = db;
             _mapper = mapper;
@@ -130,15 +130,9 @@ namespace ECommereceApi.Repo
 
 
         // **************************************** Hamed ****************************************
+        #region Hamed
 
-
-        // Getting the Final total Order Price From the Cart
-        //public async Task<decimal> GetFinalTotalPriceFromCart(int offerId,CartProductsDTO cartProductsDTO, )
-        //{
-        //    // 
-        //}
-
-        public async Task<PagedResult<OrderDisplayDTO>> GetUserOrdersPaginatedAsync(int userId,int page, int pageSize)
+        public async Task<PagedResult<OrderDisplayDTO>> GetUserOrdersPaginatedAsync(int userId, int page, int pageSize)
         {
             var orders = await _db.Orders.Where(o => o.UserId == userId).ToListAsync();
             return RenderPagination(page, pageSize, orders);
@@ -161,17 +155,130 @@ namespace ECommereceApi.Repo
 
             return result;
         }
-        public async Task<double> GetFinalOfferPriceAsync(int offerId, int userId)
+        // *** Price
+        public async Task<Tuple<int, int>> GetFinalOfferPriceAsync(int offerId, int userId)
         {
-            var offer = _offerRepo.GetOfferById(offerId);
+            var offer = await GetOfferByIdAsync(offerId);
+            var cartProducts = await GetUserCartProductsAsync(userId);
+            var cartFinalPrice = cartProducts.FinalPrice;
+            
 
-            // Get Cart items
+            await ValidateOfferAndCartProductsAsync(offer, cartProducts);
 
-            //
+            var offerCalculationResult = await CalculateTotalItemsPriceInOfferAsync(offer, cartProducts);
+            var totalItemsPriceInOffer = offerCalculationResult.Item1;
+            var updatedCartProducts = offerCalculationResult.Item2;
 
+            var totalNonOfferPrice = CalculateTotalNonOfferPrice(updatedCartProducts);
+
+            var offerFinalPrice = totalItemsPriceInOffer + totalNonOfferPrice;
+
+            return new Tuple<int, int>((int)Math.Ceiling(cartFinalPrice),(int)Math.Ceiling(offerFinalPrice));
+        }
+
+
+        private async Task<Offer> GetOfferByIdAsync(int offerId)
+        {
+            var todayOffers = await GetTodaysOffersAsync();
+            var offer = todayOffers.FirstOrDefault(x => x.OfferId == offerId);
+
+            if (offer == null)
+            {
+                throw new ArgumentException("Offer not found");
+            }
+
+            return offer;
+        }
+
+        private async Task<CartProductsDTO> GetUserCartProductsAsync(int userId)
+        {
+            var user = await _cartRepo.GetUserByIdAsync(userId);
+            return await _cartRepo.GetCartProductsAsync(user);
+        }
+
+        private async Task ValidateOfferAndCartProductsAsync(Offer offer, CartProductsDTO cartProducts)
+        {
+            bool isOfferApplicable = await IsOfferApplicableAsync(offer, cartProducts);
+            bool areItemsAvailable = await IsAllCartItemsAvailableAsync(cartProducts);
+
+            if (!isOfferApplicable || !areItemsAvailable)
+            {
+                throw new InvalidOperationException("Offer is not applicable or items are not available");
+            }
+        }
+
+        private double CalculateTotalNonOfferPrice(CartProductsDTO cartProducts)
+        {
+            return cartProducts.ProductsAmounts.Sum(x => x.FinalPrice.Value * x.Amount);
+        }
+
+        private async Task<Tuple<double, CartProductsDTO>> CalculateTotalItemsPriceInOfferAsync(Offer offer, CartProductsDTO cartProducts)
+        {
+            double totalItemsPriceInOffer = 0;
+
+            foreach (var productOffer in offer.ProductOffers)
+            {
+                totalItemsPriceInOffer += CalculateDiscountedPrice(productOffer, cartProducts);
+            }
+
+            totalItemsPriceInOffer -= (double)offer.PackageDiscount;
+
+            UpdateCartProductsForOffer(cartProducts, offer);
+
+            return new Tuple<double, CartProductsDTO>(totalItemsPriceInOffer, cartProducts);
+        }
+
+        private double CalculateDiscountedPrice(ProductOffer productOffer, CartProductsDTO cartProducts)
+        {
+            var product = cartProducts.ProductsAmounts.FirstOrDefault(x => x.ProductId == productOffer.ProductId);
+            if (product != null)
+            {
+                double discountRate = (productOffer.Discount ?? 0) / 100.0;
+                double discountedPricePerUnit = (product.FinalPrice ?? 0) * (1 - discountRate);
+                return discountedPricePerUnit * productOffer.ProductAmount;
+            }
             return 0;
+        }
+
+        private void UpdateCartProductsForOffer(CartProductsDTO cartProducts, Offer offer)
+        {
+            foreach (var productOffer in offer.ProductOffers)
+            {
+                var product = cartProducts.ProductsAmounts.FirstOrDefault(x => x.ProductId == productOffer.ProductId);
+                if (product != null)
+                {
+                    product.Amount -= productOffer.ProductAmount;
+                    if (product.Amount <= 0)
+                    {
+                        cartProducts.ProductsAmounts.Remove(product);
+                    }
+                }
+            }
+        }
+
+        // *** end of Price
+
+        public async Task ConfirmOrder(OrderPostDTO orderPostDTO)
+        {
+            if (orderPostDTO.OfferId == null|| orderPostDTO.OfferId == 0)
+            {
+                // if no offer assigned 
+                await AddOrderWithoutOfferAsync(new CartProductsDTO(), new AddOrderWithoutOfferDTO());
+            }
+            else
+            {
+                // if there is an offer assigned
+                Tuple<int, int> price = GetFinalOfferPriceAsync(orderPostDTO.OfferId, orderPostDTO.UserId).Result;
+
+                var pricebefore = price.Item1;
+                var priceafter = price.Item2;
+
+                // store the after price in the order table
+            }
+            // Notify the user
 
         }
+        #endregion 
 
         // **************************************** End Of Hamed ****************************************
     }

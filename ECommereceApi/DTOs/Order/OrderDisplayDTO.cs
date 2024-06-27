@@ -30,6 +30,8 @@ namespace ECommereceApi.DTOs.Order
         public double? TotalPrice { get; set; }
         public int? TotalAmount { get; set; }
 
+        public PaymentMethod? PaymentMethod{ get; set; }
+
     }
 }
 

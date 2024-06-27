@@ -57,12 +57,27 @@ namespace ECommereceApi.Controllers
 
         // Calculated The Final Total Price Of The Order
         [HttpGet]
-        [Route("GetFinalOfferPrice")]
-        public async Task<IActionResult> GetFinalOfferPrice(int offerId, int userId)
+        [Route("GetFinalPriceDetails/{offerId}/{userId}")]
+        public async Task<IActionResult> GetFinalPriceDetails(int offerId, int userId)
         {
-           double final =  await _orderRepo.GetFinalOfferPriceAsync(offerId, userId);
-            return Ok(final);
+            try
+            {
+                var final = await _orderRepo.GetFinalOfferPriceAsync(offerId, userId);
+                return Ok(new { cartFinalPrice= final.Item1, offerFinalPrice =final.Item2});
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+                throw;
+            }
+        }
 
+        [HttpPost]
+        [Route("ConfirmOrder")]
+        public async Task<IActionResult> ConfirmOrder([FromBody] OrderPostDTO orderPostDTO)
+        {
+            await _orderRepo.ConfirmOrder(orderPostDTO);
+            return Ok();
         }
 
         // **************************************** End Of Hamed ****************************************

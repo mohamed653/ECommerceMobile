@@ -46,6 +46,7 @@ public partial class Order
 
 	public DateOnly? ResponseDate { get; set; }
 
+    public PaymentMethod? PaymentMethod { get; set; }
 	public double? TotalPrice { get; set; }
 	public int? TotalAmount { get; set; }
 }

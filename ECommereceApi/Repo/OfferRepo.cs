@@ -161,10 +161,10 @@ namespace ECommereceApi.Repo
                     throw new Exception("Product not found");
                 item.Name = product.Name;
                 if (product.ProductImages.Count > 0)
-                    item.Image = product.ProductImages.FirstOrDefault().ImageId;
+                    item.Image = _fileCloudService.GetImageUrl(product.ProductImages.FirstOrDefault().ImageId);
             }
         }
-        public async Task AddProductsToOffer(int offerId, OffersDTOPost offerProductsDTO)
+        public async Task<string> AddProductsToOffer(int offerId, OffersDTOPost offerProductsDTO)
         {
             try
             {
@@ -191,9 +191,13 @@ namespace ECommereceApi.Repo
                     ProductAmount = offerProductsDTO.ProductAmount,
                     Discount = offerProductsDTO.Discount
                 };
-
                 offer.ProductOffers.Add(productOffer);
                 await _context.SaveChangesAsync();
+                // check if the amount is in Stocl
+                if (!await IsProductOfferAmountInStock(productOffer))
+                    return "Alert! Product Amount is not in stock";
+                   
+                return String.Empty;
 
             }
             catch (Exception)
@@ -201,6 +205,13 @@ namespace ECommereceApi.Repo
                 Log.Error($"Error in AddProductsToOffer");
                 throw;
             }
+        }
+
+        private async Task<bool> IsProductOfferAmountInStock(ProductOffer productOffer)
+        {
+            var product = await _context.Products.FindAsync(productOffer.ProductId);
+
+            return product.Amount >= productOffer.ProductAmount;
         }
 
         // Total Price after Discount should be Positive or Zero

@@ -201,7 +201,7 @@ namespace ECommereceApi.Controllers
             var status = await _userRepo.SoftDeleteAsync(id);
             if (status == Status.Success)
             {
-                return Ok("Deleted Successfully");
+                return Ok();
             }
             else if(status == Status.NotFound)
             {

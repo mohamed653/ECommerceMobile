@@ -119,8 +119,8 @@ namespace ECommereceApi.Controllers
             if (!ModelState.IsValid) return BadRequest(ModelState);
             try
             {
-                await offerRepo.AddProductsToOffer(offerId, offerProductsDTO);
-                return Created();
+                var msg = await offerRepo.AddProductsToOffer(offerId, offerProductsDTO);
+                return Ok(msg);
             }
             catch (Exception e)
             {

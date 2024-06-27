@@ -13,7 +13,7 @@ namespace ECommereceApi.IRepo
         //Task<Status> UpdateProductsFromOffer(int offerId, OffersDTOPost offerProductsDTO);
         Task<Status> UpdateProductsFromOffer(int offerId, int oldProductId, OffersDTOPost offerProductsDTO);
         Task<int> AddOffer(OfferDTO offerDTO);
-        Task AddProductsToOffer(int offerId, OffersDTOPost offerProductsDTO);
+        Task<string> AddProductsToOffer(int offerId, OffersDTOPost offerProductsDTO);
         Task UpdateOffer(int offerId,OfferDTO offerDTO);
         Task DeleteOffer(int offerId);
         Task <bool> OfferExpiredOrInActive(int offerId);
