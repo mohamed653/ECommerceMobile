@@ -146,7 +146,7 @@ builder.Services.AddScoped<IUserManagementRepo, UserManagementRepo>();
 builder.Services.AddScoped<IMailRepo, MailRepo>();
 builder.Services.AddScoped<IOrderRepo, OrderRepo>();
 builder.Services.AddScoped<ICartRepo, CartRepo>();
-
+builder.Services.AddScoped<IReviewRepo, ReviewRepo>();
 builder.Services.AddSignalR();
 
 // Global Exception Handling Service
