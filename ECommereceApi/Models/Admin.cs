@@ -14,6 +14,8 @@ public partial class Admin
     [Key]
     public int UserId { get; set; }
 
+    public bool IsSuperAdmin { get; set; } = false;
+
     [ForeignKey("UserId")]
     [InverseProperty("Admin")]
     public virtual User User { get; set; }

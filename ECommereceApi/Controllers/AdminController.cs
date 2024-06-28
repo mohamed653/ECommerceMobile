@@ -59,7 +59,7 @@ namespace ECommereceApi.Controllers
         }
 
         /// <summary>
-        /// AddUser
+        /// Add User
         /// </summary>
         /// <returns></returns>
         [HttpPost]
