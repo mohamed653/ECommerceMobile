@@ -52,13 +52,19 @@ namespace ECommereceApi.Repo
 
         private async Task<bool> IsSuperAdmin(int id)
         {
-            var user = _context.Users.FirstOrDefault(x => x.UserId == id);
-            if (user == null) return false;
-
-            if (user.UserId == GetSuperAdminAsync().Id)
+            var user = _context.Users.Include(x=>x.Admin).FirstOrDefault(x => x.UserId == id);
+            if (user == null)
+                return false;
+            if(user.Admin == null||user.Admin.IsSuperAdmin==false)
+            {
+                return false;
+            }
+            else if (user.Admin.IsSuperAdmin)
+            {
                 return true;
+            }
+            
             return false;
-
         }
 
         public async Task<Status> AddUserAsync(UserDTOUi userDto)
@@ -92,7 +98,7 @@ namespace ECommereceApi.Repo
                 {
                     return status;
                 }
-                await _context.Admins.AddAsync(new Admin { UserId = user.UserId });
+                await _context.Admins.AddAsync(new Admin { UserId = user.UserId,IsSuperAdmin=false });
                 return await SaveAsync();
             }
         }

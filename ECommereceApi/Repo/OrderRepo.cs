@@ -162,6 +162,18 @@ namespace ECommereceApi.Repo
         // **************************************** Hamed ****************************************
         #region Hamed
 
+
+        public async Task<PagedResult<OrderDisplayDTO>> GetAllOrdersPaginatedAsync(int page, int pageSize)
+        {
+            var orders = await _db.Orders.ToListAsync();
+            return RenderPagination(page, pageSize, orders);
+        }
+
+        public async Task<PagedResult<OrderDisplayDTO>> GetOrdersByStatusPaginatedAsync(OrderStatus status, int page, int pageSize)
+        {
+            var orders = await _db.Orders.Where(o=>o.Status== status).ToListAsync();
+            return RenderPagination(page, pageSize, orders);
+        }
         public async Task<PagedResult<OrderDisplayDTO>> GetUserOrdersPaginatedAsync(int userId, int page, int pageSize)
         {
             var orders = await _db.Orders.Where(o => o.UserId == userId).ToListAsync();
@@ -313,13 +325,18 @@ namespace ECommereceApi.Repo
                 orderPreview = await AddOrderAsync(_cartProductsDTO, addOrderOfferDTO, finalPriceAferOffer);
 
             }
-            // Notify the user
+            // Notify the Admins ***************** using Notification Service *****************
+
+
+            // Delete the user cart
+            await _cartRepo.DeleteCartItemsAsync(user);
 
             // return order
             return orderPreview.OrderId;
 
-            // Delete the cart
         }
+
+
         #endregion 
 
         // **************************************** End Of Hamed ****************************************

@@ -55,6 +55,34 @@ namespace ECommereceApi.Controllers
             return NotFound("No orders found for this user");
         }
 
+        [HttpGet]
+        [Route("GetAllOrdersPaginated")]
+        public async Task<IActionResult> GetAllOrdersPaginated(int page, [Required] int pageSize)
+        {
+            if (page <= 0 || pageSize <= 0)
+                return BadRequest();
+
+            var orders = await _orderRepo.GetAllOrdersPaginatedAsync( page, pageSize);
+            if (orders.Items.Count > 0)
+                return Ok(orders);
+
+            return NotFound("No orders found for this user");
+        }
+
+        [HttpGet]
+        [Route("GetOrdersByStatusPaginatedAsync")]
+        public async Task<IActionResult> GetOrdersByStatusPaginatedAsync(OrderStatus orderStatus,int page, [Required] int pageSize)
+        {
+            if (page <= 0 || pageSize <= 0)
+                return BadRequest();
+
+            var orders = await _orderRepo.GetOrdersByStatusPaginatedAsync(orderStatus, page, pageSize);
+            if (orders.Items.Count > 0)
+                return Ok(orders);
+
+            return NotFound("No orders found for this user");
+        }
+
         // Calculated The Final Total Price Of The Order
         [HttpGet]
         [Route("GetFinalPriceDetails/{offerId}/{userId}")]
