@@ -55,6 +55,32 @@ namespace ECommereceApi.Controllers
             return NotFound("No orders found for this user");
         }
 
+        /// <summary>
+        ///  Status: 0 => Pending, 1 => Shipped, 2 => Delivered, 3 => Cancelled
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="orderStatus"></param>
+        /// <param name="page"></param>
+        /// <param name="pageSize"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("GetUserOrdersByStatusPaginated")]
+        public async Task<IActionResult> GetUserOrdersByStatusPaginated(int userId,OrderStatus orderStatus, int page, [Required] int pageSize)
+        {
+            var user = await _cartRepo.GetUserByIdAsync(userId);
+            if (user is null)
+            {
+                return NotFound("No User Found!");
+            }
+            if (page <= 0 || pageSize <= 0)
+                return BadRequest();
+
+            var orders = await _orderRepo.GetUserOrdersByStatusPaginatedAsync(userId, orderStatus ,page, pageSize);
+            if (orders.Items.Count > 0)
+                return Ok(orders);
+
+            return NotFound("No orders found for this user");
+        }
         [HttpGet]
         [Route("GetAllOrdersPaginated")]
         public async Task<IActionResult> GetAllOrdersPaginated(int page, [Required] int pageSize)

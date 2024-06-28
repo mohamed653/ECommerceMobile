@@ -22,7 +22,7 @@ namespace ECommereceApi.DTOs.Order
 
         public OrderStatus Status { get; set; }
 
-        public virtual ICollection<ProductOrder> ProductOrders { get; set; }
+        public virtual ICollection<ProductOrderDTO> ProductOrders { get; set; }
         public int? OfferId { get; set; }
 
         public DateOnly? ResponseDate { get; set; }
@@ -32,6 +32,13 @@ namespace ECommereceApi.DTOs.Order
 
         public PaymentMethod? PaymentMethod{ get; set; }
 
+    }
+
+    public class ProductOrderDTO
+    {
+        public Guid OrderId { get; set; }
+        public int ProductId { get; set; }
+        public int Amount { get; set; }
     }
 }
 

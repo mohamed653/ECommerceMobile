@@ -165,21 +165,26 @@ namespace ECommereceApi.Repo
 
         public async Task<PagedResult<OrderDisplayDTO>> GetAllOrdersPaginatedAsync(int page, int pageSize)
         {
-            var orders = await _db.Orders.ToListAsync();
-            return RenderPagination(page, pageSize, orders);
+            var _orders = _mapper.Map<List<OrderDisplayDTO>>(await _db.Orders.Include(x => x.ProductOrders).ToListAsync());
+            return RenderPagination(page, pageSize, _orders);
         }
 
         public async Task<PagedResult<OrderDisplayDTO>> GetOrdersByStatusPaginatedAsync(OrderStatus status, int page, int pageSize)
         {
-            var orders = await _db.Orders.Where(o=>o.Status== status).ToListAsync();
-            return RenderPagination(page, pageSize, orders);
+            var _orders = _mapper.Map<List<OrderDisplayDTO>>(await _db.Orders.Where(o=>o.Status == status).Include(x => x.ProductOrders).ToListAsync());
+            return RenderPagination(page, pageSize, _orders);
         }
         public async Task<PagedResult<OrderDisplayDTO>> GetUserOrdersPaginatedAsync(int userId, int page, int pageSize)
         {
-            var orders = await _db.Orders.Where(o => o.UserId == userId).ToListAsync();
-            return RenderPagination(page, pageSize, orders);
+            var _orders = _mapper.Map<List<OrderDisplayDTO>>( await _db.Orders.Where(o=>o.UserId== userId).Include(x=>x.ProductOrders).ToListAsync());
+            return RenderPagination(page, pageSize, _orders);
         }
-        public PagedResult<OrderDisplayDTO> RenderPagination(int page, int pageSize, List<Order> inputOrders)
+        public async Task<PagedResult<OrderDisplayDTO>> GetUserOrdersByStatusPaginatedAsync(int userId, OrderStatus orderStatus, int page, int pageSize)
+        {
+            var _orders = _mapper.Map<List<OrderDisplayDTO>>(await _db.Orders.Where(o => o.UserId == userId&&o.Status == orderStatus).Include(x => x.ProductOrders).ToListAsync());
+            return RenderPagination(page, pageSize, _orders);
+        }
+        public PagedResult<OrderDisplayDTO> RenderPagination(int page, int pageSize, List<OrderDisplayDTO> inputOrders)
         {
             PagedResult<OrderDisplayDTO> result = new PagedResult<OrderDisplayDTO>();
             int totalCount = inputOrders.Count;
@@ -191,9 +196,8 @@ namespace ECommereceApi.Repo
             result.PageNumber = page;
             result.HasPrevious = page != 1;
             result.HasNext = page != result.TotalPages;
-
             var orders = inputOrders.Skip((page - 1) * pageSize).Take(pageSize).ToList();
-            result.Items = _mapper.Map<List<OrderDisplayDTO>>(orders);
+            result.Items = orders;
 
             return result;
         }
@@ -336,8 +340,9 @@ namespace ECommereceApi.Repo
 
         }
 
+        
 
-        #endregion 
+        #endregion
 
         // **************************************** End Of Hamed ****************************************
     }
