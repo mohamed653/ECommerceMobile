@@ -196,11 +196,28 @@ namespace ECommereceApi.Controllers
             return Created("", output);
         }
         [HttpGet]
+        [Route("/api/CategoryDetails/All")]
+        public async Task<IActionResult> GetAllCategoriesDetailsAsync()
+        {
+            return Ok(await productRepo.GetAllCategoriesDetailsAsync());
+        }
+        [HttpGet]
         [Route("/api/CategoryDetails/{categoryId:int}")]
         public async Task<IActionResult> GetCategoryDetailsAsync([Required] int categoryId)
         {
             if (!await productRepo.IsCategoryExistsAsync(categoryId)) return NotFound("Category Not Found");
-            return Ok(await productRepo.GetCategoryDetails(categoryId));
+            return Ok(await productRepo.GetCategoryDetailsAsync(categoryId));
+        }
+        [HttpGet]
+        [Route("/api/Product/CategorySubCategoryValue")]
+        public async Task<IActionResult> GetAllProductsForCategorySubCategoryValues([Required]int categoryId, [Required]int subCategoryId, [Required]string value)
+        {
+            if(value.IsNullOrEmpty()) return BadRequest("Invalid Value");
+            if(!await productRepo.IsCategoryExistsAsync(categoryId)) return NotFound("Category Not Found!");
+            if(!await productRepo.IsSubCategoryExistsAsync(subCategoryId)) return NotFound("Sub Category Not Found");
+            int? categorySubCategoryId = await productRepo.GetCategorySubCategoryIdFromSeparateIds(categoryId, subCategoryId);
+            if(categorySubCategoryId is null) return NotFound("Category And Sub Category Not Related");
+            return Ok(await productRepo.GetProductsDisplayDTOsFromCategorySubCategoryIdAndValueAsync(categorySubCategoryId.Value, value));
         }
         [HttpGet]
         [Route("/api/SubCategoryDetails/{subCategoryId:int}")]
@@ -294,16 +311,16 @@ namespace ECommereceApi.Controllers
         }
         [HttpPut]
         [Route("/api/products/search")]
-        public async Task<IActionResult> GetAllSearchResultsAsync(string? Name, double? MinOriginalPrice, double? MaxOriginalPrice, int? MinAmount, int? MaxAmount, List<int>? CategoriesIds)
+        public async Task<IActionResult> GetAllSearchResultsAsync(string? Name, double? MinOriginalPrice, double? MaxOriginalPrice, int? MinAmount, int? MaxAmount, List<int>? CategoriesIds, int? OfferId)
         {
-            return Ok(await productRepo.GetAllProductsSearchAsync(Name, MinOriginalPrice, MaxOriginalPrice, MinAmount, MaxAmount, CategoriesIds));
+            return Ok(await productRepo.GetAllProductsSearchAsync(Name, MinOriginalPrice, MaxOriginalPrice, MinAmount, MaxAmount, CategoriesIds, OfferId));
         }
         [HttpOptions]
         [Route("/api/products/search")]
-        public async Task<IActionResult> GetAllSearchResultPaginatedAsync(string? Name, double? MinOriginalPrice, double? MaxOriginalPrice, int? MinAmount, int? MaxAmount, List<int>? CategoriesIds, [Required] int page, [Required] int pageSize)
+        public async Task<IActionResult> GetAllSearchResultPaginatedAsync(string? Name, double? MinOriginalPrice, double? MaxOriginalPrice, int? MinAmount, int? MaxAmount, List<int>? CategoriesIds, [Required] int page, [Required] int pageSize, int? offerId)
         {
             if (page <= 0 || pageSize <= 0) return BadRequest();
-            return Ok(await productRepo.GetAllProductsSearchPaginatedAsync(Name, MinOriginalPrice, MaxOriginalPrice, MinAmount, MaxAmount, CategoriesIds, page, pageSize));
+            return Ok(await productRepo.GetAllProductsSearchPaginatedAsync(Name, MinOriginalPrice, MaxOriginalPrice, MinAmount, MaxAmount, CategoriesIds, page, pageSize,offerId));
         }
     }
 }

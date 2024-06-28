@@ -33,16 +33,19 @@ namespace ECommereceApi.IRepo
         Task<Status> RemoveProductPictureAsync(int productId, string picture);
         Task<PagedResult<ProductDisplayDTO>> RenderPaginationForAllProductsAsync(int page, int pageSize);
         Task<PagedResult<ProductDisplayDTO>> RenderSortedPaginationSortedAsync(int page, int pageSize, string sortOrder);
-        Task<List<ProductDisplayDTO>> GetAllProductsSearchAsync(string? Name, double? MinOriginalPrice, double? MaxOriginalPrice, int? MinAmount, int? MaxAmount, List<int>? CategoriesIds);
-        Task<PagedResult<ProductDisplayDTO>> GetAllProductsSearchPaginatedAsync(string? Name, double? MinOriginalPrice, double? MaxOriginalPrice, int? MinAmount, int? MaxAmount, List<int>? CategoriesIds, int page, int pageSize);
+        Task<List<ProductDisplayDTO>> GetAllProductsSearchAsync(string? Name, double? MinOriginalPrice, double? MaxOriginalPrice, int? MinAmount, int? MaxAmount, List<int>? CategoriesIds, int? offerId);
+        Task<PagedResult<ProductDisplayDTO>> GetAllProductsSearchPaginatedAsync(string? Name, double? MinOriginalPrice, double? MaxOriginalPrice, int? MinAmount, int? MaxAmount, List<int>? CategoriesIds, int page, int pageSize, int? offerId);
         Task<bool> IsAllProductsExistsAsync(HashSet<int> productsIds);
         Task<CategorySubCategoryValueDTO> AddSubCategoryValueAsync(CategorySubCategoryValuesAddDTO input);
         Task<int> AssignSubCategoryToCategoryAsync(int categoryId, int subCategoryId);
-        Task<SubCategoriesValuesForCategoryDTO> GetCategoryDetails(int categoryId);
+        Task<ICollection<SubCategoriesValuesForCategoryDTO>> GetAllCategoriesDetailsAsync();
+        Task<SubCategoriesValuesForCategoryDTO> GetCategoryDetailsAsync(int categoryId);
         Task<CategoriesValuesForSubCategoryDTO> GetSubCategoryDetails(int subCategoryId);
         Task<ProductCategorySubCategoryValuesDTO> UpdateCategorySubCategoryValue(CategorySubCategoryValuesAddDTO addDTO, string newValue);
         Task<bool> IsCategorySubCategoryExistsAsync(int categoryId, int subCategoryId);
         Task<bool> IsCategoryExistsAsync(int id);
         Task<bool> IsSubCategoryExistsAsync(int id);
+        Task<int> GetCategorySubCategoryIdFromSeparateIds(int categoryId, int subCategoryId);
+        Task<ICollection<ProductDisplayDTO>> GetProductsDisplayDTOsFromCategorySubCategoryIdAndValueAsync(int categorySubCategoryId, string value);
     }
 }
