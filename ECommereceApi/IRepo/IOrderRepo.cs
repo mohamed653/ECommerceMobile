@@ -8,8 +8,8 @@ namespace ECommereceApi.IRepo
     {
         Task<bool> IsAllCartItemsAvailableAsync(CartProductsDTO cartProducts);
         Task<OrderPreviewDTO> GetOrderPreviewAsync(CartProductsDTO cartProductsDTO);
-        Task<OrderPreviewWithoutOffersDTO> AddOrderWithoutOfferAsync(CartProductsDTO cartProductsDTO, AddOrderOfferDTO addOrderOfferDTO);
-        Task<OrderPreviewWithoutOffersDTO> AddOrderWithOfferAsync(CartProductsDTO cartProductsDTO, AddOrderOfferDTO addOrderOfferDTO, double finalOfferPrice);
+        //Task<OrderPreviewWithoutOffersDTO> AddOrderWithoutOfferAsync(CartProductsDTO cartProductsDTO, AddOrderOfferDTO addOrderOfferDTO);
+        Task<OrderPreviewWithoutOffersDTO> AddOrderAsync(CartProductsDTO cartProductsDTO, AddOrderOfferDTO addOrderOfferDTO, double finalOfferPrice);
         Task<Order> GetOrderByIdAsync(Guid orderId);
         Task ChangeOrderStatusAsync(Guid orderId, OrderStatus newStatus);
         Task<PagedResult<OrderDisplayDTO>> GetUserOrdersPaginatedAsync(int userId, int page, int pageSize);

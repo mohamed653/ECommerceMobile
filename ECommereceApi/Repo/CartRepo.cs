@@ -22,15 +22,15 @@ namespace ECommereceApi.Repo
 
         public async Task<User> GetUserByIdAsync(int userId)
         {
-            User user = await _db.Users.Include(u => u.ProductCarts).FirstOrDefaultAsync(u => u.UserId == userId);
-            if (user == null)
+            User? user = await _db.Users.Include(u => u.ProductCarts).FirstOrDefaultAsync(u => u.UserId == userId);
+            if (user == null) 
             {
                 return null;
             }
             return user;
         }
 
-        public async Task<CartProductsDTO> GetCartProductsAsync(User user)
+        public async Task<CartProductsDTO?> GetCartProductsAsync(User user)
         {
 
             var result = user.ProductCarts;
@@ -44,7 +44,8 @@ namespace ECommereceApi.Repo
             {
                 ProductDisplayInCartDTO productDisplayDTO = _mapper.Map<ProductDisplayInCartDTO>(await _productRepo.GetProductByIdAsync(item.ProductId));
                 productDisplayDTO.Amount = item.ProductAmount;
-                productDisplayDTO.AllAmount = _db.Products.FirstOrDefaultAsync(p => p.ProductId == item.ProductId).Result.Amount;
+                var _prod = await _db.Products.FirstOrDefaultAsync(p => p.ProductId == item.ProductId);
+                productDisplayDTO.AllAmount = _prod.Amount;
                 cartProducts.ProductsAmounts.Add(productDisplayDTO);
                 cartProducts.numberOfUniqueProducts++;
                 cartProducts.numberOfProducts += item.ProductAmount;
@@ -55,7 +56,7 @@ namespace ECommereceApi.Repo
         public async Task DeleteCartItemsAsync(User user)
         {
             user.ProductCarts.Clear();
-            _db.SaveChangesAsync();
+            await _db.SaveChangesAsync();
         }
         public async Task AddProductToCartAsync(User user, ProductDisplayDTO product, int amount)
         {
@@ -67,11 +68,11 @@ namespace ECommereceApi.Repo
                 UserId = user.UserId,
                 ProductAmount = actualAmount
             });
-            _db.SaveChangesAsync();
+            await _db.SaveChangesAsync();
         }
         public async Task ClearAndAddMultipleProducts(User user, List<int> productsIds, List<int> amounts)
         {
-            DeleteCartItemsAsync(user);
+            await DeleteCartItemsAsync(user);
             for(int i = 0; i < productsIds.Count; i++)
             {
                 user.ProductCarts.Add(new ProductCart()
@@ -80,7 +81,7 @@ namespace ECommereceApi.Repo
                     ProductAmount = amounts[i]
                 });
             }
-            _db.SaveChangesAsync();
+            await _db.SaveChangesAsync();
         }
     }
 }
