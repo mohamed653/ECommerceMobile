@@ -196,11 +196,28 @@ namespace ECommereceApi.Controllers
             return Created("", output);
         }
         [HttpGet]
+        [Route("/api/CategoryDetails/All")]
+        public async Task<IActionResult> GetAllCategoriesDetailsAsync()
+        {
+            return Ok(await productRepo.GetAllCategoriesDetailsAsync());
+        }
+        [HttpGet]
         [Route("/api/CategoryDetails/{categoryId:int}")]
         public async Task<IActionResult> GetCategoryDetailsAsync([Required] int categoryId)
         {
             if (!await productRepo.IsCategoryExistsAsync(categoryId)) return NotFound("Category Not Found");
-            return Ok(await productRepo.GetCategoryDetails(categoryId));
+            return Ok(await productRepo.GetCategoryDetailsAsync(categoryId));
+        }
+        [HttpGet]
+        [Route("/api/Product/CategorySubCategoryValue")]
+        public async Task<IActionResult> GetAllProductsForCategorySubCategoryValues([Required]int categoryId, [Required]int subCategoryId, [Required]string value)
+        {
+            if(value.IsNullOrEmpty()) return BadRequest("Invalid Value");
+            if(!await productRepo.IsCategoryExistsAsync(categoryId)) return NotFound("Category Not Found!");
+            if(!await productRepo.IsSubCategoryExistsAsync(subCategoryId)) return NotFound("Sub Category Not Found");
+            int? categorySubCategoryId = await productRepo.GetCategorySubCategoryIdFromSeparateIds(categoryId, subCategoryId);
+            if(categorySubCategoryId is null) return NotFound("Category And Sub Category Not Related");
+            return Ok(await productRepo.GetProductsDisplayDTOsFromCategorySubCategoryIdAndValueAsync(categorySubCategoryId.Value, value));
         }
         [HttpGet]
         [Route("/api/SubCategoryDetails/{subCategoryId:int}")]

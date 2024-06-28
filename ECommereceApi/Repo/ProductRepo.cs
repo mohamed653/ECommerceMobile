@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Newtonsoft.Json.Linq;
 using ECommereceApi.Services.classes;
 using ECommereceApi.Services.Interfaces;
+using System.Collections.Generic;
 
 namespace ECommereceApi.Repo
 {
@@ -183,10 +184,28 @@ namespace ECommereceApi.Repo
             output.Id = result.Entity.Id;
             return output;
         }
-        public async Task<SubCategoriesValuesForCategoryDTO> GetCategoryDetails(int categoryId)
+        public async Task<SubCategoriesValuesForCategoryDTO> GetCategoryDetailsAsync(int categoryId)
         {
             var category = await GetCategoryWithSubCategoryWithValuesAsync(categoryId);
             return await MapSubCategoriesValuesForCategory(category);
+        }
+        public async Task<ICollection<SubCategoriesValuesForCategoryDTO>> GetAllCategoriesDetailsFromIdsAsync(ICollection<int> ids)
+        {
+            List<SubCategoriesValuesForCategoryDTO> output = new();
+            foreach(var id in ids)
+            {
+                output.Add(await GetCategoryDetailsAsync(id));
+            }
+            return output;
+        }
+        public async Task<ICollection<SubCategoriesValuesForCategoryDTO>> GetAllCategoriesDetailsAsync()
+        {
+            var CategoriesIds = await GetAllCategoriesIdsAsync();
+            return await GetAllCategoriesDetailsFromIdsAsync(CategoriesIds);
+        }
+        public async Task<ICollection<int>> GetAllCategoriesIdsAsync()
+        {
+            return await _db.Categories.Select(c => c.CategoryId).ToListAsync();
         }
         public async Task<CategoriesValuesForSubCategoryDTO> GetSubCategoryDetails(int subCategoryId)
         {
@@ -565,6 +584,26 @@ namespace ECommereceApi.Repo
             await _db.Entry(target).Reference(t => t.CategorySubCategory).TargetEntry.Reference(te => te.SubCategory).LoadAsync();
             return _mapper.Map<ProductCategorySubCategoryValuesDTO>(target);
         }
-
+        public async Task<ICollection<ProductDisplayDTO>> GetProductsDisplayDTOsFromCategorySubCategoryIdAndValueAsync(int categorySubCategoryId, string value)
+        {
+            return _mapper.Map<List<ProductDisplayDTO>>(await GetProductsFromCategorySubCategoryIdsValuesAsync(categorySubCategoryId, value));
+        }
+        public async Task<ICollection<Product>> GetProductsFromCategorySubCategoryIdsValuesAsync(int categorySubCategoryId, string value)
+        {
+            var allProcutsFromCategorySubCategory = await GetProductsFromCategorySubCategoryIdAsync(categorySubCategoryId);
+            return await _db.ProductCategorySubCategoryValues
+                .Include(csv => csv.Product)
+                .Include(csv => csv.CategorySubCategoryValues)
+                .Where(csv => allProcutsFromCategorySubCategory.Contains(csv.Product) && csv.CategorySubCategoryValues.Value == value)
+                .Select(csv => csv.Product).ToListAsync();
+        }
+        public async Task<ICollection<Product>> GetProductsFromCategorySubCategoryIdAsync(int categorySubCategoryId)
+        {
+            return await _db.Products
+                .Include(p => p.Category)
+                .ThenInclude(c => c.CategorySubCategory)
+                .ThenInclude(cs => cs.CategorySubCategoryValues)
+                .Where(p => p.Category.CategorySubCategory.Any(cs => cs.CategorySubCategoryId == categorySubCategoryId)).ToListAsync();
+        }
     }
 }
