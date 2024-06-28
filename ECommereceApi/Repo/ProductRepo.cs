@@ -417,9 +417,12 @@ namespace ECommereceApi.Repo
                 productInput = await _db.Products.Include(p => p.Category).Include(p => p.ProductImages).OrderBy(p => p.Name).ToListAsync();
             return RenderPagination(page, pageSize, productInput);
         }
-        public async Task<List<Product>> GetAllFilteredProductsFromSearchAsync(string? Name, double? MinOriginalPrice, double? MaxOriginalPrice, int? MinAmount, int? MaxAmount, List<int>? CategoriesIds)
+        public async Task<List<Product>> GetAllFilteredProductsFromSearchAsync(string? Name, double? MinOriginalPrice, double? MaxOriginalPrice, int? MinAmount, int? MaxAmount, List<int>? CategoriesIds, int? OfferId)
         {
-            var query = _db.Products.Include(p => p.Category).AsQueryable();
+            var query = _db.Products
+                .Include(p => p.Category)
+                .Include(p => p.ProductOffers)
+                .AsQueryable();
             if (!Name.IsNullOrEmpty())
                 query = query.Where(p => p.Name.Contains(Name));
             if (MinOriginalPrice.HasValue)
@@ -432,16 +435,18 @@ namespace ECommereceApi.Repo
                 query = query.Where(p => p.Amount <= MinAmount);
             if (CategoriesIds is not null)
                 query = query.Where(p => CategoriesIds.Contains(p.CategoryId));
+            if(OfferId is not null)
+                query = query.Where(p => p.ProductOffers.Any(po => po.OfferId != OfferId));
             return await query.ToListAsync();
         }
-        public async Task<List<ProductDisplayDTO>> GetAllProductsSearchAsync(string? Name, double? MinOriginalPrice, double? MaxOriginalPrice, int? MinAmount, int? MaxAmount, List<int>? CategoriesIds)
+        public async Task<List<ProductDisplayDTO>> GetAllProductsSearchAsync(string? Name, double? MinOriginalPrice, double? MaxOriginalPrice, int? MinAmount, int? MaxAmount, List<int>? CategoriesIds, int? offerId)
         {
-            var products = await GetAllFilteredProductsFromSearchAsync(Name, MinOriginalPrice, MaxOriginalPrice, MinAmount, MaxAmount, CategoriesIds);
+            var products = await GetAllFilteredProductsFromSearchAsync(Name, MinOriginalPrice, MaxOriginalPrice, MinAmount, MaxAmount, CategoriesIds, offerId);
             return _mapper.Map<List<ProductDisplayDTO>>(products);
         }
-        public async Task<PagedResult<ProductDisplayDTO>> GetAllProductsSearchPaginatedAsync(string? Name, double? MinOriginalPrice, double? MaxOriginalPrice, int? MinAmount, int? MaxAmount, List<int>? CategoriesIds, int page, int pageSize)
+        public async Task<PagedResult<ProductDisplayDTO>> GetAllProductsSearchPaginatedAsync(string? Name, double? MinOriginalPrice, double? MaxOriginalPrice, int? MinAmount, int? MaxAmount, List<int>? CategoriesIds, int page, int pageSize, int? offerId)
         {
-            var products = await GetAllFilteredProductsFromSearchAsync(Name, MinOriginalPrice, MaxOriginalPrice, MinAmount, MaxAmount, CategoriesIds);
+            var products = await GetAllFilteredProductsFromSearchAsync(Name, MinOriginalPrice, MaxOriginalPrice, MinAmount, MaxAmount, CategoriesIds, offerId);
             var output = RenderPagination(page, pageSize, products);
             return output;
         }
