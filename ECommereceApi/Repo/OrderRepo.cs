@@ -33,7 +33,7 @@ namespace ECommereceApi.Repo
         public async Task<OrderPreviewDTO> GetOrderPreviewAsync(CartProductsDTO cartProductsDTO)
         {
             var output = _mapper.Map<OrderPreviewDTO>(cartProductsDTO);
-            AssignAllAmountPropertyToProductDisplayInCartDTOAsync(output.ProductsAmounts);
+            await AssignAllAmountPropertyToProductDisplayInCartDTOAsync(output.ProductsAmounts);
             var offers = await GetTodaysOffersAsync();
             output.ApplicableOffers = await GetApplicableOffersForCartAsync(cartProductsDTO, offers);
             return output;
@@ -43,33 +43,41 @@ namespace ECommereceApi.Repo
             foreach (var product in products)
                 product.AllAmount = (await GetProductByIdAsync(product.ProductId)).Amount;
         }
-        public async Task<OrderPreviewWithoutOffersDTO> AddOrderWithoutOfferAsync(CartProductsDTO cartProductsDTO, AddOrderOfferDTO addOrderOfferDTO)
-        {
-            var output = _mapper.Map<OrderPreviewWithoutOffersDTO>(addOrderOfferDTO);
-            output.ProductsAmounts = cartProductsDTO.ProductsAmounts;
-            var addedRecord = await _db.Orders.AddAsync(_mapper.Map<Order>(addOrderOfferDTO));
-            await _db.SaveChangesAsync();
-            foreach (var product in cartProductsDTO.ProductsAmounts)
-            {
-                var productOrder = new ProductOrder
-                {
-                    OrderId = addedRecord.Entity.OrderId,
-                    ProductId = product.ProductId,
-                    Amount = product.Amount
-                };
-                await _db.ProductOrders.AddAsync(productOrder);
-            }
-            await _db.SaveChangesAsync();
-            AssignAdditionalValuestoOrderPreviewDTO(output);
-            output.OrderId = addedRecord.Entity.OrderId;
-            return output;
-        }
+        //public async Task<OrderPreviewWithoutOffersDTO> AddOrderWithoutOfferAsync(CartProductsDTO cartProductsDTO, AddOrderOfferDTO addOrderOfferDTO, double finalPrice)
+        //{
+        //    var output = _mapper.Map<OrderPreviewWithoutOffersDTO>(addOrderOfferDTO);
+        //    output.ProductsAmounts = cartProductsDTO.ProductsAmounts;
+        //    output.FinalPrice = 
+        //    var addedRecord = await _db.Orders.AddAsync(_mapper.Map<Order>(addOrderOfferDTO));
+        //    await _db.SaveChangesAsync();
+        //    foreach (var product in cartProductsDTO.ProductsAmounts)
+        //    {
+        //        var productOrder = new ProductOrder
+        //        {
+        //            OrderId = addedRecord.Entity.OrderId,
+        //            ProductId = product.ProductId,
+        //            Amount = product.Amount
+        //        };
+        //        await _db.ProductOrders.AddAsync(productOrder);
+        //    }
+        //    await _db.SaveChangesAsync();
+        //    AssignAdditionalValuestoOrderPreviewDTO(output);
+        //    output.OrderId = addedRecord.Entity.OrderId;
+        //    return output;
+        //}
         // ** added By Hamed
-        public async Task<OrderPreviewWithoutOffersDTO> AddOrderWithOfferAsync(CartProductsDTO cartProductsDTO, AddOrderOfferDTO addOrderOfferDTO,double finalOfferPrice)
+        public async Task<OrderPreviewWithoutOffersDTO> AddOrderAsync(CartProductsDTO cartProductsDTO, AddOrderOfferDTO addOrderOfferDTO,double finalPrice)
         {
             var output = _mapper.Map<OrderPreviewWithoutOffersDTO>(addOrderOfferDTO);
             output.ProductsAmounts = cartProductsDTO.ProductsAmounts;
-            var addedRecord = await _db.Orders.AddAsync(_mapper.Map<Order>(addOrderOfferDTO));
+            output.FinalPrice = finalPrice;
+
+            var _order = _mapper.Map<Order>(addOrderOfferDTO);
+            _order.TotalPrice = finalPrice;
+            _order.Status = OrderStatus.Pending;
+            _order.TotalAmount = cartProductsDTO.numberOfProducts;
+
+            var addedRecord = await _db.Orders.AddAsync(_order);
             await _db.SaveChangesAsync();
             foreach (var product in cartProductsDTO.ProductsAmounts)
             {
@@ -121,7 +129,7 @@ namespace ECommereceApi.Repo
             var results = cartProducts.ProductsAmounts.Select(p => IsProductExistWithAmounts(p)).ToList();
             return results.All(r => r);
         }
-        public async Task<Product> GetProductByIdAsync(int productId)
+        public async Task<Product?> GetProductByIdAsync(int productId)
         {
             return await _db.Products.SingleOrDefaultAsync(p => p.ProductId == productId);
         }
@@ -154,6 +162,18 @@ namespace ECommereceApi.Repo
         // **************************************** Hamed ****************************************
         #region Hamed
 
+
+        public async Task<PagedResult<OrderDisplayDTO>> GetAllOrdersPaginatedAsync(int page, int pageSize)
+        {
+            var orders = await _db.Orders.ToListAsync();
+            return RenderPagination(page, pageSize, orders);
+        }
+
+        public async Task<PagedResult<OrderDisplayDTO>> GetOrdersByStatusPaginatedAsync(OrderStatus status, int page, int pageSize)
+        {
+            var orders = await _db.Orders.Where(o=>o.Status== status).ToListAsync();
+            return RenderPagination(page, pageSize, orders);
+        }
         public async Task<PagedResult<OrderDisplayDTO>> GetUserOrdersPaginatedAsync(int userId, int page, int pageSize)
         {
             var orders = await _db.Orders.Where(o => o.UserId == userId).ToListAsync();
@@ -288,10 +308,13 @@ namespace ECommereceApi.Repo
             // Get Cart By User Id
             var _cartProductsDTO = await _cartRepo.GetCartProductsAsync(user);
 
-            // If No Offer Assigned
-            if (addOrderOfferDTO.OfferId == null|| addOrderOfferDTO.OfferId == 0)
+            // If No Offer Assigned or Not Applicable no more <==
+            if (addOrderOfferDTO.OfferId == null|| addOrderOfferDTO.OfferId == 0 )
             {
-               orderPreview = await AddOrderWithoutOfferAsync(_cartProductsDTO, addOrderOfferDTO);
+                addOrderOfferDTO.OfferId = null;
+                // Get Total Price of the cart
+               var totalCartPrice = _cartProductsDTO.FinalPrice;
+               orderPreview = await  AddOrderAsync(_cartProductsDTO, addOrderOfferDTO, totalCartPrice);
             }
             // If Offer Assigned
             else
@@ -299,14 +322,21 @@ namespace ECommereceApi.Repo
                 // Get the final price of the offer
                 var finalPriceAferOffer = GetFinalOfferPriceAsync(addOrderOfferDTO.OfferId.Value, addOrderOfferDTO.UserId).Result.Item2;
 
-                orderPreview = await AddOrderWithOfferAsync(_cartProductsDTO, addOrderOfferDTO, finalPriceAferOffer);
+                orderPreview = await AddOrderAsync(_cartProductsDTO, addOrderOfferDTO, finalPriceAferOffer);
 
             }
-            // Notify the user
+            // Notify the Admins ***************** using Notification Service *****************
+
+
+            // Delete the user cart
+            await _cartRepo.DeleteCartItemsAsync(user);
 
             // return order
             return orderPreview.OrderId;
+
         }
+
+
         #endregion 
 
         // **************************************** End Of Hamed ****************************************

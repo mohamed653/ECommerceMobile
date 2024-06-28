@@ -19,6 +19,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
 var webHostEnvironment = builder.Services.BuildServiceProvider().GetRequiredService<IWebHostEnvironment>();
+var documentationFilePath = Path.Combine(System.AppContext.BaseDirectory, "ECommereceApi.xml");
 
 builder.Services.AddDbContext<ECommerceContext>(options =>
 {
@@ -91,7 +92,7 @@ builder.Services.AddSwaggerGen(c =>
         Scheme = "bearer",
         BearerFormat = "JWT"
     };
-    c.IncludeXmlComments(webHostEnvironment.WebRootPath + "\\mydoc.xml");
+    c.IncludeXmlComments(documentationFilePath);
     c.AddSecurityDefinition("Bearer", securityScheme);
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {

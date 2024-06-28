@@ -25,7 +25,7 @@ namespace ECommereceApi.Repo
             return await _db.Users.Include(u => u.ProductCarts).FirstOrDefaultAsync(u => u.UserId == userId);
         }
 
-        public async Task<CartProductsDTO> GetCartProductsAsync(User user)
+        public async Task<CartProductsDTO?> GetCartProductsAsync(User user)
         {
             return await MapProductsInCartIntoCartProductsDTO(user.ProductCarts, new CartProductsDTO());
         }
@@ -83,6 +83,7 @@ namespace ECommereceApi.Repo
             }
             cartProducts.FinalPrice = cartProducts.ProductsAmounts.Sum(pa => pa.FinalPrice.Value * pa.Amount);
             return cartProducts;
+
         }
     }
 }

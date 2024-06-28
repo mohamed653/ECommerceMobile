@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
+	<DocumentationFile>$(OutputPath)doc.xml</DocumentationFile>
   </PropertyGroup>
 
 	<ItemGroup>
@@ -38,5 +39,6 @@
   </ItemGroup>
 	<PropertyGroup>
 		<NoWarn>1591</NoWarn>
+		<DocumentationFile></DocumentationFile>
 	</PropertyGroup>
 </Project>
