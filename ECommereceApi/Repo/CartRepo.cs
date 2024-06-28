@@ -22,25 +22,57 @@ namespace ECommereceApi.Repo
 
         public async Task<User> GetUserByIdAsync(int userId)
         {
-            User user = await _db.Users.Include(u => u.ProductCarts).FirstOrDefaultAsync(u => u.UserId == userId);
-            if (user == null)
-            {
-                return null;
-            }
-            return user;
+            return await _db.Users.Include(u => u.ProductCarts).FirstOrDefaultAsync(u => u.UserId == userId);
         }
 
         public async Task<CartProductsDTO> GetCartProductsAsync(User user)
         {
+            return await MapProductsInCartIntoCartProductsDTO(user.ProductCarts, new CartProductsDTO());
+        }
 
-            var result = user.ProductCarts;
-            if (result == null)
+        public async Task DeleteCartItemsAsync(User user)
+        {
+            user.ProductCarts.Clear();
+            await MySaveChangesAsync();
+        }
+        public async Task AddProductsToCartAsync(User user, List<int> productsIds, List<int> amounts)
+        {
+            AddMultipleProductsToCart(user.ProductCarts, productsIds, amounts);
+            await MySaveChangesAsync();
+        }
+        public async Task AddProductToCartAsync(User user, ProductDisplayDTO product, int amount)
+        {
+            user.ProductCarts.Add(new ProductCart()
             {
-                return null;
+                ProductId = product.ProductId,
+                UserId = user.UserId,
+                ProductAmount = amount
+            });
+            await MySaveChangesAsync();
+        }
+        public async Task MySaveChangesAsync()
+        {
+            await _db.SaveChangesAsync();
+        }
+
+        public bool IsUserHaveProductsInCart(User user)
+        {
+            return user.ProductCarts.Count != 0;
+        }
+        public void AddMultipleProductsToCart(ICollection<ProductCart> productsInCart, List<int> productsIds, List<int> amounts)
+        {
+            for (int i = 0; i < productsIds.Count; i++)
+            {
+                productsInCart.Add(new ProductCart()
+                {
+                    ProductId = productsIds[i],
+                    ProductAmount = amounts[i]
+                });
             }
-            CartProductsDTO cartProducts = new CartProductsDTO();
-            cartProducts.UserId = user.UserId;
-            foreach (var item in result)
+        }
+        public async Task<CartProductsDTO> MapProductsInCartIntoCartProductsDTO(ICollection<ProductCart> products, CartProductsDTO cartProducts)
+        {
+            foreach (var item in products)
             {
                 ProductDisplayInCartDTO productDisplayDTO = _mapper.Map<ProductDisplayInCartDTO>(await _productRepo.GetProductByIdAsync(item.ProductId));
                 productDisplayDTO.Amount = item.ProductAmount;
@@ -51,36 +83,6 @@ namespace ECommereceApi.Repo
             }
             cartProducts.FinalPrice = cartProducts.ProductsAmounts.Sum(pa => pa.FinalPrice.Value * pa.Amount);
             return cartProducts;
-        }
-        public async Task DeleteCartItemsAsync(User user)
-        {
-            user.ProductCarts.Clear();
-            _db.SaveChangesAsync();
-        }
-        public async Task AddProductToCartAsync(User user, ProductDisplayDTO product, int amount)
-        {
-            int maxProductAmount = product.Amount;
-            int actualAmount = maxProductAmount >= amount ? amount : maxProductAmount;
-            user.ProductCarts.Add(new ProductCart()
-            {
-                ProductId = product.ProductId,
-                UserId = user.UserId,
-                ProductAmount = actualAmount
-            });
-            _db.SaveChangesAsync();
-        }
-        public async Task ClearAndAddMultipleProducts(User user, List<int> productsIds, List<int> amounts)
-        {
-            DeleteCartItemsAsync(user);
-            for(int i = 0; i < productsIds.Count; i++)
-            {
-                user.ProductCarts.Add(new ProductCart()
-                {
-                    ProductId = productsIds[i],
-                    ProductAmount = amounts[i]
-                });
-            }
-            _db.SaveChangesAsync();
         }
     }
 }
