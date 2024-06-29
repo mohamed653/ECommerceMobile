@@ -89,7 +89,7 @@ namespace ECommereceApi.Repo
 
             foreach(var wishList in wishLists.Result)
             {
-                var product = await _productRepo.GetProductByIdAsync(wishList.ProductId);
+                var product = await _productRepo.GetProductDisplayDTOByIdAsync(wishList.ProductId);
                 if(product.ProductImages.Count > 1)
                     product.ProductImages = product.ProductImages.Take(1).ToList();
                 products.Add(product);
@@ -113,7 +113,7 @@ namespace ECommereceApi.Repo
             List<ProductDisplayDTO> topProducts = new List<ProductDisplayDTO>();
             foreach (var product in products)
             {
-                var p = await _productRepo.GetProductByIdAsync(product.ProductId);
+                var p = await _productRepo.GetProductDisplayDTOByIdAsync(product.ProductId);
                 topProducts.Add(p);
             }
             return topProducts;

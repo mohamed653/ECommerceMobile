@@ -22,5 +22,6 @@ namespace ECommereceApi.DTOs.Product
         public int CategoryId { get; set; }
         public string CategoryName { get; set; }
         public double? FinalPrice { get; set; }
+        public ICollection<SubCategoryValuesDTO> CategoryValues { get; set; } = new List<SubCategoryValuesDTO>();
     }
 }

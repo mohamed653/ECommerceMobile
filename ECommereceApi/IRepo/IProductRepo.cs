@@ -9,8 +9,9 @@ namespace ECommereceApi.IRepo
     {
         Task<ProductDisplayDTO> AddProductAsync(ProductAddDTO product);
         Task<Status> DeleteProductAsync(int id);
-        Task<IEnumerable<ProductDisplayDTO>> GetAllProductsAsync();
-        Task<ProductDisplayDTO> GetProductByIdAsync(int id);
+        Task<bool> IsProductExistsAsync(int id);
+        Task<IEnumerable<ProductDisplayDTO>> GetAllProductDisplayDTOsAsync();
+        Task<ProductDisplayDTO> GetProductDisplayDTOByIdAsync(int id);
         Task<Status> UpdateProductAsync(ProductAddDTO product, int Id);
         Task SubtractProductAmountFromStock(List<ProductOrderStockDTO> productOrderStockDTOs);
         Task<IEnumerable<ProductDisplayDTO>> GetAllCategoryProductsAsync(int categoryId);
