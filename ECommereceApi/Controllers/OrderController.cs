@@ -188,8 +188,8 @@ namespace ECommereceApi.Controllers
         }
 
         [HttpPost]
-        [Route("ChangeStatusShipped")]
-        public async Task<IActionResult> ChangeStatusShipped(Guid orderId)
+        [Route("ChangeStatusAccepted")]
+        public async Task<IActionResult> ChangeStatusAccepted(Guid orderId)
         {
             var order = await _orderRepo.GetOrderByIdAsync(orderId);
             if (order is null)
@@ -200,7 +200,42 @@ namespace ECommereceApi.Controllers
             {
                 return BadRequest("order is not in Pending state");
             }
-            await _orderRepo.ChangeOrderStatusAsync(orderId, OrderStatus.Shipped);
+            try
+            {
+                await _orderRepo.ChangeOrderStatusAsync(orderId, OrderStatus.Accepted);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+                throw;
+            }
+
+            return Ok();
+        }
+
+        [HttpPost]
+        [Route("ChangeStatusShipped")]
+        public async Task<IActionResult> ChangeStatusShipped(Guid orderId,DateOnly ShippingDate)
+        {
+            var order = await _orderRepo.GetOrderByIdAsync(orderId);
+            if (order is null)
+            {
+                return NotFound("order not found");
+            }
+            if (order.Status != OrderStatus.Pending)
+            {
+                return BadRequest("order is not in Pending state");
+            }
+            try
+            {
+                await _orderRepo.ChangeOrderStatusAsync(orderId, OrderStatus.Shipped);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+                throw;
+            }
+          
             return Ok();
         }
         [HttpPost]
@@ -216,7 +251,14 @@ namespace ECommereceApi.Controllers
             {
                 return BadRequest("order is not in Shipped state");
             }
-            await _orderRepo.ChangeOrderStatusAsync(orderId, OrderStatus.Delivered);
+            try
+            {
+                await _orderRepo.ChangeOrderStatusAsync(orderId, OrderStatus.Delivered);
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
             return Ok();
         }
         [HttpPost]
@@ -232,7 +274,17 @@ namespace ECommereceApi.Controllers
             {
                 return BadRequest("order has been delivered");
             }
-            await _orderRepo.ChangeOrderStatusAsync(orderId, OrderStatus.Cancelled);
+
+            try
+            {
+                await _orderRepo.ChangeOrderStatusAsync(orderId, OrderStatus.Cancelled);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+                throw;
+            }
+        
             return Ok();
         }
         // **************************************** End Of Hamed ****************************************

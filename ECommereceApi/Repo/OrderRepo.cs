@@ -9,6 +9,7 @@ using ECommereceApi.Services.classes;
 using ECommereceApi.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Serilog;
 
 namespace ECommereceApi.Repo
 {
@@ -77,13 +78,6 @@ namespace ECommereceApi.Repo
             output.FinalPrice = output.ProductsAmounts.Sum(p => p.FinalPrice.Value * p.Amount);
             output.numberOfProducts = output.ProductsAmounts.Sum(p => p.Amount);
             output.numberOfUniqueProducts = output.ProductsAmounts.Count;
-        }
-        public async Task ChangeOrderStatusAsync(Guid orderId, OrderStatus newStatus)
-        {
-            var order = await GetOrderByIdAsync(orderId);
-            order.Status = newStatus;
-            _db.Orders.Update(order);
-            await _db.SaveChangesAsync();
         }
 
         public async Task AssignAllAmountPropertyToProductDisplayInCartDTOAsync(List<ProductDisplayInCartDTO> products)
@@ -354,7 +348,57 @@ namespace ECommereceApi.Repo
 
         #endregion
 
-        #region Order Shipment and Delivery
+        #region Order Acceptance, Shipment and Delivery
+
+        public async Task ChangeOrderStatusAsync(Guid orderId, OrderStatus newStatus)
+        {
+            var order = await GetOrderByIdAsync(orderId);
+            if (order == null)
+            {
+                throw new ArgumentException("Order not found");
+            }
+            if (order.Status == newStatus)
+            {
+                throw new InvalidOperationException("Order status is already " + newStatus);
+            }
+            if(order.Status>newStatus)
+            {
+                throw new InvalidOperationException("Order status can't be reversed to " + newStatus);
+            }
+            switch (newStatus)
+            {
+
+               case OrderStatus.Accepted:
+                    
+                    break;
+                case OrderStatus.Shipped:
+                    order.ShippingDate = DateOnly.FromDateTime(DateTime.Now);
+                    break;
+                case OrderStatus.Delivered:
+                    // Call the Sales Service to Update
+
+                    break;
+                case OrderStatus.Cancelled:
+                    // Call the Sales Service to Update
+
+                break;
+
+            }
+
+            order.Status = newStatus;
+            _db.Orders.Update(order);
+            try
+            {
+                await _db.SaveChangesAsync();
+            }
+            catch(Exception ex)
+            {
+                Log.Error($"OrderRepo |ChangeOrderStatus() OrderId:{orderId} ErrorMessage:{ex.Message}");
+                throw;
+            }
+            
+        }
+
         #endregion
 
         #region Order Statistics
