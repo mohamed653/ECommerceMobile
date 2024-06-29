@@ -375,6 +375,7 @@ namespace ECommereceApi.Repo
         {
             var totalOrders = await GetTotalOrdersCountByStatusAsync(OrderStatus.Pending, userId);
             var totalPendingOrders = await GetTotalOrdersCountByStatusAsync(OrderStatus.Pending, userId);
+            var totalAcceptedOrders = await GetTotalOrdersCountByStatusAsync(OrderStatus.Accepted, userId);
             var totalShippedOrders = await GetTotalOrdersCountByStatusAsync(OrderStatus.Shipped, userId);
             var totalDeliveredOrders = await GetTotalOrdersCountByStatusAsync(OrderStatus.Delivered, userId);
             var totalCancelledOrders = await GetTotalOrdersCountByStatusAsync(OrderStatus.Cancelled, userId);
@@ -383,6 +384,7 @@ namespace ECommereceApi.Repo
             {
                 TotalOrders = totalOrders,
                 TotalPendingOrders = totalPendingOrders,
+                TotalAcceptedOrders = totalAcceptedOrders,
                 TotalShippedOrders = totalShippedOrders,
                 TotalDeliveredOrders = totalDeliveredOrders,
                 TotalCancelledOrders = totalCancelledOrders
@@ -392,6 +394,7 @@ namespace ECommereceApi.Repo
         {
             var totalOrders = await GetTotalOrdersCountAsync();
             var totalPendingOrders = await GetTotalOrdersCountByStatusAsync(OrderStatus.Pending);
+            var totalAcceptedOrders = await GetTotalOrdersCountByStatusAsync(OrderStatus.Accepted);
             var totalShippedOrders = await GetTotalOrdersCountByStatusAsync(OrderStatus.Shipped);
             var totalDeliveredOrders = await GetTotalOrdersCountByStatusAsync(OrderStatus.Delivered);
             var totalCancelledOrders = await GetTotalOrdersCountByStatusAsync(OrderStatus.Cancelled);
@@ -400,6 +403,7 @@ namespace ECommereceApi.Repo
             {
                 TotalOrders = totalOrders,
                 TotalPendingOrders = totalPendingOrders,
+                TotalAcceptedOrders = totalAcceptedOrders,
                 TotalShippedOrders = totalShippedOrders,
                 TotalDeliveredOrders = totalDeliveredOrders,
                 TotalCancelledOrders = totalCancelledOrders
