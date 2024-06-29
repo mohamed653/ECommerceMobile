@@ -17,7 +17,7 @@ public class ValidProductId : ValidationAttribute
 
         IProductRepo productRepo = (IProductRepo)validationContext.GetService(typeof(IProductRepo));
 
-        ProductDisplayDTO ExistingProduct = productRepo.GetProductByIdAsync(productId.Value).Result;
+        ProductDisplayDTO ExistingProduct = productRepo.GetProductDisplayDTOByIdAsync(productId.Value).Result;
         if (ExistingProduct is null)
             return new ValidationResult("No product with this id!");
 

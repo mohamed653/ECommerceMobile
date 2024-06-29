@@ -21,7 +21,7 @@ namespace ECommereceApi.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllProductsAsync()
         {
-            return Ok(await productRepo.GetAllProductsAsync());
+            return Ok(await productRepo.GetAllProductDisplayDTOsAsync());
         }
         [HttpPost]
         public async Task<IActionResult> AddProductAsync([Required] ProductAddDTO product)
@@ -35,6 +35,7 @@ namespace ECommereceApi.Controllers
         [HttpDelete]
         public async Task<IActionResult> DeleteProductAsync(int id)
         {
+            if(!await productRepo.IsProductExistsAsync(id)) return NotFound("No Product with this Id");
             var result = await productRepo.DeleteProductAsync(id);
             if (result == Status.Failed) return BadRequest();
             return Ok();
@@ -51,7 +52,7 @@ namespace ECommereceApi.Controllers
         [Route("/api/product/{id:int}")]
         public async Task<IActionResult> GetProductByIdAsync(int id)
         {
-            var result = await productRepo.GetProductByIdAsync(id);
+            var result = await productRepo.GetProductDisplayDTOByIdAsync(id);
             if (result == null) return NotFound();
             return Ok(result);
         }
