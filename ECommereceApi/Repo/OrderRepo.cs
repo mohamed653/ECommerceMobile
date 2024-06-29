@@ -23,10 +23,12 @@ namespace ECommereceApi.Repo
         private readonly IFileCloudService _fileCloudService;
         private readonly ICartRepo _cartRepo;
         private readonly IOfferRepo _offerRepo;
+        private readonly IProductRepo _productRepo;
+        private readonly IProductSalesManagment _productSalesManagment;
         #endregion
 
         #region Ctor
-        public OrderRepo(IWebHostEnvironment env, ECommerceContext db, IMapper mapper, IFileCloudService fileCloudService, ICartRepo cartRepo, IOfferRepo offerRepo)
+        public OrderRepo(IWebHostEnvironment env, ECommerceContext db, IMapper mapper, IFileCloudService fileCloudService, ICartRepo cartRepo, IOfferRepo offerRepo, IProductRepo productRepo, IProductSalesManagment productSalesManagment)
         {
             _db = db;
             _mapper = mapper;
@@ -34,6 +36,8 @@ namespace ECommereceApi.Repo
             _fileCloudService = fileCloudService;
             _cartRepo = cartRepo;
             _offerRepo = offerRepo;
+            _productRepo = productRepo;
+            _productSalesManagment = productSalesManagment;
         }
         #endregion
 
@@ -46,9 +50,9 @@ namespace ECommereceApi.Repo
             output.ApplicableOffers = await GetApplicableOffersForCartAsync(cartProductsDTO, offers);
             return output;
         }
-        public async Task<Order> GetOrderByIdAsync(Guid orderId)
+        public async Task<OrderDisplayDTO> GetOrderByIdAsync(Guid orderId)
         {
-            return await _db.Orders.FindAsync(orderId);
+            return _mapper.Map<OrderDisplayDTO>( await _db.Orders.Include(u=>u.User).Include(o=>o.ProductOrders).FirstOrDefaultAsync(x=>x.OrderId ==orderId));
         }
         public async Task<Product?> GetProductByIdAsync(int productId)
         {
@@ -350,54 +354,68 @@ namespace ECommereceApi.Repo
 
         #region Order Acceptance, Shipment and Delivery
 
-        public async Task ChangeOrderStatusAsync(Guid orderId, OrderStatus newStatus)
+        public async Task ChangeOrderStatusAsync(Guid orderId, OrderStatus newStatus, int arrivalInDays = 0)
         {
-            var order = await GetOrderByIdAsync(orderId);
+            var order = await _db.Orders.Include(x=>x.ProductOrders).FirstOrDefaultAsync(x => x.OrderId == orderId);
+            List<ProductOrderStockDTO> productOrderStockDTOs = order.ProductOrders.Select(x => new ProductOrderStockDTO
+            {
+                ProductId = x.ProductId,
+                Amount = x.Amount
+            }).ToList();
+
             if (order == null)
             {
                 throw new ArgumentException("Order not found");
             }
+
             if (order.Status == newStatus)
             {
-                throw new InvalidOperationException("Order status is already " + newStatus);
+                throw new InvalidOperationException($"Order status is already {newStatus}");
             }
-            if(order.Status>newStatus)
+
+            if (order.Status != OrderStatus.Cancelled && order.Status > newStatus)
             {
-                throw new InvalidOperationException("Order status can't be reversed to " + newStatus);
-            }
-            switch (newStatus)
-            {
-
-               case OrderStatus.Accepted:
-                    
-                    break;
-                case OrderStatus.Shipped:
-                    order.ShippingDate = DateOnly.FromDateTime(DateTime.Now);
-                    break;
-                case OrderStatus.Delivered:
-                    // Call the Sales Service to Update
-
-                    break;
-                case OrderStatus.Cancelled:
-                    // Call the Sales Service to Update
-
-                break;
-
+                throw new InvalidOperationException($"Order status can't be reversed to {newStatus}");
             }
 
-            order.Status = newStatus;
-            _db.Orders.Update(order);
             try
             {
+                switch (newStatus)
+                {
+                    case OrderStatus.Accepted:
+                        await _productRepo.SubtractProductAmountFromStock(productOrderStockDTOs);
+                        break;
+
+                    case OrderStatus.Shipped:
+                        order.ShippingDate = DateOnly.FromDateTime(DateTime.Now);
+                        order.ArrivalInDays = arrivalInDays;
+                        // Call Notification Service to Notify the User
+                        break;
+
+                    case OrderStatus.Delivered:
+                        await _productSalesManagment.UpdateOrderProductsScores(orderId, productOrderStockDTOs);
+                        // Call Notification Service to Notify the Admin
+                        break;
+
+                    case OrderStatus.Cancelled:
+                        // Call Notification Service to Notify the User
+                        break;
+                }
+
+                order.Status = newStatus;
+
+                _db.Attach(_mapper.Map<Order>(order)); // Ensure the entity is attached to the context
+                _db.Entry(order).State = EntityState.Modified; // Mark the entity as modified
                 await _db.SaveChangesAsync();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                Log.Error($"OrderRepo |ChangeOrderStatus() OrderId:{orderId} ErrorMessage:{ex.Message}");
+                Log.Error($"OrderRepo | ChangeOrderStatusAsync() OrderId:{orderId} ErrorMessage:{ex.Message}");
                 throw;
             }
-            
         }
+
+
 
         #endregion
 

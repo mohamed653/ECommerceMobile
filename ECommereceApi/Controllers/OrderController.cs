@@ -215,20 +215,25 @@ namespace ECommereceApi.Controllers
 
         [HttpPost]
         [Route("ChangeStatusShipped")]
-        public async Task<IActionResult> ChangeStatusShipped(Guid orderId,DateOnly ShippingDate)
+        public async Task<IActionResult> ChangeStatusShipped(Guid orderId,int arrivalInDays)
         {
             var order = await _orderRepo.GetOrderByIdAsync(orderId);
             if (order is null)
             {
                 return NotFound("order not found");
             }
-            if (order.Status != OrderStatus.Pending)
+            if (arrivalInDays <= 0)
+                return BadRequest("arrival days must be greater than 0");
+            else if(arrivalInDays > 14)
+                return BadRequest("arrival days must be less than 14");
+
+            if (order.Status != OrderStatus.Accepted)
             {
-                return BadRequest("order is not in Pending state");
+                return BadRequest("order is not in Accepted state");
             }
             try
             {
-                await _orderRepo.ChangeOrderStatusAsync(orderId, OrderStatus.Shipped);
+                await _orderRepo.ChangeOrderStatusAsync(orderId, OrderStatus.Shipped, arrivalInDays);
             }
             catch (Exception ex)
             {
@@ -270,9 +275,9 @@ namespace ECommereceApi.Controllers
             {
                 return NotFound("order not found");
             }
-            if (order.Status == OrderStatus.Delivered)
+            if (order.Status != OrderStatus.Pending)
             {
-                return BadRequest("order has been delivered");
+                return BadRequest("order has been already"+order.Status);
             }
 
             try

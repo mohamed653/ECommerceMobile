@@ -46,14 +46,7 @@ public partial class Order
     [NotMapped]
     public DateOnly? ArrivalDate
     {
-        get
-        {
-            if (ShippingDate.HasValue && ArrivalInDays.HasValue)
-            {
-                return ShippingDate.Value.AddDays(ArrivalInDays.Value);
-            }
-            return null;
-        }
+        get;
     }
     public DateOnly? ShippingDate { get; set; }
 

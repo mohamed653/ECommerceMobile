@@ -1,4 +1,5 @@
-﻿using ECommereceApi.DTOs.Product;
+﻿using ECommereceApi.DTOs.Order;
+using ECommereceApi.DTOs.Product;
 using ECommereceApi.Models;
 using ECommereceApi.Repo;
 
@@ -11,6 +12,7 @@ namespace ECommereceApi.IRepo
         Task<IEnumerable<ProductDisplayDTO>> GetAllProductsAsync();
         Task<ProductDisplayDTO> GetProductByIdAsync(int id);
         Task<Status> UpdateProductAsync(ProductAddDTO product, int Id);
+        Task SubtractProductAmountFromStock(List<ProductOrderStockDTO> productOrderStockDTOs);
         Task<IEnumerable<ProductDisplayDTO>> GetAllCategoryProductsAsync(int categoryId);
         Task<IEnumerable<CategoryDTO>> GetAllCategoriesAsync();
         Task<CategoryDTO> AddCategoryAsync(CategoryAddDTO category);

@@ -13,6 +13,8 @@ using Newtonsoft.Json.Linq;
 using ECommereceApi.Services.classes;
 using ECommereceApi.Services.Interfaces;
 using System.Collections.Generic;
+using ECommereceApi.DTOs.Order;
+using Serilog;
 
 namespace ECommereceApi.Repo
 {
@@ -89,6 +91,41 @@ namespace ECommereceApi.Repo
             await _db.SaveChangesAsync();
             return Status.Success;
         }
+
+
+        public async Task SubtractProductAmountFromStock(List<ProductOrderStockDTO> productOrderStockDTOs)
+        {
+            using (var transaction = await _db.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    foreach (var productOrderStockDTO in productOrderStockDTOs)
+                    {
+                        var product = await _db.Products.FirstOrDefaultAsync(p => p.ProductId == productOrderStockDTO.ProductId);
+                        if (product == null)
+                            continue;
+
+                        if (product.Amount < productOrderStockDTO.Amount)
+                        {
+                            throw new Exception($"The amount of the product {product.ProductId} is less than the amount of the order");
+                        }
+
+                        product.Amount -= productOrderStockDTO.Amount;
+                        _db.Products.Update(product);
+                    }
+
+                    await _db.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    Log.Error("Error in SubtractProductAmountFromStock: {0}", ex.Message);
+                    throw;
+                }
+            }
+        }
+
         public async Task<IEnumerable<ProductDisplayDTO>> GetAllCategoryProductsAsync(int categoryId)
         {
             return _mapper.Map<List<ProductDisplayDTO>>(await _db.Products.Where(p => p.CategoryId == categoryId).Include(p => p.Category).Include(p => p.ProductImages).ToListAsync());
