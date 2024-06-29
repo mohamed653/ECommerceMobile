@@ -56,7 +56,7 @@ namespace ECommereceApi.Controllers
         }
 
         /// <summary>
-        ///  Status: 0 => Pending, 1 => Shipped, 2 => Delivered, 3 => Cancelled
+        ///  Status: 0 => Pending,1==> Accepted, 2 => Shipped, 3 => Delivered, 4 => Cancelled
         /// </summary>
         /// <param name="userId"></param>
         /// <param name="orderStatus"></param>
@@ -107,6 +107,38 @@ namespace ECommereceApi.Controllers
                 return Ok(orders);
 
             return NotFound("No orders found for this user");
+        }
+
+        [HttpGet]
+        [Route("GetOrderById")]
+        public async Task<IActionResult> GetOrderById(Guid orderId)
+        {
+            var order = await _orderRepo.GetOrderByIdAsync(orderId);
+            if (order is null)
+            {
+                return NotFound("No Order Found!");
+            }
+            return Ok(order);
+        }
+
+        [HttpGet]
+        [Route("GetOrderStats")]
+        public async Task<IActionResult> GetOrderStats()
+        {
+            var stats = await _orderRepo.GetOrderStats();
+            return Ok(stats);
+        }
+        [HttpGet]
+        [Route("GetOrderStatsByUserId")]
+        public async Task<IActionResult> GetOrderStatsByUserId(int userId)
+        {
+            var user = await _cartRepo.GetUserByIdAsync(userId);
+            if (user is null)
+            {
+                return NotFound("No User Found!");
+            }
+            var stats = await _orderRepo.GetUserOrderStats(userId);
+            return Ok(stats);
         }
 
         // Calculated The Final Total Price Of The Order

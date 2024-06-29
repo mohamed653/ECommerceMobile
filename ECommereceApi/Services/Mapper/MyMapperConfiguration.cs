@@ -82,7 +82,9 @@ namespace ECommereceApi.Services.Mapper
             CreateMap<OrderPreviewWithoutOffersDTO, AddOrderOfferDTO>().ReverseMap();
             CreateMap<Order, AddOrderOfferDTO>().ReverseMap();
             CreateMap<OrderDisplayDTO, Order>().ReverseMap();
-            CreateMap<ProductOrderDTO,ProductOrder>().ReverseMap();
+            CreateMap<ProductOrderDTO, ProductOrder>().ReverseMap()
+            .ForMember(dest => dest.ProductImage, opt => opt.MapFrom(src => src.Product.ProductImages.FirstOrDefault()));
+            CreateMap<UserOrderDTO,User>().ReverseMap();
             #endregion
 
         }

@@ -15,12 +15,16 @@ namespace ECommereceApi.Repo
 
     public class OrderRepo : IOrderRepo
     {
+        #region Fields
         private readonly ECommerceContext _db;
         private readonly IMapper _mapper;
         private readonly IWebHostEnvironment _env;
         private readonly IFileCloudService _fileCloudService;
         private readonly ICartRepo _cartRepo;
         private readonly IOfferRepo _offerRepo;
+        #endregion
+
+        #region Ctor
         public OrderRepo(IWebHostEnvironment env, ECommerceContext db, IMapper mapper, IFileCloudService fileCloudService, ICartRepo cartRepo, IOfferRepo offerRepo)
         {
             _db = db;
@@ -30,6 +34,9 @@ namespace ECommereceApi.Repo
             _cartRepo = cartRepo;
             _offerRepo = offerRepo;
         }
+        #endregion
+
+        #region Get Functions
         public async Task<OrderPreviewDTO> GetOrderPreviewAsync(CartProductsDTO cartProductsDTO)
         {
             var output = _mapper.Map<OrderPreviewDTO>(cartProductsDTO);
@@ -38,80 +45,18 @@ namespace ECommereceApi.Repo
             output.ApplicableOffers = await GetApplicableOffersForCartAsync(cartProductsDTO, offers);
             return output;
         }
-        public async Task AssignAllAmountPropertyToProductDisplayInCartDTOAsync(List<ProductDisplayInCartDTO> products)
-        {
-            foreach (var product in products)
-                product.AllAmount = (await GetProductByIdAsync(product.ProductId)).Amount;
-        }
-        //public async Task<OrderPreviewWithoutOffersDTO> AddOrderWithoutOfferAsync(CartProductsDTO cartProductsDTO, AddOrderOfferDTO addOrderOfferDTO, double finalPrice)
-        //{
-        //    var output = _mapper.Map<OrderPreviewWithoutOffersDTO>(addOrderOfferDTO);
-        //    output.ProductsAmounts = cartProductsDTO.ProductsAmounts;
-        //    output.FinalPrice = 
-        //    var addedRecord = await _db.Orders.AddAsync(_mapper.Map<Order>(addOrderOfferDTO));
-        //    await _db.SaveChangesAsync();
-        //    foreach (var product in cartProductsDTO.ProductsAmounts)
-        //    {
-        //        var productOrder = new ProductOrder
-        //        {
-        //            OrderId = addedRecord.Entity.OrderId,
-        //            ProductId = product.ProductId,
-        //            Amount = product.Amount
-        //        };
-        //        await _db.ProductOrders.AddAsync(productOrder);
-        //    }
-        //    await _db.SaveChangesAsync();
-        //    AssignAdditionalValuestoOrderPreviewDTO(output);
-        //    output.OrderId = addedRecord.Entity.OrderId;
-        //    return output;
-        //}
-        // ** added By Hamed
-        public async Task<OrderPreviewWithoutOffersDTO> AddOrderAsync(CartProductsDTO cartProductsDTO, AddOrderOfferDTO addOrderOfferDTO,double finalPrice)
-        {
-            var output = _mapper.Map<OrderPreviewWithoutOffersDTO>(addOrderOfferDTO);
-            output.ProductsAmounts = cartProductsDTO.ProductsAmounts;
-            output.FinalPrice = finalPrice;
-
-            var _order = _mapper.Map<Order>(addOrderOfferDTO);
-            _order.TotalPrice = finalPrice;
-            _order.Status = OrderStatus.Pending;
-            _order.TotalAmount = cartProductsDTO.numberOfProducts;
-
-            var addedRecord = await _db.Orders.AddAsync(_order);
-            await _db.SaveChangesAsync();
-            foreach (var product in cartProductsDTO.ProductsAmounts)
-            {
-                var productOrder = new ProductOrder
-                {
-                    OrderId = addedRecord.Entity.OrderId,
-                    ProductId = product.ProductId,
-                    Amount = product.Amount
-                };
-                await _db.ProductOrders.AddAsync(productOrder);
-            }
-            await _db.SaveChangesAsync();
-            AssignAdditionalValuestoOrderPreviewDTO(output);
-            output.OrderId = addedRecord.Entity.OrderId;
-            return output;
-        }
-        public async Task ChangeOrderStatusAsync(Guid orderId, OrderStatus newStatus)
-        {
-            var order = await GetOrderByIdAsync(orderId);
-            order.Status = newStatus;
-            _db.Orders.Update(order);
-            await _db.SaveChangesAsync();
-        }
         public async Task<Order> GetOrderByIdAsync(Guid orderId)
         {
             return await _db.Orders.FindAsync(orderId);
         }
-        private void AssignAdditionalValuestoOrderPreviewDTO(OrderPreviewWithoutOffersDTO output)
+        public async Task<Product?> GetProductByIdAsync(int productId)
         {
-            output.FinalPrice = output.ProductsAmounts.Sum(p => p.FinalPrice.Value * p.Amount);
-            output.numberOfProducts = output.ProductsAmounts.Sum(p => p.Amount);
-            output.numberOfUniqueProducts = output.ProductsAmounts.Count;
+            return await _db.Products.SingleOrDefaultAsync(p => p.ProductId == productId);
         }
-
+        public async Task<List<Offer>> GetTodaysOffersAsync()
+        {
+            return await _db.Offers.Include(o => o.ProductOffers).Where(o => o.OfferDate.AddDays(o.Duration) >= DateOnly.FromDateTime(DateTime.Now) && o.OfferDate <= DateOnly.FromDateTime(DateTime.Now)).ToListAsync();
+        }
         public async Task<List<OfferDisplayDTO>> GetApplicableOffersForCartAsync(CartProductsDTO cartProductsDTO, List<Offer> offers)
         {
             List<OfferDisplayDTO> applicableOffers = new List<OfferDisplayDTO>();
@@ -124,15 +69,38 @@ namespace ECommereceApi.Repo
             }
             return applicableOffers;
         }
+        #endregion
+
+        #region Exec Functions
+        private void AssignAdditionalValuestoOrderPreviewDTO(OrderPreviewWithoutOffersDTO output)
+        {
+            output.FinalPrice = output.ProductsAmounts.Sum(p => p.FinalPrice.Value * p.Amount);
+            output.numberOfProducts = output.ProductsAmounts.Sum(p => p.Amount);
+            output.numberOfUniqueProducts = output.ProductsAmounts.Count;
+        }
+        public async Task ChangeOrderStatusAsync(Guid orderId, OrderStatus newStatus)
+        {
+            var order = await GetOrderByIdAsync(orderId);
+            order.Status = newStatus;
+            _db.Orders.Update(order);
+            await _db.SaveChangesAsync();
+        }
+
+        public async Task AssignAllAmountPropertyToProductDisplayInCartDTOAsync(List<ProductDisplayInCartDTO> products)
+        {
+            foreach (var product in products)
+                product.AllAmount = (await GetProductByIdAsync(product.ProductId)).Amount;
+        }
+
+        #endregion
+
+        #region Checks
         public async Task<bool> IsAllCartItemsAvailableAsync(CartProductsDTO cartProducts)
         {
             var results = cartProducts.ProductsAmounts.Select(p => IsProductExistWithAmounts(p)).ToList();
             return results.All(r => r);
         }
-        public async Task<Product?> GetProductByIdAsync(int productId)
-        {
-            return await _db.Products.SingleOrDefaultAsync(p => p.ProductId == productId);
-        }
+   
         public bool IsProductExistWithAmounts(ProductDisplayInCartDTO product)
         {
             return _db.Products.Any(p => p.ProductId == product.ProductId && p.Amount >= product.Amount);
@@ -153,35 +121,45 @@ namespace ECommereceApi.Repo
             }
             return isApplicable;
         }
-        public async Task<List<Offer>> GetTodaysOffersAsync()
-        {
-            return await _db.Offers.Include(o => o.ProductOffers).Where(o => o.OfferDate.AddDays(o.Duration) >= DateOnly.FromDateTime(DateTime.Now) && o.OfferDate <= DateOnly.FromDateTime(DateTime.Now)).ToListAsync();
-        }
 
+        #endregion
 
         // **************************************** Hamed ****************************************
-        #region Hamed
+        #region Order Paginations
 
 
         public async Task<PagedResult<OrderDisplayDTO>> GetAllOrdersPaginatedAsync(int page, int pageSize)
         {
-            var _orders = _mapper.Map<List<OrderDisplayDTO>>(await _db.Orders.Include(x => x.ProductOrders).ToListAsync());
+            var _orders = _mapper.Map<List<OrderDisplayDTO>>(await _db.Orders.Include(x=>x.User)
+                                                                            .Include(x => x.ProductOrders)
+                                                                            .ThenInclude(x => x.Product)
+                                                                            .ThenInclude(x => x.ProductImages).ToListAsync());
             return RenderPagination(page, pageSize, _orders);
         }
 
         public async Task<PagedResult<OrderDisplayDTO>> GetOrdersByStatusPaginatedAsync(OrderStatus status, int page, int pageSize)
         {
-            var _orders = _mapper.Map<List<OrderDisplayDTO>>(await _db.Orders.Where(o=>o.Status == status).Include(x => x.ProductOrders).ToListAsync());
+            var _orders = _mapper.Map<List<OrderDisplayDTO>>(await _db.Orders.Where(o=>o.Status == status)
+                                                                            .Include(x => x.ProductOrders).ThenInclude(x => x.Product)
+                                                                            .ThenInclude(x => x.ProductImages)
+                                                                            .ToListAsync());
             return RenderPagination(page, pageSize, _orders);
         }
         public async Task<PagedResult<OrderDisplayDTO>> GetUserOrdersPaginatedAsync(int userId, int page, int pageSize)
         {
-            var _orders = _mapper.Map<List<OrderDisplayDTO>>( await _db.Orders.Where(o=>o.UserId== userId).Include(x=>x.ProductOrders).ToListAsync());
+            var _orders = _mapper.Map<List<OrderDisplayDTO>>( await _db.Orders.Where(o=>o.UserId== userId)
+                                                                                .Include(x=>x.ProductOrders).ThenInclude(x=>x.Product)
+                                                                                .ThenInclude(x=>x.ProductImages)
+                                                                                .ToListAsync());
             return RenderPagination(page, pageSize, _orders);
         }
         public async Task<PagedResult<OrderDisplayDTO>> GetUserOrdersByStatusPaginatedAsync(int userId, OrderStatus orderStatus, int page, int pageSize)
         {
-            var _orders = _mapper.Map<List<OrderDisplayDTO>>(await _db.Orders.Where(o => o.UserId == userId&&o.Status == orderStatus).Include(x => x.ProductOrders).ToListAsync());
+            var _orders = _mapper.Map<List<OrderDisplayDTO>>(await _db.Orders.Where(o => o.UserId == userId&&o.Status == orderStatus)
+                                                                             .Include(x => x.ProductOrders)
+                                                                             .ThenInclude(x => x.Product)
+                                                                             .ThenInclude(x => x.ProductImages)
+                                                                             .ToListAsync());
             return RenderPagination(page, pageSize, _orders);
         }
         public PagedResult<OrderDisplayDTO> RenderPagination(int page, int pageSize, List<OrderDisplayDTO> inputOrders)
@@ -201,7 +179,9 @@ namespace ECommereceApi.Repo
 
             return result;
         }
-        // *** Price
+        #endregion
+        
+        #region Order Offer Price Calculation
         public async Task<Tuple<int, int>> GetFinalOfferPriceAsync(int offerId, int userId)
         {
             var offer = await GetOfferByIdAsync(offerId);
@@ -302,7 +282,37 @@ namespace ECommereceApi.Repo
             }
         }
 
-        // *** end of Price
+        #endregion
+
+        #region Order Confirmation
+        public async Task<OrderPreviewWithoutOffersDTO> AddOrderAsync(CartProductsDTO cartProductsDTO, AddOrderOfferDTO addOrderOfferDTO, double finalPrice)
+        {
+            var output = _mapper.Map<OrderPreviewWithoutOffersDTO>(addOrderOfferDTO);
+            output.ProductsAmounts = cartProductsDTO.ProductsAmounts;
+            output.FinalPrice = finalPrice;
+
+            var _order = _mapper.Map<Order>(addOrderOfferDTO);
+            _order.TotalPrice = finalPrice;
+            _order.Status = OrderStatus.Pending;
+            _order.TotalAmount = cartProductsDTO.numberOfProducts;
+
+            var addedRecord = await _db.Orders.AddAsync(_order);
+            await _db.SaveChangesAsync();
+            foreach (var product in cartProductsDTO.ProductsAmounts)
+            {
+                var productOrder = new ProductOrder
+                {
+                    OrderId = addedRecord.Entity.OrderId,
+                    ProductId = product.ProductId,
+                    Amount = product.Amount
+                };
+                await _db.ProductOrders.AddAsync(productOrder);
+            }
+            await _db.SaveChangesAsync();
+            AssignAdditionalValuestoOrderPreviewDTO(output);
+            output.OrderId = addedRecord.Entity.OrderId;
+            return output;
+        }
 
         public async Task<Guid> ConfirmOrder(AddOrderOfferDTO addOrderOfferDTO)
         {
@@ -340,7 +350,61 @@ namespace ECommereceApi.Repo
 
         }
 
-        
+
+
+        #endregion
+
+        #region Order Shipment and Delivery
+        #endregion
+
+        #region Order Statistics
+
+        private async Task<int> GetTotalOrdersCountAsync()
+        {
+            return await _db.Orders.CountAsync();
+        }
+        private async Task<int> GetTotalOrdersCountByStatusAsync(OrderStatus status)
+        {
+            return await _db.Orders.CountAsync(x => x.Status == status);
+        }
+        private async Task<int> GetTotalOrdersCountByStatusAsync(OrderStatus status,int userId)
+        {
+            return await _db.Orders.CountAsync(x => x.Status == status && x.UserId == userId);
+        }
+        public async Task<OrderStatsDTO> GetUserOrderStats(int userId)
+        {
+            var totalOrders = await GetTotalOrdersCountByStatusAsync(OrderStatus.Pending, userId);
+            var totalPendingOrders = await GetTotalOrdersCountByStatusAsync(OrderStatus.Pending, userId);
+            var totalShippedOrders = await GetTotalOrdersCountByStatusAsync(OrderStatus.Shipped, userId);
+            var totalDeliveredOrders = await GetTotalOrdersCountByStatusAsync(OrderStatus.Delivered, userId);
+            var totalCancelledOrders = await GetTotalOrdersCountByStatusAsync(OrderStatus.Cancelled, userId);
+
+            return new OrderStatsDTO
+            {
+                TotalOrders = totalOrders,
+                TotalPendingOrders = totalPendingOrders,
+                TotalShippedOrders = totalShippedOrders,
+                TotalDeliveredOrders = totalDeliveredOrders,
+                TotalCancelledOrders = totalCancelledOrders
+            };
+        }
+        public async Task<OrderStatsDTO> GetOrderStats()
+        {
+            var totalOrders = await GetTotalOrdersCountAsync();
+            var totalPendingOrders = await GetTotalOrdersCountByStatusAsync(OrderStatus.Pending);
+            var totalShippedOrders = await GetTotalOrdersCountByStatusAsync(OrderStatus.Shipped);
+            var totalDeliveredOrders = await GetTotalOrdersCountByStatusAsync(OrderStatus.Delivered);
+            var totalCancelledOrders = await GetTotalOrdersCountByStatusAsync(OrderStatus.Cancelled);
+
+            return new OrderStatsDTO
+            {
+                TotalOrders = totalOrders,
+                TotalPendingOrders = totalPendingOrders,
+                TotalShippedOrders = totalShippedOrders,
+                TotalDeliveredOrders = totalDeliveredOrders,
+                TotalCancelledOrders = totalCancelledOrders
+            };
+        }
 
         #endregion
 
