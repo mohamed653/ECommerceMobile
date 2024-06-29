@@ -99,7 +99,7 @@ namespace ECommereceApi.Repo
         public async Task<ICollection<ProductDisplayDTO>> GetProductDisplayDTOsByIdsAsync(ICollection<int> ids)
         {
             var output = new List<ProductDisplayDTO>();
-            foreach(var id in ids)
+            foreach (var id in ids)
                 output.Add(await GetProductDisplayDTOByIdAsync(id));
             return output;
         }
@@ -160,7 +160,7 @@ namespace ECommereceApi.Repo
             return Status.Success;
         }
 
-
+        //***Hamed***
         public async Task SubtractProductAmountFromStock(List<ProductOrderStockDTO> productOrderStockDTOs)
         {
             using (var transaction = await _db.Database.BeginTransactionAsync())
