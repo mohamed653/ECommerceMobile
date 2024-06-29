@@ -159,7 +159,7 @@ namespace ECommereceApi.Controllers
         }
 
 
-        // **************************************** End Of Hamed ****************************************
+
         [HttpPost]
         [Route("ConfirmOrder")] // ** Updated By Hamed**
         public async Task<IActionResult> ConfirmOrder([FromBody] AddOrderOfferDTO addOrderOfferDTO)
@@ -235,6 +235,6 @@ namespace ECommereceApi.Controllers
             await _orderRepo.ChangeOrderStatusAsync(orderId, OrderStatus.Cancelled);
             return Ok();
         }
-
+        // **************************************** End Of Hamed ****************************************
     }
 }
