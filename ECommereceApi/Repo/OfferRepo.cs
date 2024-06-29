@@ -286,8 +286,8 @@ namespace ECommereceApi.Repo
                 if (offer.OfferDate.AddDays(offer.Duration) < DateOnly.FromDateTime(DateTime.Now))
                     throw new Exception("Offer date should be in the future");
 
-                // check if title is unique
-                if (_context.Offers.Any(x => x.Title == offer.Title))
+                // check if title is unique except my title
+                if (_context.Offers.Any(x => x.Title == offerDTO.Title && x.OfferId != offerId))
                     throw new Exception("Title should be unique");
 
                 offer.Title = offerDTO.Title;

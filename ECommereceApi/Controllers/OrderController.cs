@@ -52,7 +52,7 @@ namespace ECommereceApi.Controllers
             if (orders.Items.Count > 0)
                 return Ok(orders);
 
-            return NotFound("No orders found for this user");
+            return Ok("No orders found for this user");
         }
 
         /// <summary>
@@ -79,7 +79,7 @@ namespace ECommereceApi.Controllers
             if (orders.Items.Count > 0)
                 return Ok(orders);
 
-            return NotFound("No orders found for this user");
+            return Ok("No orders found for this user");
         }
         [HttpGet]
         [Route("GetAllOrdersPaginated")]
@@ -92,12 +92,12 @@ namespace ECommereceApi.Controllers
             if (orders.Items.Count > 0)
                 return Ok(orders);
 
-            return NotFound("No orders found for this user");
+            return Ok("No orders found for this user");
         }
 
         [HttpGet]
-        [Route("GetOrdersByStatusPaginatedAsync")]
-        public async Task<IActionResult> GetOrdersByStatusPaginatedAsync(OrderStatus orderStatus,int page, [Required] int pageSize)
+        [Route("GetOrdersByStatusPaginated")]
+        public async Task<IActionResult> GetOrdersByStatusPaginated(OrderStatus orderStatus,int page, [Required] int pageSize)
         {
             if (page <= 0 || pageSize <= 0)
                 return BadRequest();
@@ -106,7 +106,7 @@ namespace ECommereceApi.Controllers
             if (orders.Items.Count > 0)
                 return Ok(orders);
 
-            return NotFound("No orders found for this user");
+            return Ok("No orders found for this user");
         }
 
         [HttpGet]
