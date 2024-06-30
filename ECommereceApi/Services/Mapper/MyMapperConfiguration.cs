@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using ECommereceApi.DTOs.Account;
+using ECommereceApi.DTOs.Notification;
 using ECommereceApi.DTOs.Offer;
 using ECommereceApi.DTOs.Order;
 using ECommereceApi.DTOs.Product;
@@ -95,6 +96,8 @@ namespace ECommereceApi.Services.Mapper
             CreateMap<UserOrderDTO,User>().ReverseMap();
             #endregion
 
+            // Notifications
+            CreateMap<NotificationMessage, NotificationPostDTO>().ReverseMap();
         }
     }
 }

@@ -24,12 +24,14 @@ namespace ECommereceApi.Repo
         private readonly IMapper _mapper;
         private readonly IWebHostEnvironment _env;
         private readonly IFileCloudService _fileCloudService;
-        public ProductRepo(IWebHostEnvironment env, ECommerceContext context, IMapper mapper, IFileCloudService fileCloudService)
+        private readonly NotificationService _notificationService;
+        public ProductRepo(IWebHostEnvironment env, ECommerceContext context, IMapper mapper, IFileCloudService fileCloudService, NotificationService notificationService)
         {
             _env = env;
             _db = context;
             _mapper = mapper;
             _fileCloudService = fileCloudService;
+            _notificationService = notificationService;
         }
         public async Task<ProductDisplayDTO> AddProductAsync(ProductAddDTO product)
         {
@@ -55,6 +57,8 @@ namespace ECommereceApi.Repo
             //    }
             //}
             //await MySaveChangesAsync()
+            await _notificationService.AddNotificationToCaller(11,"تم إضافة منتج جديد ");
+
             return await GetProductDisplayDTOByIdAsync(result.Entity.ProductId);
         }
         public async Task<bool> IsProductExistsAsync(int id)

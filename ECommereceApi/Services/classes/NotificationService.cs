@@ -19,9 +19,7 @@ namespace ECommereceApi.Services.classes
 
         public async Task AddNotificationToAllCustomers(string message)
         {
-
             await _hubContext.Clients.Group("Users").SendAsync("ReceiveNotification", message);
-            // you can add a new table to store clients notifications  because it will be a lot of data
 
             var users = await _userRepo.GetCustomersAsync();
             foreach (var user in users)
@@ -39,7 +37,7 @@ namespace ECommereceApi.Services.classes
             await _context.SaveChangesAsync();
         }
 
-        public async Task AddNotificationToAllAdmins( string message)
+        public async Task AddNotificationToAllAdmins(string message)
         {
             await _hubContext.Clients.Group("Admins").SendAsync("ReceiveNotification", message);
 
@@ -57,11 +55,12 @@ namespace ECommereceApi.Services.classes
                 _context.NotificationMessages.Add(notification);
             }
             await _context.SaveChangesAsync();
-
         }
+
         public async Task AddNotificationToCaller(int userId, string message)
         {
-            await _hubContext.Clients.User(userId.ToString()).SendAsync("ReceiveNotification", message);
+            userId = 11;
+            await _hubContext.Clients.Group("Users").SendAsync("ReceiveNotification", message);
 
             var notification = new NotificationMessage
             {
@@ -73,17 +72,17 @@ namespace ECommereceApi.Services.classes
             };
             _context.NotificationMessages.Add(notification);
             await _context.SaveChangesAsync();
-
         }
+
         public async Task<List<NotificationMessage>> GetAllMessages()
         {
             return await _context.NotificationMessages.Include(x => x.User).ToListAsync();
         }
+
         public async Task<List<NotificationMessage>> GetAllMessagesForUser(int userId)
         {
             return await _context.NotificationMessages.Include(x => x.User).Where(s => s.UserId == userId).ToListAsync();
         }
-
 
         public async Task MarkAllAsRead(int userId)
         {
