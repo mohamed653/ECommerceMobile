@@ -43,7 +43,7 @@ namespace ECommereceApi.Controllers
             if(!await _repo.IsUserExistsByIdAsync(UserId)) return NotFound("No User With this Id");
             if(!await _repo.IsProductExistsByIdAsync(ProductId)) return NotFound("No Product with this Id");
             if(!await _repo.IsProductExistsInCartAsync(ProductId, UserId)) return NotFound("Product Is not in cart");
-            await _repo.DeleteProductFromCartAsync(ProductId, UserId);
+            await _repo.DeleteProductFromCartAsync(UserId, ProductId);
             return Ok();
         }
         [HttpPost]
