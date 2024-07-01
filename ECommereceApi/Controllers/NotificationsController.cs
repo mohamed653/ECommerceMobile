@@ -31,7 +31,7 @@ public class NotificationController : ControllerBase
     [HttpPost("addForCaller/{message}")]
     public async Task<IActionResult> AddNotificationToCaller([FromBody] NotificationMessage message)
     {
-        await _notificationService.AddNotificationToCaller(message.UserId, message.MsgContent);
+        await _notificationService.AddNotificationToCaller(message.UserId.ToString(), message.MsgContent);
         return Ok();
     }
     // add notification to all customers
@@ -52,7 +52,7 @@ public class NotificationController : ControllerBase
     [HttpPost("AddNotification/{userId}")]
     public async Task<IActionResult> AddNotification(int userId, [FromBody] NotificationPostDTO message)
     {
-        await _notificationService.AddNotificationToCaller(userId, message.MsgContent);
+        await _notificationService.AddNotificationToCaller(userId.ToString(), message.MsgContent);
         return Ok();
     }
 

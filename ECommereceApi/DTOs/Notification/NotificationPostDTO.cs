@@ -18,5 +18,7 @@ namespace ECommereceApi.DTOs.Notification
         [StringLength(100)]
         public string HiddenLink { get; set; }
 
+        public bool Seen { get; set; }
+
     }
 }

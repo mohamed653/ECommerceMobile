@@ -15,6 +15,7 @@ using ECommereceApi.Services.Interfaces;
 using System.Collections.Generic;
 using ECommereceApi.DTOs.Order;
 using Serilog;
+using ECommerceApi.StaticLinks;
 
 namespace ECommereceApi.Repo
 {
@@ -39,25 +40,9 @@ namespace ECommereceApi.Repo
             //if (product.SubCategoriesIds.Count != product.SubCategoriesValues.Count)
             //    return null;
             await MySaveChangesAsync();
-            //var category = await _db.Categories.Include(c => c.Subs).ThenInclude(sc => sc).FirstOrDefaultAsync(c => c.CategoryId == product.CategoryId);
-            ////var subcatsIds = category.Subs.Select(s => s.SubId).ToList();            
-            //var subcatsIds = category.Subs.Select(sc => sc.SubCategoryId).ToList();
-
-            //for (int i = 0; i < product.SubCategoriesIds.Count; i++)
-            //{
-            //    if (subcatsIds.Contains(subcatsIds[i]))
-            //    {
-            //        //var productSubCats = new ProductSubCategory()
-            //        //{
-            //        //    ProductId = result.Entity.ProductId,
-            //        //    //CategorySubCategoryValuesId = subcatsIds[i],
-            //        //    //SubCategoryValue = product.SubCategoriesValues[i]
-            //        //};
-            //        //await _db.ProductSubCategories.AddAsync(productSubCats);
-            //    }
-            //}
-            //await MySaveChangesAsync()
-            await _notificationService.AddNotificationToCaller(11,"تم إضافة منتج جديد ");
+       
+            await _notificationService.AddNotificationToAllCustomers($" تم إضافة منتج جديد {product.Name}"
+                                            ,NotificationLinks.GetLink(NotificationType.CustomerProductList));
 
             return await GetProductDisplayDTOByIdAsync(result.Entity.ProductId);
         }
