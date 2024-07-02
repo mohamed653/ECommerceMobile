@@ -130,6 +130,12 @@ Log.Logger = new LoggerConfiguration()
 //File Server Service
 builder.Services.AddScoped<IFileCloudService, FileCloudService>();
 
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    //options.Configuration = builder.Configuration.GetConnectionString("Redis");
+    //options.InstanceName = "ECommerceApi_";
+});
+
 // Add AutoMapper Service
 builder.Services.AddAutoMapper(typeof(Program));
 //builder.Services.AddAutoMapper((serviceProvider, cfg) =>
@@ -173,7 +179,7 @@ else
 }
 
 
-app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
+//app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 app.UseCors("myPolicy");
 app.UseHttpsRedirection();
 app.UseStaticFiles();
