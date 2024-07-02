@@ -37,7 +37,7 @@ builder.Services.AddCors(corsOptions =>
 
 #region FileServer
 
-var cloudinaryCredentials = builder.Configuration.GetSection("Cloudinary");
+var cloudinaryCredentials = builder.Configuration.GetSection("_Cloudinary");
 var account = new Account(
     cloudinaryCredentials["CloudName"],
     cloudinaryCredentials["ApiKey"],
