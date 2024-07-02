@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
+using ECommerceApi.StaticLinks;
 using ECommereceApi.DTOs.Offer;
+using ECommereceApi.Services.classes;
 using ECommereceApi.Services.Interfaces;
 using MethodTimer;
 using Microsoft.EntityFrameworkCore;
@@ -16,14 +18,16 @@ namespace ECommereceApi.Repo
         private readonly IFileCloudService _fileCloudService;
         private readonly IMapper _mapper;
         private readonly IProductRepo _productRepo;
+        private readonly NotificationService _notificationService;
         #endregion
         #region Constructors
-        public OfferRepo(ECommerceContext context, IFileCloudService fileCloudService, IMapper mapper, IProductRepo productRepo)
+        public OfferRepo(ECommerceContext context, IFileCloudService fileCloudService, IMapper mapper, IProductRepo productRepo,NotificationService notificationService)
         {
             _context = context;
             _fileCloudService = fileCloudService;
             _mapper = mapper;
             _productRepo = productRepo;
+            _notificationService = notificationService;
         }
         #endregion
 
@@ -105,30 +109,6 @@ namespace ECommereceApi.Repo
             }
         }
 
-        //public async Task<OffersDTOUI> GetOfferById(int id)
-        //{
-        //    try
-        //    {
-        //        var offer = await _context.Offers.Include(x => x.ProductOffers).FirstOrDefaultAsync(x => x.OfferId == id);
-        //        if (offer == null)
-        //            throw new Exception("Offer not found");
-        //        if (OfferExpiredOrInActive(offer))
-        //            throw new Exception("Offer is expired or inactive");
-
-        //        var offerDTO = _mapper.Map<OffersDTOUI>(offer);
-        //        offerDTO.ProductOffers = _mapper.Map<List<OfferProductsDTO>>(offer.ProductOffers);
-
-
-        //        return offerDTO;
-        //    }
-        //    catch (Exception)
-        //    {
-        //        throw;
-        //    }
-
-        //}
-
-
         public async Task<OffersDTOUI> GetOfferById(int id)
         {
             try
@@ -197,6 +177,7 @@ namespace ECommereceApi.Repo
                 if (!await IsProductOfferAmountInStock(productOffer))
                     return "Alert! Product Amount is not in stock";
                    
+                await _notificationService.AddNotificationToAllCustomers("تم إضافة عرض جديد",NotificationLinks.GetLink(NotificationType.CustomerOffers));
                 return String.Empty;
 
             }
