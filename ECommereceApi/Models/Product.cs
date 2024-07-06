@@ -27,7 +27,7 @@ public partial class Product : ISoftDeletable
 
     public string Description { get; set; }
 
-    public double Score { get; set; }
+    public double? Score { get; set; }
 
     public int CategoryId { get; set; }
 
