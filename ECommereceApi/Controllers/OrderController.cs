@@ -52,35 +52,9 @@ namespace ECommereceApi.Controllers
             if (orders.Items.Count > 0)
                 return Ok(orders);
 
-            return Ok("No orders found for this user");
+            return NotFound("No orders found for this user");
         }
 
-        /// <summary>
-        ///  Status: 0 => Pending,1==> Accepted, 2 => Shipped, 3 => Delivered, 4 => Cancelled
-        /// </summary>
-        /// <param name="userId"></param>
-        /// <param name="orderStatus"></param>
-        /// <param name="page"></param>
-        /// <param name="pageSize"></param>
-        /// <returns></returns>
-        [HttpGet]
-        [Route("GetUserOrdersByStatusPaginated")]
-        public async Task<IActionResult> GetUserOrdersByStatusPaginated(int userId,OrderStatus orderStatus, int page, [Required] int pageSize)
-        {
-            var user = await _cartRepo.GetUserByIdAsync(userId);
-            if (user is null)
-            {
-                return NotFound("No User Found!");
-            }
-            if (page <= 0 || pageSize <= 0)
-                return BadRequest();
-
-            var orders = await _orderRepo.GetUserOrdersByStatusPaginatedAsync(userId, orderStatus ,page, pageSize);
-            if (orders.Items.Count > 0)
-                return Ok(orders);
-
-            return Ok("No orders found for this user");
-        }
         [HttpGet]
         [Route("GetAllOrdersPaginated")]
         public async Task<IActionResult> GetAllOrdersPaginated(int page, [Required] int pageSize)
@@ -92,12 +66,12 @@ namespace ECommereceApi.Controllers
             if (orders.Items.Count > 0)
                 return Ok(orders);
 
-            return Ok("No orders found for this user");
+            return NotFound("No orders found for this user");
         }
 
         [HttpGet]
-        [Route("GetOrdersByStatusPaginated")]
-        public async Task<IActionResult> GetOrdersByStatusPaginated(OrderStatus orderStatus,int page, [Required] int pageSize)
+        [Route("GetOrdersByStatusPaginatedAsync")]
+        public async Task<IActionResult> GetOrdersByStatusPaginatedAsync(OrderStatus orderStatus,int page, [Required] int pageSize)
         {
             if (page <= 0 || pageSize <= 0)
                 return BadRequest();
@@ -106,39 +80,7 @@ namespace ECommereceApi.Controllers
             if (orders.Items.Count > 0)
                 return Ok(orders);
 
-            return Ok("No orders found for this user");
-        }
-
-        [HttpGet]
-        [Route("GetOrderById")]
-        public async Task<IActionResult> GetOrderById(Guid orderId)
-        {
-            var order = await _orderRepo.GetOrderByIdAsync(orderId);
-            if (order is null)
-            {
-                return NotFound("No Order Found!");
-            }
-            return Ok(order);
-        }
-
-        [HttpGet]
-        [Route("GetOrderStats")]
-        public async Task<IActionResult> GetOrderStats()
-        {
-            var stats = await _orderRepo.GetOrderStats();
-            return Ok(stats);
-        }
-        [HttpGet]
-        [Route("GetOrderStatsByUserId")]
-        public async Task<IActionResult> GetOrderStatsByUserId(int userId)
-        {
-            var user = await _cartRepo.GetUserByIdAsync(userId);
-            if (user is null)
-            {
-                return NotFound("No User Found!");
-            }
-            var stats = await _orderRepo.GetUserOrderStats(userId);
-            return Ok(stats);
+            return NotFound("No orders found for this user");
         }
 
         // Calculated The Final Total Price Of The Order
@@ -159,7 +101,7 @@ namespace ECommereceApi.Controllers
         }
 
 
-
+        // **************************************** End Of Hamed ****************************************
         [HttpPost]
         [Route("ConfirmOrder")] // ** Updated By Hamed**
         public async Task<IActionResult> ConfirmOrder([FromBody] AddOrderOfferDTO addOrderOfferDTO)
@@ -188,8 +130,8 @@ namespace ECommereceApi.Controllers
         }
 
         [HttpPost]
-        [Route("ChangeStatusAccepted")]
-        public async Task<IActionResult> ChangeStatusAccepted(Guid orderId)
+        [Route("ChangeStatusShipped")]
+        public async Task<IActionResult> ChangeStatusShipped(Guid orderId)
         {
             var order = await _orderRepo.GetOrderByIdAsync(orderId);
             if (order is null)
@@ -200,47 +142,7 @@ namespace ECommereceApi.Controllers
             {
                 return BadRequest("order is not in Pending state");
             }
-            try
-            {
-                await _orderRepo.ChangeOrderStatusAsync(orderId, OrderStatus.Accepted);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-                throw;
-            }
-
-            return Ok();
-        }
-
-        [HttpPost]
-        [Route("ChangeStatusShipped")]
-        public async Task<IActionResult> ChangeStatusShipped(Guid orderId,int arrivalInDays)
-        {
-            var order = await _orderRepo.GetOrderByIdAsync(orderId);
-            if (order is null)
-            {
-                return NotFound("order not found");
-            }
-            if (arrivalInDays <= 0)
-                return BadRequest("arrival days must be greater than 0");
-            else if(arrivalInDays > 14)
-                return BadRequest("arrival days must be less than 14");
-
-            if (order.Status != OrderStatus.Accepted)
-            {
-                return BadRequest("order is not in Accepted state");
-            }
-            try
-            {
-                await _orderRepo.ChangeOrderStatusAsync(orderId, OrderStatus.Shipped, arrivalInDays);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-                throw;
-            }
-          
+            await _orderRepo.ChangeOrderStatusAsync(orderId, OrderStatus.Shipped);
             return Ok();
         }
         [HttpPost]
@@ -256,14 +158,7 @@ namespace ECommereceApi.Controllers
             {
                 return BadRequest("order is not in Shipped state");
             }
-            try
-            {
-                await _orderRepo.ChangeOrderStatusAsync(orderId, OrderStatus.Delivered);
-            }
-            catch(Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            await _orderRepo.ChangeOrderStatusAsync(orderId, OrderStatus.Delivered);
             return Ok();
         }
         [HttpPost]
@@ -275,23 +170,13 @@ namespace ECommereceApi.Controllers
             {
                 return NotFound("order not found");
             }
-            if (order.Status != OrderStatus.Pending)
+            if (order.Status == OrderStatus.Delivered)
             {
-                return BadRequest("order has been already"+order.Status);
+                return BadRequest("order has been delivered");
             }
-
-            try
-            {
-                await _orderRepo.ChangeOrderStatusAsync(orderId, OrderStatus.Cancelled);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-                throw;
-            }
-        
+            await _orderRepo.ChangeOrderStatusAsync(orderId, OrderStatus.Cancelled);
             return Ok();
         }
-        // **************************************** End Of Hamed ****************************************
+
     }
 }

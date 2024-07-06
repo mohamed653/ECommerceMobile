@@ -19,7 +19,7 @@ namespace ECommereceApi.IRepo
         Task <bool> OfferExpiredOrInActive(int offerId);
 
         Task<List<OffersDTOUI>> RemoveProductFromOffer(int offerId, int productId);
-       
+       Task<bool> IsProductInActiveOrComingOfferAsync(int productId);
 
     }
 }

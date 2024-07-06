@@ -2,8 +2,6 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using ECommereceApi.Services.classes;
-using ECommereceApi.DTOs.Notification;
-using AutoMapper;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -11,13 +9,11 @@ public class NotificationController : ControllerBase
 {
     private readonly ILogger<NotificationController> _logger;
     private readonly NotificationService _notificationService;
-    private readonly IMapper _mappper;
 
-    public NotificationController(ILogger<NotificationController> logger, NotificationService notificationService, IMapper mappper)
+    public NotificationController(ILogger<NotificationController> logger, NotificationService notificationService)
     {
         _logger = logger;
         _notificationService = notificationService;
-        _mappper = mappper;
     }
 
 
@@ -25,13 +21,13 @@ public class NotificationController : ControllerBase
     public async Task<IActionResult> GetAllNotifications(int userId)
     {
         var notifications = await _notificationService.GetAllMessagesForUser(userId);
-        return Ok(_mappper.Map<List<NotificationPostDTO>>(notifications));
+        return Ok(notifications);
     }
 
     [HttpPost("addForCaller/{message}")]
     public async Task<IActionResult> AddNotificationToCaller([FromBody] NotificationMessage message)
     {
-        await _notificationService.AddNotificationToCaller(message.UserId.ToString(), message.MsgContent);
+        await _notificationService.AddNotificationToCaller(message.UserId, message.MsgContent);
         return Ok();
     }
     // add notification to all customers
@@ -49,14 +45,7 @@ public class NotificationController : ControllerBase
         return Ok();
     }
 
-    [HttpPost("AddNotification/{userId}")]
-    public async Task<IActionResult> AddNotification(int userId, [FromBody] NotificationPostDTO message)
-    {
-        await _notificationService.AddNotificationToCaller(userId.ToString(), message.MsgContent);
-        return Ok();
-    }
-
-    [HttpPost("MarkAllAsRead/{userId}")]
+    [HttpPost("{userId}")]
     public async Task<IActionResult> MarkAllAsRead(int userId)
     {
         await _notificationService.MarkAllAsRead(userId);

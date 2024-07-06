@@ -15,8 +15,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 
 builder.Services.AddControllers();
-// Register IHttpContextAccessor
-builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddEndpointsApiExplorer();
 
 var webHostEnvironment = builder.Services.BuildServiceProvider().GetRequiredService<IWebHostEnvironment>();
@@ -155,7 +154,6 @@ builder.Services.AddScoped<IMailRepo, MailRepo>();
 builder.Services.AddScoped<IOrderRepo, OrderRepo>();
 builder.Services.AddScoped<ICartRepo, CartRepo>();
 builder.Services.AddScoped<IReviewRepo, ReviewRepo>();
-builder.Services.AddScoped<IProductSalesManagment,ProductSalesManagment>();
 builder.Services.AddSignalR();
 
 // Global Exception Handling Service

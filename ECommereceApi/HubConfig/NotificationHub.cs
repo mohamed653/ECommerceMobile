@@ -4,26 +4,19 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ECommereceApi.HubConfig
 {
-    public class NotificationHub : Hub
+    public class NotificationHub:Hub
     {
         private readonly NotificationService _notificationService;
         private readonly IUserRepo _userRepo;
-
         public NotificationHub(NotificationService notificationService, IUserRepo userRepo)
         {
             _notificationService = notificationService;
             _userRepo = userRepo;
         }
-
         public override async Task OnConnectedAsync()
         {
-            var userIdString = Context.GetHttpContext().Request.Query["userId"];
-            if (!int.TryParse(userIdString, out int userIdentifier))
-            {
-                throw new Exception("Invalid userId");
-            }
-
-            var user = await _userRepo.GetUserAsync(userIdentifier);
+            int userIdentifier = int.Parse(Context.UserIdentifier);
+            var user = _userRepo.GetUserAsync(userIdentifier).Result;
 
             if (user.Role == RoleType.Admin)
             {
@@ -33,6 +26,8 @@ namespace ECommereceApi.HubConfig
             {
                 await Groups.AddToGroupAsync(Context.ConnectionId, "Users");
             }
+
+            await Clients.All.SendAsync("ReceiveNotification", $"A user: {userIdentifier} has connected");
 
             await base.OnConnectedAsync();
         }
@@ -50,9 +45,9 @@ namespace ECommereceApi.HubConfig
             await Clients.Caller.SendAsync("ReceiveNotificationCount", count);
         }
 
-        public async Task SendNotificationToAllUser( string message)
+        public async Task SendNotification(string userId, string message)
         {
-            await Clients.Group("Users").SendAsync("ReceiveNotification", message);
+            await Clients.User(userId).SendAsync("ReceiveNotification", message);
         }
     }
 }

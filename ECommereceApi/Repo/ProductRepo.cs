@@ -1,21 +1,7 @@
-﻿using ECommereceApi.Models;
-using ECommereceApi.IRepo;
-using ECommereceApi.Data;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using AutoMapper;
-using Microsoft.IdentityModel.Tokens;
-using CloudinaryDotNet;
-using CloudinaryDotNet.Actions;
-using Azure;
 using ECommereceApi.DTOs.Product;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Newtonsoft.Json.Linq;
-using ECommereceApi.Services.classes;
 using ECommereceApi.Services.Interfaces;
-using System.Collections.Generic;
-using ECommereceApi.DTOs.Order;
-using Serilog;
-using ECommerceApi.StaticLinks;
 
 namespace ECommereceApi.Repo
 {
@@ -25,25 +11,17 @@ namespace ECommereceApi.Repo
         private readonly IMapper _mapper;
         private readonly IWebHostEnvironment _env;
         private readonly IFileCloudService _fileCloudService;
-        private readonly NotificationService _notificationService;
-        public ProductRepo(IWebHostEnvironment env, ECommerceContext context, IMapper mapper, IFileCloudService fileCloudService, NotificationService notificationService)
+        public ProductRepo(IWebHostEnvironment env, ECommerceContext context, IMapper mapper, IFileCloudService fileCloudService)
         {
             _env = env;
             _db = context;
             _mapper = mapper;
             _fileCloudService = fileCloudService;
-            _notificationService = notificationService;
         }
         public async Task<ProductDisplayDTO> AddProductAsync(ProductAddDTO product)
         {
             var result = await _db.Products.AddAsync(_mapper.Map<Product>(product));
-            //if (product.SubCategoriesIds.Count != product.SubCategoriesValues.Count)
-            //    return null;
             await MySaveChangesAsync();
-       
-            await _notificationService.AddNotificationToAllCustomers($" تم إضافة منتج جديد {product.Name}"
-                                            ,NotificationLinks.GetLink(NotificationType.CustomerProductList));
-
             return await GetProductDisplayDTOByIdAsync(result.Entity.ProductId);
         }
         public async Task<bool> IsProductExistsAsync(int id)
@@ -88,7 +66,7 @@ namespace ECommereceApi.Repo
         public async Task<ICollection<ProductDisplayDTO>> GetProductDisplayDTOsByIdsAsync(ICollection<int> ids)
         {
             var output = new List<ProductDisplayDTO>();
-            foreach (var id in ids)
+            foreach(var id in ids)
                 output.Add(await GetProductDisplayDTOByIdAsync(id));
             return output;
         }
@@ -138,51 +116,13 @@ namespace ECommereceApi.Repo
                 .GroupBy(p => p.CategorySubCategoryValues.CategorySubCategory.SubCategory)
                 .ToListAsync();
         }
-        public async Task<Status> UpdateProductAsync(ProductAddDTO product, int Id)
+        public async Task UpdateProductAsync(ProductAddDTO product, int Id)
         {
             var target = await _db.Products.SingleOrDefaultAsync(p => p.ProductId == Id);
-            if (target == null)
-                return Status.NotFound;
             _mapper.Map(product, target);
             _db.Products.Update(target);
             await MySaveChangesAsync();
-            return Status.Success;
         }
-
-        //***Hamed***
-        public async Task SubtractProductAmountFromStock(List<ProductOrderStockDTO> productOrderStockDTOs)
-        {
-            using (var transaction = await _db.Database.BeginTransactionAsync())
-            {
-                try
-                {
-                    foreach (var productOrderStockDTO in productOrderStockDTOs)
-                    {
-                        var product = await _db.Products.FirstOrDefaultAsync(p => p.ProductId == productOrderStockDTO.ProductId);
-                        if (product == null)
-                            continue;
-
-                        if (product.Amount < productOrderStockDTO.Amount)
-                        {
-                            throw new Exception($"The amount of the product {product.ProductId} is less than the amount of the order");
-                        }
-
-                        product.Amount -= productOrderStockDTO.Amount;
-                        _db.Products.Update(product);
-                    }
-
-                    await _db.SaveChangesAsync();
-                    await transaction.CommitAsync();
-                }
-                catch (Exception ex)
-                {
-                    await transaction.RollbackAsync();
-                    Log.Error("Error in SubtractProductAmountFromStock: {0}", ex.Message);
-                    throw;
-                }
-            }
-        }
-
         public async Task<IEnumerable<ProductDisplayDTO>> GetAllCategoryProductsAsync(int categoryId)
         {
             return _mapper.Map<List<ProductDisplayDTO>>(await _db.Products.Where(p => p.CategoryId == categoryId).Include(p => p.Category).Include(p => p.ProductImages).ToListAsync());
@@ -210,8 +150,6 @@ namespace ECommereceApi.Repo
         public async Task<CategoryDTO> UpdateCategoryAsync(int id, CategoryAddDTO category)
         {
             var target = await _db.Categories.Include(c => c.CategorySubCategory).ThenInclude(sc => sc.SubCategory).FirstOrDefaultAsync(c => c.CategoryId == id);
-            if (target is null)
-                return null;
             target.Name = category.Name;
             target.CategorySubCategory.Clear();
             foreach (var subId in category.SubCategoriesIds)
@@ -490,33 +428,28 @@ namespace ECommereceApi.Repo
         }
         public async Task<PagedResult<ProductDisplayDTO>> RenderSortedPaginationSortedAsync(int page, int pageSize, string sortOrder)
         {
-            List<Product> productInput;
+            var query = GetBasicProductQuery();
             if (sortOrder.Equals("name_asc"))
-                productInput = _db.Products.OrderBy(p => p.Name).ToList();
+                query = query.OrderBy(p => p.Name);
             else if (sortOrder.Equals("name_des"))
-                productInput = _db.Products.OrderByDescending(p => p.Name).ToList();
+                query = query.OrderByDescending(p => p.Name);
             else if (sortOrder.Equals("price_asc"))
-                productInput = _db.Products.OrderBy(p => p.OriginalPrice).ToList();
+                query = query.OrderBy(p => p.OriginalPrice);
             else if (sortOrder.Equals("price_des"))
-                productInput = _db.Products.OrderByDescending(p => p.OriginalPrice).ToList();
+                query = query.OrderByDescending(p => p.OriginalPrice);
             else if (sortOrder.Equals("amount_asc"))
-                productInput = _db.Products.OrderBy(p => p.Amount).ToList();
+                query = query.OrderBy(p => p.Amount);
             else if (sortOrder.Equals("amount_des"))
-                productInput = _db.Products.OrderByDescending(p => p.Amount).ToList();
+                query = query.OrderByDescending(p => p.Amount);
             else if (sortOrder.Equals("discount_asc"))
-                productInput = _db.Products.OrderBy(p => p.Discount).ToList();
+                query = query.OrderBy(p => p.Discount);
             else if (sortOrder.Equals("discount_des"))
-                productInput = _db.Products.OrderByDescending(p => p.Discount).ToList();
-            else
-                productInput = await _db.Products.Include(p => p.Category).Include(p => p.ProductImages).OrderBy(p => p.Name).ToListAsync();
-            return RenderPagination(page, pageSize, productInput);
+                query = query.OrderByDescending(p => p.Discount);
+            return RenderPagination(page, pageSize, await query.ToListAsync());
         }
         public async Task<List<Product>> GetAllFilteredProductsFromSearchAsync(string? Name, double? MinOriginalPrice, double? MaxOriginalPrice, int? MinAmount, int? MaxAmount, List<int>? CategoriesIds, int? OfferId)
         {
-            var query = _db.Products
-                .Include(p => p.Category)
-                .Include(p => p.ProductOffers)
-                .AsQueryable();
+            var query = GetBasicProductQuery();
             if (!Name.IsNullOrEmpty())
                 query = query.Where(p => p.Name.Contains(Name));
             if (MinOriginalPrice.HasValue)
@@ -532,6 +465,14 @@ namespace ECommereceApi.Repo
             if (OfferId is not null)
                 query = query.Where(p => p.ProductOffers.Any(po => po.OfferId != OfferId));
             return await query.ToListAsync();
+        }
+        public IQueryable<Product>? GetBasicProductQuery()
+        {
+            return _db.Products
+                .Include(p => p.Category)
+                .Include(p => p.ProductOffers)
+                .Include(p => p.ProductImages)
+                .AsQueryable();
         }
         public async Task<List<ProductDisplayDTO>> GetAllProductsSearchAsync(string? Name, double? MinOriginalPrice, double? MaxOriginalPrice, int? MinAmount, int? MaxAmount, List<int>? CategoriesIds, int? offerId)
         {
@@ -703,6 +644,13 @@ namespace ECommereceApi.Repo
                 .ThenInclude(c => c.CategorySubCategory)
                 .ThenInclude(cs => cs.CategorySubCategoryValues)
                 .Where(p => p.Category.CategorySubCategory.Any(cs => cs.CategorySubCategoryId == categorySubCategoryId)).ToListAsync();
+        }
+        public bool IsOrgignalPriceGreaterThanDiscount(double originalPrice, double? discount)
+        {
+            if(discount is null)
+                return true;
+            else 
+                return originalPrice > discount;
         }
     }
 }
