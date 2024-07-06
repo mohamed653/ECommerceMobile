@@ -13,21 +13,31 @@ namespace ECommereceApi.Controllers
     [ApiController]
     public class ProductController : ControllerBase
     {
-        private readonly IProductRepo productRepo;
-        public ProductController(IProductRepo _productRepo)
+        private readonly IProductRepo _productRepo;
+        private readonly ICartRepo _cartRepo;
+        private readonly IOfferRepo _offerRepo;
+        private readonly IOrderRepo _orderRepo;
+        public ProductController(IProductRepo productRepo, ICartRepo cartRepo, IOfferRepo offerRepo, IOrderRepo orderRepo)
         {
-            productRepo = _productRepo;
+            _productRepo = productRepo;
+            _cartRepo = cartRepo;
+            _offerRepo = offerRepo;
+            _orderRepo = orderRepo;
         }
         [HttpGet]
         public async Task<IActionResult> GetAllProductsAsync()
         {
-            return Ok(await productRepo.GetAllProductDisplayDTOsAsync());
+            return Ok(await _productRepo.GetAllProductDisplayDTOsAsync());
         }
         [HttpPost]
         public async Task<IActionResult> AddProductAsync([Required] ProductAddDTO product)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            var result = await productRepo.AddProductAsync(product);
+            if (!_productRepo.IsOrgignalPriceGreaterThanDiscount(product.OriginalPrice, product.Discount))
+                return BadRequest("Price can't Be Equal or less than Discount!");
+            if (!await _productRepo.IsCategoryExistsAsync(product.CategoryId))
+                return NotFound("Category Not Found");
+            var result = await _productRepo.AddProductAsync(product);
             if (result is null)
                 return BadRequest();
             return Created("", result);
@@ -35,8 +45,14 @@ namespace ECommereceApi.Controllers
         [HttpDelete]
         public async Task<IActionResult> DeleteProductAsync(int id)
         {
-            if(!await productRepo.IsProductExistsAsync(id)) return NotFound("No Product with this Id");
-            var result = await productRepo.DeleteProductAsync(id);
+            if (!await _productRepo.IsProductExistsAsync(id)) return NotFound("No Product with this Id");
+            if (await _cartRepo.IsProductExistsInAnyCartAsync(id))
+                return BadRequest("Product Is In Cart");
+            if (await _offerRepo.IsProductInActiveOrComingOfferAsync(id))
+                return BadRequest("Product Is included In Active Or Coming Offer");
+            if (await _orderRepo.IsProductInActiveOrderAsync(id))
+                return BadRequest("Product Is In Active Order");
+            var result = await _productRepo.DeleteProductAsync(id);
             if (result == Status.Failed) return BadRequest();
             return Ok();
         }
@@ -44,15 +60,18 @@ namespace ECommereceApi.Controllers
         public async Task<IActionResult> UpdateProductAsync([Required] ProductAddDTO product, int Id)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            var result = await productRepo.UpdateProductAsync(product, Id);
-            if (result == Status.NotFound) return NotFound();
+            if (!_productRepo.IsOrgignalPriceGreaterThanDiscount(product.OriginalPrice, product.Discount))
+                return BadRequest("Price can't Be Equal or less than Discount!");
+            if (!await _productRepo.IsCategoryExistsAsync(product.CategoryId))
+                return NotFound("Category Not Found");
+            await _productRepo.UpdateProductAsync(product, Id);
             return Ok();
         }
         [HttpGet]
         [Route("/api/product/{id:int}")]
         public async Task<IActionResult> GetProductByIdAsync(int id)
         {
-            var result = await productRepo.GetProductDisplayDTOByIdAsync(id);
+            var result = await _productRepo.GetProductDisplayDTOByIdAsync(id);
             if (result == null) return NotFound();
             return Ok(result);
         }
@@ -60,7 +79,7 @@ namespace ECommereceApi.Controllers
         [Route("/api/category/{categoryId:int}")]
         public async Task<IActionResult> GetAllProductsByCategoryAsync(int categoryId)
         {
-            var result = await productRepo.GetAllCategoryProductsAsync(categoryId);
+            var result = await _productRepo.GetAllCategoryProductsAsync(categoryId);
             if (result == null) return NotFound();
             return Ok(result);
         }
@@ -70,7 +89,7 @@ namespace ECommereceApi.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest();
-            return Created("", await productRepo.AddCategoryAsync(category));
+            return Created("", await _productRepo.AddCategoryAsync(category));
         }
         [HttpPut]
         [Route("/api/category")]
@@ -78,7 +97,9 @@ namespace ECommereceApi.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest();
-            var result = await productRepo.UpdateCategoryAsync(id, category);
+            if (!await _productRepo.IsCategoryExistsAsync(id))
+                return NotFound("Category Not Found!");
+            var result = await _productRepo.UpdateCategoryAsync(id, category);
             if (result is null)
                 return BadRequest();
             return Created("", result);
@@ -87,7 +108,7 @@ namespace ECommereceApi.Controllers
         [Route("/api/category")]
         public async Task<IActionResult> DeleteCategoryAsync(int categoryId)
         {
-            var result = await productRepo.DeleteCategoryAsync(categoryId);
+            var result = await _productRepo.DeleteCategoryAsync(categoryId);
             if (result == Status.NotFound)
                 return NotFound();
             return Ok();
@@ -96,7 +117,7 @@ namespace ECommereceApi.Controllers
         [Route("/api/category/all")]
         public async Task<IActionResult> GetAllCategoriesAsync()
         {
-            var result = await productRepo.GetAllCategoriesAsync();
+            var result = await _productRepo.GetAllCategoriesAsync();
             if (result == null) return NotFound();
             return Ok(result);
         }
@@ -104,13 +125,13 @@ namespace ECommereceApi.Controllers
         [Route("/api/subCategory/all")]
         public async Task<IActionResult> GetAllSubCategoriesAsync()
         {
-            return Ok(await productRepo.GetAllSubCategoriesAsync());
+            return Ok(await _productRepo.GetAllSubCategoriesAsync());
         }
         [HttpGet]
         [Route("/api/subCategory/{id:int}")]
         public async Task<IActionResult> GetSubCategoryByIdAsync(int id)
         {
-            var result = await productRepo.GetSubCategoryById(id);
+            var result = await _productRepo.GetSubCategoryById(id);
             if (result is null)
                 return NotFound();
             return Ok(result);
@@ -121,7 +142,7 @@ namespace ECommereceApi.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest();
-            var result = await productRepo.AddSubCategoryAsync(category);
+            var result = await _productRepo.AddSubCategoryAsync(category);
             if (result is null)
                 return NotFound();
             return Created("", result);
@@ -132,7 +153,7 @@ namespace ECommereceApi.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest();
-            var result = await productRepo.UpdateSubCategoryAsync(id, cat);
+            var result = await _productRepo.UpdateSubCategoryAsync(id, cat);
             if (result is null)
                 return NotFound();
             return Ok(result);
@@ -141,10 +162,10 @@ namespace ECommereceApi.Controllers
         [Route("/api/subCategory")]
         public async Task<IActionResult> DeleteSubCategoryAsync(int subId)
         {
-            var result = await productRepo.DeleteSubCategoryAsync(subId);
+            var result = await _productRepo.DeleteSubCategoryAsync(subId);
             if (result == Status.NotFound)
                 return NotFound();
-            if(result == Status.Failed)
+            if (result == Status.Failed)
                 return BadRequest("Sub Category is associated with other entities");
             return Ok();
         }
@@ -152,7 +173,7 @@ namespace ECommereceApi.Controllers
         [Route("/api/subCategoryFromCategory/{categoryId:int}")]
         public async Task<IActionResult> GetAllSubCategoriesFromCategoryAsync(int categoryId)
         {
-            var result = await productRepo.GetAllSubCategoriesForCategoryAsync(categoryId);
+            var result = await _productRepo.GetAllSubCategoriesForCategoryAsync(categoryId);
             if (result == null) return NotFound();
             return Ok(result);
         }
@@ -160,7 +181,7 @@ namespace ECommereceApi.Controllers
         [Route("/api/CategorySubCategoryValues/{ProductId:int}/{categoryId:int}/{subCategoryId:int}")]
         public async Task<IActionResult> GetCategorySubCategoryValuesAsync(int ProductId, int categoryId, int subCategoryId)
         {
-            var result = await productRepo.GetProductCategorySubCategoryValuesAsync(ProductId, categoryId, subCategoryId);
+            var result = await _productRepo.GetProductCategorySubCategoryValuesAsync(ProductId, categoryId, subCategoryId);
             if (result == null) return NotFound();
             return Ok(result);
         }
@@ -168,7 +189,7 @@ namespace ECommereceApi.Controllers
         [Route("/api/CategorySubCategoryValuesAll/{ProductId:int}")]
         public async Task<IActionResult> GetAllCategorySubCategoryValuesAsync(int ProductId)
         {
-            var result = await productRepo.GetAllProductCategorySubCategoryValuesAsync(ProductId);
+            var result = await _productRepo.GetAllProductCategorySubCategoryValuesAsync(ProductId);
             if (result == null) return NotFound();
             return Ok(result);
         }
@@ -177,7 +198,7 @@ namespace ECommereceApi.Controllers
         public async Task<IActionResult> AssignValueForProductCategorySubCategoryAsync(ProductCategorySubCategoyValueAddDTO input)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            var result = await productRepo.AssignValueForProductCategorySubCategory(input);
+            var result = await _productRepo.AssignValueForProductCategorySubCategory(input);
             if (result == null) return BadRequest();
             return Created("", result);
         }
@@ -186,13 +207,13 @@ namespace ECommereceApi.Controllers
         public async Task<IActionResult> AddSubCategoryValue(CategorySubCategoryValuesAddDTO input)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            if(!await productRepo.IsCategoryExistsAsync(input.CategoryId))
+            if (!await _productRepo.IsCategoryExistsAsync(input.CategoryId))
                 return NotFound("Category Not Found");
-            if(!await productRepo.IsSubCategoryExistsAsync(input.SubCategoryId))
+            if (!await _productRepo.IsSubCategoryExistsAsync(input.SubCategoryId))
                 return NotFound("Sub Category Not Found");
-            if(!await productRepo.IsCategorySubCategoryExistsAsync(input.CategoryId, input.SubCategoryId))
-                await productRepo.AssignSubCategoryToCategoryAsync(input.CategoryId, input.SubCategoryId);
-            var output = await productRepo.AddSubCategoryValueAsync(input);
+            if (!await _productRepo.IsCategorySubCategoryExistsAsync(input.CategoryId, input.SubCategoryId))
+                await _productRepo.AssignSubCategoryToCategoryAsync(input.CategoryId, input.SubCategoryId);
+            var output = await _productRepo.AddSubCategoryValueAsync(input);
             if (output == null) return BadRequest();
             return Created("", output);
         }
@@ -200,38 +221,38 @@ namespace ECommereceApi.Controllers
         [Route("/api/CategoryDetails/All")]
         public async Task<IActionResult> GetAllCategoriesDetailsAsync()
         {
-            return Ok(await productRepo.GetAllCategoriesDetailsAsync());
+            return Ok(await _productRepo.GetAllCategoriesDetailsAsync());
         }
         [HttpGet]
         [Route("/api/CategoryDetails/{categoryId:int}")]
         public async Task<IActionResult> GetCategoryDetailsAsync([Required] int categoryId)
         {
-            if (!await productRepo.IsCategoryExistsAsync(categoryId)) return NotFound("Category Not Found");
-            return Ok(await productRepo.GetCategoryDetailsAsync(categoryId));
+            if (!await _productRepo.IsCategoryExistsAsync(categoryId)) return NotFound("Category Not Found");
+            return Ok(await _productRepo.GetCategoryDetailsAsync(categoryId));
         }
         [HttpGet]
         [Route("/api/Product/CategorySubCategoryValue")]
-        public async Task<IActionResult> GetAllProductsForCategorySubCategoryValues([Required]int categoryId, [Required]int subCategoryId, [Required]string value)
+        public async Task<IActionResult> GetAllProductsForCategorySubCategoryValues([Required] int categoryId, [Required] int subCategoryId, [Required] string value)
         {
-            if(value.IsNullOrEmpty()) return BadRequest("Invalid Value");
-            if(!await productRepo.IsCategoryExistsAsync(categoryId)) return NotFound("Category Not Found!");
-            if(!await productRepo.IsSubCategoryExistsAsync(subCategoryId)) return NotFound("Sub Category Not Found");
-            int? categorySubCategoryId = await productRepo.GetCategorySubCategoryIdFromSeparateIds(categoryId, subCategoryId);
-            if(categorySubCategoryId is null) return NotFound("Category And Sub Category Not Related");
-            return Ok(await productRepo.GetProductsDisplayDTOsFromCategorySubCategoryIdAndValueAsync(categorySubCategoryId.Value, value));
+            if (value.IsNullOrEmpty()) return BadRequest("Invalid Value");
+            if (!await _productRepo.IsCategoryExistsAsync(categoryId)) return NotFound("Category Not Found!");
+            if (!await _productRepo.IsSubCategoryExistsAsync(subCategoryId)) return NotFound("Sub Category Not Found");
+            int? categorySubCategoryId = await _productRepo.GetCategorySubCategoryIdFromSeparateIds(categoryId, subCategoryId);
+            if (categorySubCategoryId is null) return NotFound("Category And Sub Category Not Related");
+            return Ok(await _productRepo.GetProductsDisplayDTOsFromCategorySubCategoryIdAndValueAsync(categorySubCategoryId.Value, value));
         }
         [HttpGet]
         [Route("/api/SubCategoryDetails/{subCategoryId:int}")]
         public async Task<IActionResult> GetSubCategoryDetailsAsync([Required] int subCategoryId)
         {
-            if(!await productRepo.IsSubCategoryExistsAsync(subCategoryId)) return NotFound("SubCategory Not Found");
-            return Ok(await productRepo.GetSubCategoryDetails(subCategoryId));
+            if (!await _productRepo.IsSubCategoryExistsAsync(subCategoryId)) return NotFound("SubCategory Not Found");
+            return Ok(await _productRepo.GetSubCategoryDetails(subCategoryId));
         }
         [HttpDelete]
         [Route("/api/CategorySubCategoryValues")]
         public async Task<IActionResult> DeleteProductCategorySubCategoryValueAsync(int productId, int categoryId, int subCategoryId, string value)
         {
-            var result = await productRepo.DeleteProductCategorySubCategoryValue(productId, categoryId, subCategoryId, value);
+            var result = await _productRepo.DeleteProductCategorySubCategoryValue(productId, categoryId, subCategoryId, value);
             if (result == -1) return NotFound();
             return Ok();
         }
@@ -239,7 +260,7 @@ namespace ECommereceApi.Controllers
         [Route("/api/CategorySubCategoryValues/all")]
         public async Task<IActionResult> DeleteProductCategorySubCategoryValueAllAsync(int productId, int categoryId, int subCategoryId)
         {
-            var result = await productRepo.DeleteProductCategorySubCategoryValueAll(productId, categoryId, subCategoryId);  
+            var result = await _productRepo.DeleteProductCategorySubCategoryValueAll(productId, categoryId, subCategoryId);
             if (result == -1) return NotFound();
             return Ok();
         }
@@ -247,9 +268,9 @@ namespace ECommereceApi.Controllers
         [Route("/api/CategorySubCategoryValues")]
         public async Task<IActionResult> UpdateCategorySubCategoryValueAsync(CategorySubCategoryValuesAddDTO input, string newValue)
         {
-            if(!ModelState.IsValid)
+            if (!ModelState.IsValid)
                 return BadRequest();
-            var result = await productRepo.UpdateCategorySubCategoryValue(input, newValue);
+            var result = await _productRepo.UpdateCategorySubCategoryValue(input, newValue);
             if (result == null) return NotFound();
             return Ok(result);
         }
@@ -273,14 +294,14 @@ namespace ECommereceApi.Controllers
                 if (!validExtensions.Contains(extension))
                     return BadRequest("Invalid Extension!");
             }
-            await productRepo.AddProductPhotosAsync(input);
+            await _productRepo.AddProductPhotosAsync(input);
             return Created();
         }
         [HttpGet]
         [Route("/api/products/pictures")]
         public async Task<IActionResult> GetProductPicturesAsync(int productId)
         {
-            var result = await productRepo.GetProductPicturesAsync(productId);
+            var result = await _productRepo.GetProductPicturesAsync(productId);
             if (result is null)
                 return NotFound();
             //string baseURL = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
@@ -290,7 +311,7 @@ namespace ECommereceApi.Controllers
         [Route("/api/products/pictures")]
         public async Task<IActionResult> RemoveProductPictureAsync(int productId, string url)
         {
-            var result = await productRepo.RemoveProductPictureAsync(productId, url);
+            var result = await _productRepo.RemoveProductPictureAsync(productId, url);
             if (result == Status.NotFound) return NotFound();
             return Ok();
         }
@@ -300,7 +321,7 @@ namespace ECommereceApi.Controllers
         {
             if (page <= 0 || pageSize <= 0)
                 return BadRequest();
-            return Ok(await productRepo.RenderPaginationForAllProductsAsync(page, pageSize));
+            return Ok(await _productRepo.RenderPaginationForAllProductsAsync(page, pageSize));
         }
         [HttpOptions]
         [Route("/api/products/pagination")]
@@ -308,20 +329,20 @@ namespace ECommereceApi.Controllers
         {
             if (page <= 0 || pageSize <= 0)
                 return BadRequest();
-            return Ok(await productRepo.RenderSortedPaginationSortedAsync(page, pageSize, sortingIndex));
+            return Ok(await _productRepo.RenderSortedPaginationSortedAsync(page, pageSize, sortingIndex));
         }
         [HttpPut]
         [Route("/api/products/search")]
         public async Task<IActionResult> GetAllSearchResultsAsync(string? Name, double? MinOriginalPrice, double? MaxOriginalPrice, int? MinAmount, int? MaxAmount, List<int>? CategoriesIds, int? OfferId)
         {
-            return Ok(await productRepo.GetAllProductsSearchAsync(Name, MinOriginalPrice, MaxOriginalPrice, MinAmount, MaxAmount, CategoriesIds, OfferId));
+            return Ok(await _productRepo.GetAllProductsSearchAsync(Name, MinOriginalPrice, MaxOriginalPrice, MinAmount, MaxAmount, CategoriesIds, OfferId));
         }
         [HttpOptions]
         [Route("/api/products/search")]
         public async Task<IActionResult> GetAllSearchResultPaginatedAsync(string? Name, double? MinOriginalPrice, double? MaxOriginalPrice, int? MinAmount, int? MaxAmount, List<int>? CategoriesIds, [Required] int page, [Required] int pageSize, int? offerId)
         {
             if (page <= 0 || pageSize <= 0) return BadRequest();
-            return Ok(await productRepo.GetAllProductsSearchPaginatedAsync(Name, MinOriginalPrice, MaxOriginalPrice, MinAmount, MaxAmount, CategoriesIds, page, pageSize,offerId));
+            return Ok(await _productRepo.GetAllProductsSearchPaginatedAsync(Name, MinOriginalPrice, MaxOriginalPrice, MinAmount, MaxAmount, CategoriesIds, page, pageSize, offerId));
         }
     }
 }
