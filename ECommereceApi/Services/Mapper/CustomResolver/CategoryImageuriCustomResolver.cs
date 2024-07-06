@@ -2,7 +2,7 @@
 using ECommereceApi.DTOs.Product;
 using ECommereceApi.Services.Interfaces;
 
-namespace ECommereceApi.Services.Mapper
+namespace ECommereceApi.Services.Mapper.CustomResolver
 {
     public class CategoryImageuriCustomResolver : IValueResolver<Category, CategoryDTO, string>
     {

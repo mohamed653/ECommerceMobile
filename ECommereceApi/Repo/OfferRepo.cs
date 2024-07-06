@@ -476,6 +476,11 @@ namespace ECommereceApi.Repo
 
             return true;
         }
+        public async Task<bool> IsProductInActiveOrComingOfferAsync(int productId)
+        {
+            return await _context.ProductOffers.Include(po => po.Offer)
+                .FirstOrDefaultAsync(po => po.ProductId == productId && po.Offer.OfferDate.AddDays(po.Offer.Duration) < DateOnly.FromDateTime(DateTime.Now)) is not null;
+        }
 
         #endregion
 

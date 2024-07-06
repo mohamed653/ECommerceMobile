@@ -11,7 +11,7 @@ namespace ECommereceApi.IRepo
         Task<bool> IsProductExistsAsync(int id);
         Task<IEnumerable<ProductDisplayDTO>> GetAllProductDisplayDTOsAsync();
         Task<ProductDisplayDTO> GetProductDisplayDTOByIdAsync(int id);
-        Task<Status> UpdateProductAsync(ProductAddDTO product, int Id);
+        Task UpdateProductAsync(ProductAddDTO product, int Id);
         Task<IEnumerable<ProductDisplayDTO>> GetAllCategoryProductsAsync(int categoryId);
         Task<IEnumerable<CategoryDTO>> GetAllCategoriesAsync();
         Task<CategoryDTO> AddCategoryAsync(CategoryAddDTO category);
@@ -48,5 +48,6 @@ namespace ECommereceApi.IRepo
         Task<bool> IsSubCategoryExistsAsync(int id);
         Task<int> GetCategorySubCategoryIdFromSeparateIds(int categoryId, int subCategoryId);
         Task<ICollection<ProductDisplayDTO>> GetProductsDisplayDTOsFromCategorySubCategoryIdAndValueAsync(int categorySubCategoryId, string value);
+        bool IsOrgignalPriceGreaterThanDiscount(double originalPrice, double? discount);
     }
 }

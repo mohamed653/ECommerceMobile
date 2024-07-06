@@ -2,7 +2,7 @@
 using ECommereceApi.DTOs.Product;
 using ECommereceApi.Services.Interfaces;
 
-namespace ECommereceApi.Services.Mapper
+namespace ECommereceApi.Services.Mapper.CustomResolver
 {
     public class ImageUriCustomResolver : IValueResolver<ProductImage, ProductImageDTO, string>
     {
@@ -13,7 +13,7 @@ namespace ECommereceApi.Services.Mapper
         }
         public string Resolve(ProductImage source, ProductImageDTO destination, string destMember, ResolutionContext context)
         {
-                return _fileCloudService.GetImageUrl(source.ImageId);
+            return _fileCloudService.GetImageUrl(source.ImageId);
         }
     }
 

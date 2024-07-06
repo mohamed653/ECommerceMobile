@@ -157,7 +157,12 @@ namespace ECommereceApi.Repo
         {
             return await _db.Offers.Include(o => o.ProductOffers).Where(o => o.OfferDate.AddDays(o.Duration) >= DateOnly.FromDateTime(DateTime.Now) && o.OfferDate <= DateOnly.FromDateTime(DateTime.Now)).ToListAsync();
         }
-
+        public async Task<bool> IsProductInActiveOrderAsync(int productId)
+        {
+            return await _db.ProductOrders.Include(po => po.Order)
+                .FirstOrDefaultAsync(po => po.ProductId == productId && (po.Order.Status == OrderStatus.Delivered ||  po.Order.Status == OrderStatus.Cancelled))
+                is not null;
+        }
 
         // **************************************** Hamed ****************************************
         #region Hamed
