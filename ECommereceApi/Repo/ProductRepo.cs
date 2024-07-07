@@ -640,6 +640,7 @@ namespace ECommereceApi.Repo
         public async Task<ICollection<Product>> GetProductsFromCategorySubCategoryIdAsync(int categorySubCategoryId)
         {
             return await _db.Products
+                .Include(p => p.ProductImages)
                 .Include(p => p.Category)
                 .ThenInclude(c => c.CategorySubCategory)
                 .ThenInclude(cs => cs.CategorySubCategoryValues)

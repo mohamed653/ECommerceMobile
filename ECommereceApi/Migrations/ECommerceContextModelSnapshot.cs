@@ -273,6 +273,9 @@ namespace ECommereceApi.Migrations
                     b.Property<double>("OriginalPrice")
                         .HasColumnType("float");
 
+                    b.Property<double>("Score")
+                        .HasColumnType("float");
+
                     b.HasKey("ProductId");
 
                     b.HasIndex("CategoryId");
