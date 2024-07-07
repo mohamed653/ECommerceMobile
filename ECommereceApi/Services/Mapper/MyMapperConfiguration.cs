@@ -60,6 +60,10 @@ namespace ECommereceApi.Services.Mapper
                 .ForMember(c => c.ImageUri, option => option.MapFrom<SubCategoriesValuesForCategoryDTOImageResolver>())
                 .ReverseMap();
 
+            CreateMap<CategorySubCategoryValues, SubCategoryValuesDetailsDTO>()
+                .ForMember(csv => csv.ImageUrl, option => option.MapFrom<CategorySubCategoryValuesImageResolver>())
+                .ReverseMap();
+
             CreateMap<CategoriesValuesForSubCategoryDTO, SubCategory>().ReverseMap();
 
             CreateMap<SubCategoryValuesDTO, SubCategory>().ReverseMap();
