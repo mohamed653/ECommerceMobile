@@ -195,12 +195,13 @@ namespace ECommereceApi.Controllers
                 throw;
             }
         }
+
         /// <summary>
-        ///  remove a product from an offer
+        /// remove a product from an offer
+        ///  <param name="offerId"></param>
+        ///   <param name="productId"></param>
+        /// <returns>all offers with thier products</returns>
         /// </summary>
-        /// <param name="offerId"></param>
-        /// <param name="productId"></param>
-        /// <returns></returns>
         [HttpDelete("{offerId}/products/{productId}")]
         public async Task<IActionResult> RemoveProductFromOffer(int offerId, int productId)
         {

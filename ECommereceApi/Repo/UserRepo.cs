@@ -82,18 +82,24 @@ namespace ECommereceApi.Repo
             if (userDto.Role == RoleType.Customer)
             {
                 await _context.Users.AddAsync(user);
-                await SaveAsync();
+                var status = await SaveAsync();
+                if (status != Status.Success)
+                {
+                    return status;
+                }
                 await _context.Customers.AddAsync(new Customer { UserId = user.UserId });
-                await SaveAsync();
-                return Status.Success;
+                return await SaveAsync();
             }
             else
             {
                 await _context.Users.AddAsync(user);
-                await SaveAsync();
+                var status = await SaveAsync();
+                if (status != Status.Success)
+                {
+                    return status;
+                }
                 await _context.Admins.AddAsync(new Admin { UserId = user.UserId,IsSuperAdmin=false });
-                await SaveAsync();
-                return Status.Success;
+                return await SaveAsync();
             }
         }
 

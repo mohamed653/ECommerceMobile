@@ -124,10 +124,6 @@ namespace ECommereceApi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MsgId"));
 
-                    b.Property<string>("HiddenLink")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
                     b.Property<string>("MsgContent")
                         .HasColumnType("nvarchar(max)");
 
@@ -194,8 +190,8 @@ namespace ECommereceApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int?>("ArrivalInDays")
-                        .HasColumnType("int");
+                    b.Property<DateOnly?>("ArrivalDate")
+                        .HasColumnType("date");
 
                     b.Property<string>("City")
                         .HasMaxLength(50)
@@ -215,10 +211,7 @@ namespace ECommereceApi.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<decimal?>("Score")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateOnly?>("ShippingDate")
+                    b.Property<DateOnly?>("ResponseDate")
                         .HasColumnType("date");
 
                     b.Property<int>("Status")
@@ -278,6 +271,9 @@ namespace ECommereceApi.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<double>("OriginalPrice")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("Score")
                         .HasColumnType("float");
 
                     b.HasKey("ProductId");
@@ -497,14 +493,6 @@ namespace ECommereceApi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("WebInfoId"));
 
-                    b.Property<string>("CustomerServicePhone")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
                     b.Property<string>("FacebookAccount")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
@@ -512,10 +500,6 @@ namespace ECommereceApi.Migrations
                     b.Property<string>("InstagramAccount")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("StoreAddress")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("WebLogoImageUrl")
                         .HasMaxLength(200)

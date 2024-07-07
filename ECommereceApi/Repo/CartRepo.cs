@@ -107,11 +107,13 @@ namespace ECommereceApi.Repo
         {
             return await _db.ProductCarts.FirstOrDefaultAsync(pc => pc.ProductId == productId && pc.UserId == userId) is not null;
         }
+        public async Task<bool> IsProductExistsInAnyCartAsync(int productId)
+        {
+            return await _db.ProductCarts.FirstOrDefaultAsync(p => p.ProductId == productId) is not null;
+        }
         public async Task<bool> IsProductQuantityAvailableinStockAsync(int productId, int quantity)
         {
             return (await _db.Products.FirstOrDefaultAsync(p => p.ProductId == productId)).Amount >= quantity;
         }
-
-
     }
 }

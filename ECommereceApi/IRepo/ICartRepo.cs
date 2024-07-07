@@ -17,5 +17,6 @@ namespace ECommereceApi.IRepo
         Task<bool> IsProductExistsByIdAsync(int ProductId);
         Task<bool> IsProductExistsInCartAsync(int productId, int userId);
         Task<bool> IsProductQuantityAvailableinStockAsync(int productId, int quantity);
+        Task<bool> IsProductExistsInAnyCartAsync(int productId);
     }
 }
