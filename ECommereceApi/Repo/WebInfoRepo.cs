@@ -54,6 +54,9 @@ namespace ECommereceApi.Repo
                     WebName= config.WebName,
                     InstagramAccount = config.InstagramAccount,
                     FacebookAccount = config.FacebookAccount,
+                    StoreAddress = config.StoreAddress,
+                    CustomerServicePhone = config.CustomerServicePhone,
+                    Description = config.Description,
                 };
 
                 _context.Web_Infos.Add(newWebInfo);
