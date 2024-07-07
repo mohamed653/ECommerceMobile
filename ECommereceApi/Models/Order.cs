@@ -28,8 +28,6 @@ public partial class Order
     [StringLength(50)]
     public string PostalCode { get; set; }
 
-    public DateOnly? ArrivalDate { get; set; }
-
     public int UserId { get; set; }
 
     public OrderStatus Status { get; set; }
@@ -44,9 +42,18 @@ public partial class Order
 
     public virtual Offer Offer { get; set; }
 
-	public DateOnly? ResponseDate { get; set; }
+
+    [NotMapped]
+    public DateOnly? ArrivalDate
+    {
+        get;
+    }
+    public DateOnly? ShippingDate { get; set; }
+
+    public int? ArrivalInDays { get; set; }
 
     public PaymentMethod? PaymentMethod { get; set; }
-	public double? TotalPrice { get; set; }
-	public int? TotalAmount { get; set; }
+    public double? TotalPrice { get; set; }
+    public int? TotalAmount { get; set; }
+    public decimal? Score { get; set; }
 }
