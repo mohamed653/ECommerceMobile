@@ -29,7 +29,7 @@ namespace ECommereceApi.Repo
                                                                         FinalPrice = p.FinalPrice,
                                                                         OriginalPrice = p.OriginalPrice,
                                                                         ProductId = p.ProductId,
-                                                                        Score = p.Score,
+                                                                        Score = p.Score??0,
                                                                         ProductImages = p.ProductImages.Select(image => new ProductImageDTO() { ImageId=image.ImageId}).ToList(),
                                                                         CategoryName = p.Category.Name
                                                                     });
