@@ -23,6 +23,7 @@ public partial class Product : ISoftDeletable
     public int Amount { get; set; }
 
     public string Description { get; set; }
+    public double Score { get; set; }
 
     public int CategoryId { get; set; }
 
