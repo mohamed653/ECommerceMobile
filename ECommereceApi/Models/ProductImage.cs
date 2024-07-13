@@ -16,8 +16,9 @@ public partial class ProductImage
 
     [Key]
     [StringLength(200)]
-    //public string ImageUri { get; set; }
+    public string ImageUri { get; set; }
     public string ImageId{ get; set; }
+
 
     [ForeignKey("ProductId")]
     [InverseProperty("ProductImages")]

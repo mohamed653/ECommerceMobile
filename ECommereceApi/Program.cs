@@ -146,6 +146,7 @@ builder.Services.AddAutoMapper(typeof(Program));
 
 //builder.Services.AddScoped(typeof(IGenericRepo<>), typeof(GenericRepo<>));
 builder.Services.AddScoped<IProductRepo, ProductRepo>();
+builder.Services.AddScoped<ICategoryRepo, CategoryRepo>();
 builder.Services.AddScoped<IUserRepo, UserRepo>();
 builder.Services.AddScoped<IOfferRepo, OfferRepo>();
 builder.Services.AddScoped<IWebInfoRepo, WebInfoRepo>();
