@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using ECommereceApi.DTOs.Account;
+using ECommereceApi.DTOs.Notification;
 using ECommereceApi.DTOs.Offer;
 using ECommereceApi.DTOs.Order;
 using ECommereceApi.DTOs.Product;
@@ -89,9 +90,20 @@ namespace ECommereceApi.Services.Mapper
             CreateMap<OrderPreviewWithoutOffersDTO, AddOrderOfferDTO>().ReverseMap();
             CreateMap<Order, AddOrderOfferDTO>().ReverseMap();
             CreateMap<OrderDisplayDTO, Order>().ReverseMap();
+            CreateMap<ProductOrderDTO, ProductOrder>().ReverseMap()
+                                                      .ForMember(dest => dest.ProductImage, opt => opt.MapFrom(src => src.Product.ProductImages.FirstOrDefault()));
 
+            //CreateMap<ProductOrderDTO, ProductOrder>().ReverseMap()
+            //       .ForMember(dest => dest.ProductImage, opt => opt.MapFrom(src => src.Product.ProductImages.FirstOrDefault()))
+            //       .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.Name))
+            //       .ForMember(dest => dest.ProductPrice, opt => opt.MapFrom(src => src.Product.FinalPrice))
+            //       .ForMember(dest => dest.ProductImageUri, opt => opt.MapFrom(src => src.Product.ProductImages.FirstOrDefault().))
+
+            CreateMap<UserOrderDTO,User>().ReverseMap();
             #endregion
 
+            // Notifications
+            CreateMap<NotificationMessage, NotificationPostDTO>().ReverseMap();
         }
     }
 }

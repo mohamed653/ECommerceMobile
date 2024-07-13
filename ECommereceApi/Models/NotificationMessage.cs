@@ -23,6 +23,9 @@ public partial class NotificationMessage
 
     public DateTime SendingDate { get; set; }
 
+    [StringLength(100)]
+    public string HiddenLink { get; set; }
+
     public bool Seen { get; set; }
 
     [ForeignKey("UserId")]

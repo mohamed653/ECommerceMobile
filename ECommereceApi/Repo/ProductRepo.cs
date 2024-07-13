@@ -2,6 +2,8 @@
 using AutoMapper;
 using ECommereceApi.DTOs.Product;
 using ECommereceApi.Services.Interfaces;
+using Serilog;
+using ECommereceApi.DTOs.Order;
 
 namespace ECommereceApi.Repo
 {
@@ -20,84 +22,55 @@ namespace ECommereceApi.Repo
             _fileCloudService = fileCloudService;
             _categoryRepo = categoryRepo;
         }
+
+
+        public async Task<IEnumerable<ProductDisplayDTO>> GetAllProductDisplayDTOsAsync()
+        {
+            var AllIds = await GetAllProductsIdsAsync();
+            return await GetProductDisplayDTOsByIdsAsync(AllIds);
+        }
+        public async Task<List<ProductDisplayDTO>> GetAllProductsSearchAsync(string? Name, double? MinOriginalPrice, double? MaxOriginalPrice, int? MinAmount, int? MaxAmount, List<int>? CategoriesIds, int? offerId)
+        {
+            var products = await GetAllFilteredProductsFromSearchAsync(Name, MinOriginalPrice, MaxOriginalPrice, MinAmount, MaxAmount, CategoriesIds, offerId);
+            return _mapper.Map<List<ProductDisplayDTO>>(products);
+        }
+        public async Task<PagedResult<ProductDisplayDTO>> GetAllProductsSearchPaginatedAsync(string? Name, double? MinOriginalPrice, double? MaxOriginalPrice, int? MinAmount, int? MaxAmount, List<int>? CategoriesIds, int page, int pageSize, int? offerId)
+        {
+            var products = await GetAllFilteredProductsFromSearchAsync(Name, MinOriginalPrice, MaxOriginalPrice, MinAmount, MaxAmount, CategoriesIds, offerId);
+            var output = RenderPagination(page, pageSize, products);
+            return output;
+        }
+        public async Task<ICollection<ProductDisplayDTO>> GetProductsDisplayDTOsFromCategorySubCategoryIdAndValueAsync(int categorySubCategoryId, string value)
+        {
+            return _mapper.Map<List<ProductDisplayDTO>>(await GetProductsFromCategorySubCategoryIdsValuesAsync(categorySubCategoryId, value));
+        }
+
+
+        public async Task UpdateProductAsync(ProductAddDTO product, int Id)
+        {
+            var target = await _db.Products.SingleOrDefaultAsync(p => p.ProductId == Id);
+            _mapper.Map(product, target);
+            _db.Products.Update(target);
+            await MySaveChangesAsync();
+        }
         public async Task<ProductDisplayDTO> AddProductAsync(ProductAddDTO product)
         {
             var result = await _db.Products.AddAsync(_mapper.Map<Product>(product));
             await MySaveChangesAsync();
             return await GetProductDisplayDTOByIdAsync(result.Entity.ProductId);
         }
-        public async Task<bool> IsProductExistsAsync(int id)
-        {
-            return await _db.Products.FirstOrDefaultAsync(p => p.ProductId == id) is not null;
-        }
-        public async Task<Product> GetProductByIdAsync(int id)
-        {
-            return await _db.Products
-                .Include(p => p.ProductCarts)
-                .Include(p => p.Category)
-                .Include(p => p.ProductImages)
-                .Include(p => p.ProductOffers)
-                .Include(p => p.ProductOrders)
-                .FirstOrDefaultAsync(p => p.ProductId == id);
-        }
-        public async Task<Status> DeleteProductAsync(int id)
-        {
-            var product = await _db.Products.Include(p => p.ProductOffers).FirstOrDefaultAsync(p => p.ProductId == id);
-            if (product == null) return Status.Failed;
-            if (product.ProductOffers.Count != 0)
-            {
-                return Status.Failed;
-            }
-            _db.Products.Remove(product);
-            await MySaveChangesAsync();
-            return Status.Success;
-        }
-        public async Task MySaveChangesAsync()
-        {
-            await _db.SaveChangesAsync();
-        }
-        public async Task<IEnumerable<ProductDisplayDTO>> GetAllProductDisplayDTOsAsync()
-        {
-            var AllIds = await GetAllProductsIdsAsync();
-            return await GetProductDisplayDTOsByIdsAsync(AllIds);
-        }
-        public async Task<ICollection<int>> GetAllProductsIdsAsync()
-        {
-            return await _db.Products.Select(p => p.ProductId).ToListAsync();
-        }
         public async Task<ICollection<ProductDisplayDTO>> GetProductDisplayDTOsByIdsAsync(ICollection<int> ids)
         {
             var output = new List<ProductDisplayDTO>();
-            foreach(var id in ids)
+            foreach (var id in ids)
                 output.Add(await GetProductDisplayDTOByIdAsync(id));
             return output;
         }
-        public async Task<ProductDisplayDTO> GetProductDisplayDTOByIdAsync(int id)
+        public async Task DeleteProductAsync(int id)
         {
-            var productSubCategoryValues = await GetProductSubCategoryValuesGroupedBySubCategoryByIdAsync(id);
-            var output = await GetBasicProductDisplayDTOByIdAsync(id);
-            MapSubCategoryValuesIntoProductDisplayDTOAsync(output, productSubCategoryValues);
-            return output;
-        }
-        public async Task MapSubCategoryValuesIntoProductDisplayDTOAsync(ProductDisplayDTO productDisplayDTO, ICollection<IGrouping<SubCategory, ProductCategorySubCategoryValues>> subCategoryValues)
-        {
-            foreach (var group in subCategoryValues)
-            {
-                SubCategoryValuesDTO oneToAdd = new()
-                {
-                    Name = group.Key.Name,
-                    SubCategoryId = group.Key.SubCategoryId,
-                };
-                foreach (var sub in group)
-                {
-                    SubCategoryValuesDetailsDTO details = new();
-                    details.Value = sub.CategorySubCategoryValues.Value;
-                    details.ImageId = sub.CategorySubCategoryValues.ImageId;
-                    details.ImageUrl = _fileCloudService.GetImageUrl(sub.CategorySubCategoryValues.ImageId);
-                    oneToAdd.Values.Add(details);
-                }
-                productDisplayDTO.CategoryValues.Add(oneToAdd);
-            }
+            var product = await _db.Products.Include(p => p.ProductOffers).FirstOrDefaultAsync(p => p.ProductId == id);
+            _db.Products.Remove(product);
+            await MySaveChangesAsync();
         }
         public async Task<ProductDisplayDTO> GetBasicProductDisplayDTOByIdAsync(int id)
         {
@@ -117,13 +90,6 @@ namespace ECommereceApi.Repo
                 .Where(pcsv => pcsv.ProductId == id)
                 .GroupBy(p => p.CategorySubCategoryValues.CategorySubCategory.SubCategory)
                 .ToListAsync();
-        }
-        public async Task UpdateProductAsync(ProductAddDTO product, int Id)
-        {
-            var target = await _db.Products.SingleOrDefaultAsync(p => p.ProductId == Id);
-            _mapper.Map(product, target);
-            _db.Products.Update(target);
-            await MySaveChangesAsync();
         }
         public async Task<IEnumerable<ProductDisplayDTO>> GetAllCategoryProductsAsync(int categoryId)
         {
@@ -166,26 +132,6 @@ namespace ECommereceApi.Repo
             product.ProductImages.Remove(image);
             _fileCloudService.DeleteImageAsync(image.ImageId);
             await MySaveChangesAsync();
-        }
-        public async Task<bool> IsProductImageExistsAsync(int productId, string imageId)
-        {
-            return await _db.Products.Include(p => p.ProductImages).AnyAsync(p => p.ProductId == productId && p.ProductImages.Any(pi => pi.ImageId == imageId));
-        }
-        public PagedResult<ProductDisplayDTO> RenderPagination(int page, int pageSize, List<Product> inputProducts)
-        {
-            PagedResult<ProductDisplayDTO> result = new PagedResult<ProductDisplayDTO>();
-            int totalCount = inputProducts.Count;
-            result.TotalItems = totalCount;
-            result.TotalPages = totalCount / pageSize;
-            if (totalCount % pageSize > 0)
-                result.TotalPages++;
-            result.PageSize = pageSize;
-            result.PageNumber = page;
-            result.HasPrevious = page != 1;
-            result.HasNext = page != result.TotalPages;
-            var products = inputProducts.Skip((page - 1) * pageSize).Take(pageSize).ToList();
-            result.Items = _mapper.Map<List<ProductDisplayDTO>>(products);
-            return result;
         }
         public async Task<PagedResult<ProductDisplayDTO>> RenderPaginationForAllProductsAsync(int page, int pageSize)
         {
@@ -230,32 +176,6 @@ namespace ECommereceApi.Repo
             if (OfferId is not null)
                 query = query.Where(p => p.ProductOffers.Any(po => po.OfferId != OfferId));
             return await query.ToListAsync();
-        }
-        public IQueryable<Product>? GetBasicProductQuery()
-        {
-            return _db.Products
-                .Include(p => p.Category)
-                .Include(p => p.ProductOffers)
-                .Include(p => p.ProductImages)
-                .AsQueryable();
-        }
-        public async Task<List<ProductDisplayDTO>> GetAllProductsSearchAsync(string? Name, double? MinOriginalPrice, double? MaxOriginalPrice, int? MinAmount, int? MaxAmount, List<int>? CategoriesIds, int? offerId)
-        {
-            var products = await GetAllFilteredProductsFromSearchAsync(Name, MinOriginalPrice, MaxOriginalPrice, MinAmount, MaxAmount, CategoriesIds, offerId);
-            return _mapper.Map<List<ProductDisplayDTO>>(products);
-        }
-        public async Task<PagedResult<ProductDisplayDTO>> GetAllProductsSearchPaginatedAsync(string? Name, double? MinOriginalPrice, double? MaxOriginalPrice, int? MinAmount, int? MaxAmount, List<int>? CategoriesIds, int page, int pageSize, int? offerId)
-        {
-            var products = await GetAllFilteredProductsFromSearchAsync(Name, MinOriginalPrice, MaxOriginalPrice, MinAmount, MaxAmount, CategoriesIds, offerId);
-            var output = RenderPagination(page, pageSize, products);
-            return output;
-        }
-        public async Task<bool> IsAllProductsExistsAsync(HashSet<int> productsIds)
-        {
-            var onBoth = productsIds.Intersect(_db.Products.Select(p => p.ProductId));
-            if (onBoth.Count() == productsIds.Count)
-                return true;
-            return false;
         }
         public async Task<ProductCategorySubCategoryValuesDTO> GetProductCategorySubCategoryValuesAsync(int productId, int CategoryId, int SubCategoryId)
         {
@@ -337,10 +257,6 @@ namespace ECommereceApi.Repo
             await MySaveChangesAsync();
             return 1;
         }
-        public async Task<ICollection<ProductDisplayDTO>> GetProductsDisplayDTOsFromCategorySubCategoryIdAndValueAsync(int categorySubCategoryId, string value)
-        {
-            return _mapper.Map<List<ProductDisplayDTO>>(await GetProductsFromCategorySubCategoryIdsValuesAsync(categorySubCategoryId, value));
-        }
         public async Task<ICollection<Product>> GetProductsFromCategorySubCategoryIdsValuesAsync(int categorySubCategoryId, string value)
         {
             var allProcutsFromCategorySubCategory = await GetProductsFromCategorySubCategoryIdAsync(categorySubCategoryId);
@@ -358,11 +274,130 @@ namespace ECommereceApi.Repo
                 .ThenInclude(cs => cs.CategorySubCategoryValues)
                 .Where(p => p.Category.CategorySubCategory.Any(cs => cs.CategorySubCategoryId == categorySubCategoryId)).ToListAsync();
         }
+        //***Hamed***
+        public async Task SubtractProductAmountFromStock(List<ProductOrderStockDTO> productOrderStockDTOs)
+        {
+            using (var transaction = await _db.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    foreach (var productOrderStockDTO in productOrderStockDTOs)
+                    {
+                        var product = await _db.Products.FirstOrDefaultAsync(p => p.ProductId == productOrderStockDTO.ProductId);
+                        if (product == null)
+                            continue;
+
+                        if (product.Amount < productOrderStockDTO.Amount)
+                        {
+                            throw new Exception($"The amount of the product {product.ProductId} is less than the amount of the order");
+                        }
+
+                        product.Amount -= productOrderStockDTO.Amount;
+                        _db.Products.Update(product);
+                    }
+
+                    await _db.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    Log.Error("Error in SubtractProductAmountFromStock: {0}", ex.Message);
+                    throw;
+                }
+            }
+        }
+
+
+        public async Task<Product> GetProductByIdAsync(int id)
+        {
+            return await _db.Products
+                .Include(p => p.ProductCarts)
+                .Include(p => p.Category)
+                .Include(p => p.ProductImages)
+                .Include(p => p.ProductOffers)
+                .Include(p => p.ProductOrders)
+                .FirstOrDefaultAsync(p => p.ProductId == id);
+        }
+        public async Task<bool> IsProductExistsAsync(int id)
+        {
+            return await _db.Products.FirstOrDefaultAsync(p => p.ProductId == id) is not null;
+        }
+        public async Task MySaveChangesAsync()
+        {
+            await _db.SaveChangesAsync();
+        }
+        public async Task<ICollection<int>> GetAllProductsIdsAsync()
+        {
+            return await _db.Products.Select(p => p.ProductId).ToListAsync();
+        }
+        public async Task<ProductDisplayDTO> GetProductDisplayDTOByIdAsync(int id)
+        {
+            var productSubCategoryValues = await GetProductSubCategoryValuesGroupedBySubCategoryByIdAsync(id);
+            var output = await GetBasicProductDisplayDTOByIdAsync(id);
+            MapSubCategoryValuesIntoProductDisplayDTOAsync(output, productSubCategoryValues);
+            return output;
+        }
+        public async Task MapSubCategoryValuesIntoProductDisplayDTOAsync(ProductDisplayDTO productDisplayDTO, ICollection<IGrouping<SubCategory, ProductCategorySubCategoryValues>> subCategoryValues)
+        {
+            foreach (var group in subCategoryValues)
+            {
+                SubCategoryValuesDTO oneToAdd = new()
+                {
+                    Name = group.Key.Name,
+                    SubCategoryId = group.Key.SubCategoryId,
+                };
+                foreach (var sub in group)
+                {
+                    SubCategoryValuesDetailsDTO details = new();
+                    details.Value = sub.CategorySubCategoryValues.Value;
+                    details.ImageId = sub.CategorySubCategoryValues.ImageId;
+                    details.ImageUrl = _fileCloudService.GetImageUrl(sub.CategorySubCategoryValues.ImageId);
+                    oneToAdd.Values.Add(details);
+                }
+                productDisplayDTO.CategoryValues.Add(oneToAdd);
+            }
+        }
+        public async Task<bool> IsProductImageExistsAsync(int productId, string imageId)
+        {
+            return await _db.Products.Include(p => p.ProductImages).AnyAsync(p => p.ProductId == productId && p.ProductImages.Any(pi => pi.ImageId == imageId));
+        }
+        public PagedResult<ProductDisplayDTO> RenderPagination(int page, int pageSize, List<Product> inputProducts)
+        {
+            PagedResult<ProductDisplayDTO> result = new PagedResult<ProductDisplayDTO>();
+            int totalCount = inputProducts.Count;
+            result.TotalItems = totalCount;
+            result.TotalPages = totalCount / pageSize;
+            if (totalCount % pageSize > 0)
+                result.TotalPages++;
+            result.PageSize = pageSize;
+            result.PageNumber = page;
+            result.HasPrevious = page != 1;
+            result.HasNext = page != result.TotalPages;
+            var products = inputProducts.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+            result.Items = _mapper.Map<List<ProductDisplayDTO>>(products);
+            return result;
+        }
+        public IQueryable<Product>? GetBasicProductQuery()
+        {
+            return _db.Products
+                .Include(p => p.Category)
+                .Include(p => p.ProductOffers)
+                .Include(p => p.ProductImages)
+                .AsQueryable();
+        }
+        public async Task<bool> IsAllProductsExistsAsync(HashSet<int> productsIds)
+        {
+            var onBoth = productsIds.Intersect(_db.Products.Select(p => p.ProductId));
+            if (onBoth.Count() == productsIds.Count)
+                return true;
+            return false;
+        }
         public bool IsOrgignalPriceGreaterThanDiscount(double originalPrice, double? discount)
         {
-            if(discount is null)
+            if (discount is null)
                 return true;
-            else 
+            else
                 return originalPrice > discount;
         }
     }

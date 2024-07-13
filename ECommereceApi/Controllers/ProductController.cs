@@ -17,12 +17,14 @@ namespace ECommereceApi.Controllers
         private readonly ICartRepo _cartRepo;
         private readonly IOfferRepo _offerRepo;
         private readonly IOrderRepo _orderRepo;
-        public ProductController(IProductRepo productRepo, ICartRepo cartRepo, IOfferRepo offerRepo, IOrderRepo orderRepo)
+        private readonly ICategoryRepo _categoryRepo;
+        public ProductController(IProductRepo productRepo, ICartRepo cartRepo, IOfferRepo offerRepo, IOrderRepo orderRepo, ICategoryRepo categoryRepo)
         {
             _productRepo = productRepo;
             _cartRepo = cartRepo;
             _offerRepo = offerRepo;
             _orderRepo = orderRepo;
+            _categoryRepo = categoryRepo;
         }
         [HttpGet]
         public async Task<IActionResult> GetAllProductsAsync()
@@ -35,7 +37,7 @@ namespace ECommereceApi.Controllers
             if (!ModelState.IsValid) return BadRequest(ModelState);
             if (!_productRepo.IsOrgignalPriceGreaterThanDiscount(product.OriginalPrice, product.Discount))
                 return BadRequest("Price can't Be Equal or less than Discount!");
-            if (!await _productRepo.IsCategoryExistsAsync(product.CategoryId))
+            if (!await _categoryRepo.IsCategoryExistsAsync(product.CategoryId))
                 return NotFound("Category Not Found");
             var result = await _productRepo.AddProductAsync(product);
             if (result is null)
@@ -52,8 +54,7 @@ namespace ECommereceApi.Controllers
                 return BadRequest("Product Is included In Active Or Coming Offer");
             if (await _orderRepo.IsProductInActiveOrderAsync(id))
                 return BadRequest("Product Is In Active Order");
-            var result = await _productRepo.DeleteProductAsync(id);
-            if (result == Status.Failed) return BadRequest();
+            await _productRepo.DeleteProductAsync(id);
             return Ok();
         }
         [HttpPut]
@@ -62,7 +63,7 @@ namespace ECommereceApi.Controllers
             if (!ModelState.IsValid) return BadRequest(ModelState);
             if (!_productRepo.IsOrgignalPriceGreaterThanDiscount(product.OriginalPrice, product.Discount))
                 return BadRequest("Price can't Be Equal or less than Discount!");
-            if (!await _productRepo.IsCategoryExistsAsync(product.CategoryId))
+            if (!await _categoryRepo.IsCategoryExistsAsync(product.CategoryId))
                 return NotFound("Category Not Found");
             await _productRepo.UpdateProductAsync(product, Id);
             return Ok();
@@ -80,7 +81,7 @@ namespace ECommereceApi.Controllers
         [Route("/api/category/{categoryId:int}")]
         public async Task<IActionResult> GetAllProductsByCategoryAsync(int categoryId)
         {
-            if (!await _productRepo.IsCategoryExistsAsync(categoryId))
+            if (!await _categoryRepo.IsCategoryExistsAsync(categoryId))
                 return NotFound("Category Not Found!");
             var result = await _productRepo.GetAllCategoryProductsAsync(categoryId);
             return Ok(result);
@@ -91,9 +92,9 @@ namespace ECommereceApi.Controllers
         public async Task<IActionResult> GetAllProductsForCategorySubCategoryValues([Required] int categoryId, [Required] int subCategoryId, [Required] string value)
         {
             if (value.IsNullOrEmpty()) return BadRequest("Invalid Value");
-            if (!await _productRepo.IsCategoryExistsAsync(categoryId)) return NotFound("Category Not Found!");
-            if (!await _productRepo.IsSubCategoryExistsAsync(subCategoryId)) return NotFound("Sub Category Not Found");
-            int? categorySubCategoryId = await _productRepo.GetCategorySubCategoryIdFromSeparateIds(categoryId, subCategoryId);
+            if (!await _categoryRepo.IsCategoryExistsAsync(categoryId)) return NotFound("Category Not Found!");
+            if (!await _categoryRepo.IsSubCategoryExistsAsync(subCategoryId)) return NotFound("Sub Category Not Found");
+            int? categorySubCategoryId = await _categoryRepo.GetCategorySubCategoryIdFromSeparateIds(categoryId, subCategoryId);
             if (categorySubCategoryId is null) return NotFound("Category And Sub Category Not Related");
             return Ok(await _productRepo.GetProductsDisplayDTOsFromCategorySubCategoryIdAndValueAsync(categorySubCategoryId.Value, value));
         }
@@ -104,11 +105,11 @@ namespace ECommereceApi.Controllers
         {
             if (!await _productRepo.IsProductExistsAsync(productId))
                 return NotFound("Product Not Found!");
-            if (!await _productRepo.IsCategoryExistsAsync(categoryId))
+            if (!await _categoryRepo.IsCategoryExistsAsync(categoryId))
                 return NotFound("Category Not Found!");
-            if (!await _productRepo.IsSubCategoryExistsAsync(subCategoryId))
+            if (!await _categoryRepo.IsSubCategoryExistsAsync(subCategoryId))
                 return NotFound("Sub Category Not Found!");
-            int? categorySubCategoryId = await _productRepo.GetCategorySubCategoryIdFromSeparateIds(categoryId, subCategoryId);
+            int? categorySubCategoryId = await _categoryRepo.GetCategorySubCategoryIdFromSeparateIds(categoryId, subCategoryId);
             if (categorySubCategoryId is null) return NotFound("Category And Sub Category Not Related");
             var result = await _productRepo.DeleteProductCategorySubCategoryValue(productId, categoryId, subCategoryId, value);
             if (result == -1) return NotFound("Value Not Found");
@@ -120,9 +121,9 @@ namespace ECommereceApi.Controllers
         {
             if (!await _productRepo.IsProductExistsAsync(productId))
                 return NotFound("Product Not Found!");
-            if (!await _productRepo.IsCategoryExistsAsync(categoryId))
+            if (!await _categoryRepo.IsCategoryExistsAsync(categoryId))
                 return NotFound("Category Not Found!");
-            if (!await _productRepo.IsSubCategoryExistsAsync(subCategoryId))
+            if (!await _categoryRepo.IsSubCategoryExistsAsync(subCategoryId))
                 return NotFound("Sub Category Not Found!");
             var result = await _productRepo.DeleteProductCategorySubCategoryValueAll(productId, categoryId, subCategoryId);
             if (result == -1) return NotFound();

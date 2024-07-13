@@ -11,9 +11,11 @@ namespace ECommereceApi.Controllers
     public class CategoryController : ControllerBase
     {
         private readonly IProductRepo _productRepo;
-        public CategoryController(IProductRepo productRepo)
+        private readonly ICategoryRepo _repo;
+        public CategoryController(IProductRepo productRepo, ICategoryRepo repo)
         {
             _productRepo = productRepo;
+            _repo = repo;
         }
         [HttpPost]
         [Route("/api/category")]
@@ -21,7 +23,7 @@ namespace ECommereceApi.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest();
-            return Created("", await _productRepo.AddCategoryAsync(category));
+            return Created("", await _repo.AddCategoryAsync(category));
         }
         [HttpPut]
         [Route("/api/category")]
@@ -29,9 +31,9 @@ namespace ECommereceApi.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest();
-            if (!await _productRepo.IsCategoryExistsAsync(id))
+            if (!await _repo.IsCategoryExistsAsync(id))
                 return NotFound("Category Not Found!");
-            var result = await _productRepo.UpdateCategoryAsync(id, category);
+            var result = await _repo.UpdateCategoryAsync(id, category);
             if (result is null)
                 return BadRequest();
             return Created("", result);
@@ -40,7 +42,7 @@ namespace ECommereceApi.Controllers
         [Route("/api/category")]
         public async Task<IActionResult> DeleteCategoryAsync(int categoryId)
         {
-            var result = await _productRepo.DeleteCategoryAsync(categoryId);
+            var result = await _repo.DeleteCategoryAsync(categoryId);
             if (result == Status.NotFound)
                 return NotFound();
             return Ok();
@@ -49,7 +51,7 @@ namespace ECommereceApi.Controllers
         [Route("/api/category/all")]
         public async Task<IActionResult> GetAllCategoriesAsync()
         {
-            var result = await _productRepo.GetAllCategoriesAsync();
+            var result = await _repo.GetAllCategoriesAsync();
             if (result == null) return NotFound();
             return Ok(result);
         }
@@ -57,13 +59,13 @@ namespace ECommereceApi.Controllers
         [Route("/api/subCategory/all")]
         public async Task<IActionResult> GetAllSubCategoriesAsync()
         {
-            return Ok(await _productRepo.GetAllSubCategoriesAsync());
+            return Ok(await _repo.GetAllSubCategoriesAsync());
         }
         [HttpGet]
         [Route("/api/subCategory/{id:int}")]
         public async Task<IActionResult> GetSubCategoryByIdAsync(int id)
         {
-            var result = await _productRepo.GetSubCategoryById(id);
+            var result = await _repo.GetSubCategoryById(id);
             if (result is null)
                 return NotFound();
             return Ok(result);
@@ -74,7 +76,7 @@ namespace ECommereceApi.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest();
-            var result = await _productRepo.AddSubCategoryAsync(category);
+            var result = await _repo.AddSubCategoryAsync(category);
             if (result is null)
                 return NotFound();
             return Created("", result);
@@ -85,7 +87,7 @@ namespace ECommereceApi.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest();
-            var result = await _productRepo.UpdateSubCategoryAsync(id, cat);
+            var result = await _repo.UpdateSubCategoryAsync(id, cat);
             if (result is null)
                 return NotFound();
             return Ok(result);
@@ -94,7 +96,7 @@ namespace ECommereceApi.Controllers
         [Route("/api/subCategory")]
         public async Task<IActionResult> DeleteSubCategoryAsync(int subId)
         {
-            var result = await _productRepo.DeleteSubCategoryAsync(subId);
+            var result = await _repo.DeleteSubCategoryAsync(subId);
             if (result == Status.NotFound)
                 return NotFound();
             if (result == Status.Failed)
@@ -105,7 +107,7 @@ namespace ECommereceApi.Controllers
         [Route("/api/subCategoryFromCategory/{categoryId:int}")]
         public async Task<IActionResult> GetAllSubCategoriesFromCategoryAsync(int categoryId)
         {
-            var result = await _productRepo.GetAllSubCategoriesForCategoryAsync(categoryId);
+            var result = await _repo.GetAllSubCategoriesForCategoryAsync(categoryId);
             if (result == null) return NotFound();
             return Ok(result);
         }
@@ -139,13 +141,13 @@ namespace ECommereceApi.Controllers
         public async Task<IActionResult> AddSubCategoryValue(CategorySubCategoryValuesAddDTO input)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            if (!await _productRepo.IsCategoryExistsAsync(input.CategoryId))
+            if (!await _repo.IsCategoryExistsAsync(input.CategoryId))
                 return NotFound("Category Not Found");
-            if (!await _productRepo.IsSubCategoryExistsAsync(input.SubCategoryId))
+            if (!await _repo.IsSubCategoryExistsAsync(input.SubCategoryId))
                 return NotFound("Sub Category Not Found");
-            if (!await _productRepo.IsCategorySubCategoryExistsAsync(input.CategoryId, input.SubCategoryId))
-                await _productRepo.AssignSubCategoryToCategoryAsync(input.CategoryId, input.SubCategoryId);
-            var output = await _productRepo.AddSubCategoryValueAsync(input);
+            if (!await _repo.IsCategorySubCategoryExistsAsync(input.CategoryId, input.SubCategoryId))
+                await _repo.AssignSubCategoryToCategoryAsync(input.CategoryId, input.SubCategoryId);
+            var output = await _repo.AddSubCategoryValueAsync(input);
             if (output == null) return BadRequest();
             return Created("", output);
         }
@@ -153,21 +155,21 @@ namespace ECommereceApi.Controllers
         [Route("/api/CategoryDetails/All")]
         public async Task<IActionResult> GetAllCategoriesDetailsAsync()
         {
-            return Ok(await _productRepo.GetAllCategoriesDetailsAsync());
+            return Ok(await _repo.GetAllCategoriesDetailsAsync());
         }
         [HttpGet]
         [Route("/api/CategoryDetails/{categoryId:int}")]
         public async Task<IActionResult> GetCategoryDetailsAsync([Required] int categoryId)
         {
-            if (!await _productRepo.IsCategoryExistsAsync(categoryId)) return NotFound("Category Not Found");
-            return Ok(await _productRepo.GetCategoryDetailsAsync(categoryId));
+            if (!await _repo.IsCategoryExistsAsync(categoryId)) return NotFound("Category Not Found");
+            return Ok(await _repo.GetCategoryDetailsAsync(categoryId));
         }
         [HttpGet]
         [Route("/api/SubCategoryDetails/{subCategoryId:int}")]
         public async Task<IActionResult> GetSubCategoryDetailsAsync([Required] int subCategoryId)
         {
-            if (!await _productRepo.IsSubCategoryExistsAsync(subCategoryId)) return NotFound("SubCategory Not Found");
-            return Ok(await _productRepo.GetSubCategoryDetails(subCategoryId));
+            if (!await _repo.IsSubCategoryExistsAsync(subCategoryId)) return NotFound("SubCategory Not Found");
+            return Ok(await _repo.GetSubCategoryDetails(subCategoryId));
         }
         [HttpPatch]
         [Route("/api/CategorySubCategoryValues")]
@@ -175,7 +177,7 @@ namespace ECommereceApi.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest();
-            var result = await _productRepo.UpdateCategorySubCategoryValue(input, newValue);
+            var result = await _repo.UpdateCategorySubCategoryValue(input, newValue);
             if (result == null) return NotFound();
             return Ok(result);
         }

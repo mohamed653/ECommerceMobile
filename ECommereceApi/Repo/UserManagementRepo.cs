@@ -57,7 +57,8 @@ namespace ECommereceApi.Repo
 
             user.FName = dto.FName;
             user.LName = dto.LName;
-            user.Street = dto.Email;
+            user.Email = dto.Email.ToLower().Trim();
+            user.Street = dto.Street;
             user.City = dto.City;
             user.Phone = dto.Phone; 
             user.PostalCode = dto.PostalCode;
@@ -82,7 +83,7 @@ namespace ECommereceApi.Repo
                 {
                     FName = dto.FName,
                     LName = dto.LName,
-                    Email = dto.Email,
+                    Email = dto.Email.ToLower().Trim(),
                     Phone = dto.phone,
                     Password = dto.Password,
                     Role = RoleType.Customer,

@@ -1,4 +1,5 @@
 ﻿
+using ECommereceApi.DTOs;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -10,9 +11,12 @@ namespace ECommereceApi.Repo;
 public class ReviewRepo : IReviewRepo
 {
     private readonly ECommerceContext _context;
-    public ReviewRepo(ECommerceContext context)
+    private readonly IProductSalesManagment _productSalesManagment;
+
+    public ReviewRepo(ECommerceContext context, IProductSalesManagment productSalesManagment)
     {
         _context = context;
+        _productSalesManagment = productSalesManagment;
     }
 
 
@@ -85,7 +89,7 @@ public class ReviewRepo : IReviewRepo
 
             await _context.Rates.AddAsync(rate);
             await _context.SaveChangesAsync();
-
+            await _productSalesManagment.UpdateProductScore(reviewDto.ProductId);
             return true;
         }
         catch
@@ -106,6 +110,7 @@ public class ReviewRepo : IReviewRepo
 
             _context.Rates.Remove(rate);
             await _context.SaveChangesAsync();
+            await _productSalesManagment.UpdateProductScore(productId);
             return true;
         }
         catch
@@ -127,6 +132,7 @@ public class ReviewRepo : IReviewRepo
             rate.NumOfStars = reviewDto.NumOfStars;
 
             await _context.SaveChangesAsync();
+            await _productSalesManagment.UpdateProductScore(reviewDto.ProductId);
             return true;
         }
         catch

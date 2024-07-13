@@ -115,5 +115,7 @@ namespace ECommereceApi.Repo
         {
             return (await _db.Products.FirstOrDefaultAsync(p => p.ProductId == productId)).Amount >= quantity;
         }
+
+
     }
 }

@@ -15,7 +15,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 
 builder.Services.AddControllers();
-
+// Register IHttpContextAccessor
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddEndpointsApiExplorer();
 
 var webHostEnvironment = builder.Services.BuildServiceProvider().GetRequiredService<IWebHostEnvironment>();
@@ -36,7 +37,7 @@ builder.Services.AddCors(corsOptions =>
 
 #region FileServer
 
-var cloudinaryCredentials = builder.Configuration.GetSection("Cloudinary");
+var cloudinaryCredentials = builder.Configuration.GetSection("_Cloudinary");
 var account = new Account(
     cloudinaryCredentials["CloudName"],
     cloudinaryCredentials["ApiKey"],
@@ -145,6 +146,7 @@ builder.Services.AddAutoMapper(typeof(Program));
 
 //builder.Services.AddScoped(typeof(IGenericRepo<>), typeof(GenericRepo<>));
 builder.Services.AddScoped<IProductRepo, ProductRepo>();
+builder.Services.AddScoped<ICategoryRepo, CategoryRepo>();
 builder.Services.AddScoped<IUserRepo, UserRepo>();
 builder.Services.AddScoped<IOfferRepo, OfferRepo>();
 builder.Services.AddScoped<IWebInfoRepo, WebInfoRepo>();
@@ -154,6 +156,7 @@ builder.Services.AddScoped<IMailRepo, MailRepo>();
 builder.Services.AddScoped<IOrderRepo, OrderRepo>();
 builder.Services.AddScoped<ICartRepo, CartRepo>();
 builder.Services.AddScoped<IReviewRepo, ReviewRepo>();
+builder.Services.AddScoped<IProductSalesManagment,ProductSalesManagment>();
 builder.Services.AddSignalR();
 
 // Global Exception Handling Service
