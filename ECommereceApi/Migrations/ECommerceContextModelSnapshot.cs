@@ -32,7 +32,7 @@ namespace ECommereceApi.Migrations
 
                     b.HasKey("UserId");
 
-                    b.ToTable("Admin");
+                    b.ToTable("Admin", (string)null);
                 });
 
             modelBuilder.Entity("ECommereceApi.Models.Category", b =>
@@ -46,6 +46,9 @@ namespace ECommereceApi.Migrations
                     b.Property<string>("ImageId")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("ImageUri")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -53,7 +56,7 @@ namespace ECommereceApi.Migrations
 
                     b.HasKey("CategoryId");
 
-                    b.ToTable("Category");
+                    b.ToTable("Category", (string)null);
                 });
 
             modelBuilder.Entity("ECommereceApi.Models.CategorySubCategory", b =>
@@ -77,7 +80,7 @@ namespace ECommereceApi.Migrations
                     b.HasIndex("CategoryId", "SubCategoryId")
                         .IsUnique();
 
-                    b.ToTable("CategorySubCategory");
+                    b.ToTable("CategorySubCategory", (string)null);
                 });
 
             modelBuilder.Entity("ECommereceApi.Models.CategorySubCategoryValues", b =>
@@ -94,6 +97,9 @@ namespace ECommereceApi.Migrations
                     b.Property<string>("ImageId")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("ImageUri")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Value")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -103,7 +109,7 @@ namespace ECommereceApi.Migrations
                     b.HasIndex("CategorySubCategoryId", "Value")
                         .IsUnique();
 
-                    b.ToTable("CategorySubCategoryValues");
+                    b.ToTable("CategorySubCategoryValues", (string)null);
                 });
 
             modelBuilder.Entity("ECommereceApi.Models.Customer", b =>
@@ -113,7 +119,7 @@ namespace ECommereceApi.Migrations
 
                     b.HasKey("UserId");
 
-                    b.ToTable("Customer");
+                    b.ToTable("Customer", (string)null);
                 });
 
             modelBuilder.Entity("ECommereceApi.Models.NotificationMessage", b =>
@@ -148,7 +154,7 @@ namespace ECommereceApi.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("NotificationMessage");
+                    b.ToTable("NotificationMessage", (string)null);
                 });
 
             modelBuilder.Entity("ECommereceApi.Models.Offer", b =>
@@ -185,7 +191,7 @@ namespace ECommereceApi.Migrations
                         .IsUnique()
                         .HasFilter("[Title] IS NOT NULL");
 
-                    b.ToTable("Offer");
+                    b.ToTable("Offer", (string)null);
                 });
 
             modelBuilder.Entity("ECommereceApi.Models.Order", b =>
@@ -243,7 +249,7 @@ namespace ECommereceApi.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Order");
+                    b.ToTable("Order", (string)null);
                 });
 
             modelBuilder.Entity("ECommereceApi.Models.Product", b =>
@@ -280,11 +286,14 @@ namespace ECommereceApi.Migrations
                     b.Property<double>("OriginalPrice")
                         .HasColumnType("float");
 
+                    b.Property<double>("Score")
+                        .HasColumnType("float");
+
                     b.HasKey("ProductId");
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Product");
+                    b.ToTable("Product", (string)null);
                 });
 
             modelBuilder.Entity("ECommereceApi.Models.ProductCart", b =>
@@ -304,7 +313,7 @@ namespace ECommereceApi.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ProductCart");
+                    b.ToTable("ProductCart", (string)null);
                 });
 
             modelBuilder.Entity("ECommereceApi.Models.ProductCategorySubCategoryValues", b =>
@@ -319,7 +328,7 @@ namespace ECommereceApi.Migrations
 
                     b.HasIndex("CategorySubCategoryValuesId");
 
-                    b.ToTable("ProductCategorySubCategoryValues");
+                    b.ToTable("ProductCategorySubCategoryValues", (string)null);
                 });
 
             modelBuilder.Entity("ECommereceApi.Models.ProductImage", b =>
@@ -328,12 +337,15 @@ namespace ECommereceApi.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("ImageId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ImageUri")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
                     b.HasKey("ProductId", "ImageId");
 
-                    b.ToTable("ProductImages");
+                    b.ToTable("ProductImages", (string)null);
                 });
 
             modelBuilder.Entity("ECommereceApi.Models.ProductOffer", b =>
@@ -354,7 +366,7 @@ namespace ECommereceApi.Migrations
 
                     b.HasIndex("OfferId");
 
-                    b.ToTable("ProductOffer");
+                    b.ToTable("ProductOffer", (string)null);
                 });
 
             modelBuilder.Entity("ECommereceApi.Models.ProductOrder", b =>
@@ -372,7 +384,7 @@ namespace ECommereceApi.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("ProductOrder");
+                    b.ToTable("ProductOrder", (string)null);
                 });
 
             modelBuilder.Entity("ECommereceApi.Models.Rate", b =>
@@ -396,7 +408,7 @@ namespace ECommereceApi.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.ToTable("Rates");
+                    b.ToTable("Rates", (string)null);
                 });
 
             modelBuilder.Entity("ECommereceApi.Models.SubCategory", b =>
@@ -413,7 +425,7 @@ namespace ECommereceApi.Migrations
 
                     b.HasKey("SubCategoryId");
 
-                    b.ToTable("SubCategory");
+                    b.ToTable("SubCategory", (string)null);
                 });
 
             modelBuilder.Entity("ECommereceApi.Models.User", b =>
@@ -486,7 +498,7 @@ namespace ECommereceApi.Migrations
 
                     b.HasKey("UserId");
 
-                    b.ToTable("User");
+                    b.ToTable("User", (string)null);
                 });
 
             modelBuilder.Entity("ECommereceApi.Models.WebInfo", b =>
@@ -531,7 +543,7 @@ namespace ECommereceApi.Migrations
 
                     b.HasKey("WebInfoId");
 
-                    b.ToTable("Web_Info");
+                    b.ToTable("Web_Info", (string)null);
                 });
 
             modelBuilder.Entity("ECommereceApi.Models.WishList", b =>
@@ -546,7 +558,7 @@ namespace ECommereceApi.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("WishList");
+                    b.ToTable("WishList", (string)null);
                 });
 
             modelBuilder.Entity("ECommereceApi.Models.Admin", b =>
