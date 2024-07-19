@@ -121,6 +121,12 @@ namespace ECommereceApi.Repo
             }
             return isApplicable;
         }
+        public async Task<bool> IsProductInActiveOrderAsync(int productId)
+        {
+            return await _db.ProductOrders.Include(po => po.Order)
+                .FirstOrDefaultAsync(po => po.ProductId == productId && (po.Order.Status == OrderStatus.Delivered || po.Order.Status == OrderStatus.Cancelled))
+                is not null;
+        }
 
         #endregion
 
