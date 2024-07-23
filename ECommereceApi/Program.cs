@@ -19,6 +19,7 @@ builder.Services.AddControllers();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddEndpointsApiExplorer();
 
+
 var webHostEnvironment = builder.Services.BuildServiceProvider().GetRequiredService<IWebHostEnvironment>();
 var documentationFilePath = Path.Combine(System.AppContext.BaseDirectory, "ECommereceApi.xml");
 
