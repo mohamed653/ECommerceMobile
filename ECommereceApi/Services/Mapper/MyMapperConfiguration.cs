@@ -33,14 +33,14 @@ namespace ECommereceApi.Services.Mapper
             CreateMap<ProductDisplayDTO, ProductDisplayInCartDTO>().ReverseMap();
 
             CreateMap<ProductImage, ProductImageDTO>()
-                .ForMember(p => p.ImageUri, option => option.MapFrom<ImageUriCustomResolver>())
+                //.ForMember(p => p.ImageUri, option => option.MapFrom<ImageUriCustomResolver>())
                 .ReverseMap();
 
             CreateMap<Product, ProductAddDTO>().ReverseMap();
 
             CreateMap<Category, CategoryDTO>()
                 .ForMember(c => c.SubCategories, opt => opt.MapFrom(sc => sc.CategorySubCategory.Select(s => s.SubCategory)))
-                .ForMember(c => c.ImageUri, option => option.MapFrom<CategoryImageuriCustomResolver>())
+                //.ForMember(c => c.ImageUri, option => option.MapFrom<CategoryImageuriCustomResolver>())
                 .ReverseMap();
 
             CreateMap<SubCategory, SubCategoryDTO>()
@@ -58,7 +58,7 @@ namespace ECommereceApi.Services.Mapper
                 .ReverseMap();
             
             CreateMap<Category, SubCategoriesValuesForCategoryDTO>()
-                .ForMember(c => c.ImageUri, option => option.MapFrom<SubCategoriesValuesForCategoryDTOImageResolver>())
+                //.ForMember(c => c.ImageUri, option => option.MapFrom<SubCategoriesValuesForCategoryDTOImageResolver>())
                 .ReverseMap();
 
             CreateMap<CategoriesValuesForSubCategoryDTO, SubCategory>().ReverseMap();

@@ -46,6 +46,9 @@ namespace ECommereceApi.Migrations
                     b.Property<string>("ImageId")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("ImageUri")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -92,6 +95,9 @@ namespace ECommereceApi.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("ImageId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImageUri")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Value")
@@ -280,6 +286,9 @@ namespace ECommereceApi.Migrations
                     b.Property<double>("OriginalPrice")
                         .HasColumnType("float");
 
+                    b.Property<double>("Score")
+                        .HasColumnType("float");
+
                     b.HasKey("ProductId");
 
                     b.HasIndex("CategoryId");
@@ -328,6 +337,9 @@ namespace ECommereceApi.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("ImageId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ImageUri")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 

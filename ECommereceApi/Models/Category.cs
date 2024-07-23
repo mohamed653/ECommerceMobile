@@ -18,6 +18,7 @@ public partial class Category
     public string Name { get; set; }
     //public string ImageUri { get; set; }
     public string ImageId { get; set; }
+    public string ImageUri { get; set; }
 
     [InverseProperty("Category")]
     public virtual ICollection<Product> Products { get; set; } = new List<Product>();

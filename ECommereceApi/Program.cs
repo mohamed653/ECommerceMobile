@@ -19,6 +19,7 @@ builder.Services.AddControllers();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddEndpointsApiExplorer();
 
+
 var webHostEnvironment = builder.Services.BuildServiceProvider().GetRequiredService<IWebHostEnvironment>();
 var documentationFilePath = Path.Combine(System.AppContext.BaseDirectory, "ECommereceApi.xml");
 
@@ -37,7 +38,7 @@ builder.Services.AddCors(corsOptions =>
 
 #region FileServer
 
-var cloudinaryCredentials = builder.Configuration.GetSection("_Cloudinary");
+var cloudinaryCredentials = builder.Configuration.GetSection("Cloudinary");
 var account = new Account(
     cloudinaryCredentials["CloudName"],
     cloudinaryCredentials["ApiKey"],

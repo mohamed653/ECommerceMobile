@@ -30,6 +30,7 @@ namespace ECommereceApi.Repo
                 //var imageresult = await UploadImage(category.Image);
                 var imageresult = await _fileCloudService.UploadImagesAsync(category.Image);
                 result.Entity.ImageId = imageresult;
+                result.Entity.ImageUri = _fileCloudService.GetImageUrl(imageresult);
             }
             foreach (var subId in category.SubCategoriesIds)
             {
@@ -64,7 +65,7 @@ namespace ECommereceApi.Repo
             await MySaveChangesAsync();
             return _mapper.Map<CategoryDTO>(target);
         }
-                public async Task<Status> DeleteCategoryAsync(int categoryId)
+        public async Task<Status> DeleteCategoryAsync(int categoryId)
         {
             var target = await _db.Categories.Include(c => c.CategorySubCategory).ThenInclude(sc => sc.SubCategory).FirstOrDefaultAsync(c => c.CategoryId == categoryId);
             if (target is null)
@@ -76,15 +77,15 @@ namespace ECommereceApi.Repo
             await MySaveChangesAsync();
             return Status.Success;
         }
-                public async Task<List<SubCategoryDTO>> GetAllSubCategoriesAsync()
+        public async Task<List<SubCategoryDTO>> GetAllSubCategoriesAsync()
         {
             return _mapper.Map<List<SubCategoryDTO>>(await _db.SubCategories.ToListAsync());
         }
-                public async Task<SubCategoryDTO> GetSubCategoryById(int id)
+        public async Task<SubCategoryDTO> GetSubCategoryById(int id)
         {
             return _mapper.Map<SubCategoryDTO>(await _db.SubCategories.Include(s => s.CategorySubCategories).FirstOrDefaultAsync(s => s.SubCategoryId == id));
         }
-                public async Task<SubCategoryDTO> UpdateSubCategoryAsync(int subId, SubCategoryAddDTO subcat)
+        public async Task<SubCategoryDTO> UpdateSubCategoryAsync(int subId, SubCategoryAddDTO subcat)
         {
             var target = await _db.SubCategories.FirstOrDefaultAsync(s => s.SubCategoryId == subId);
             if (target is null)
@@ -94,7 +95,7 @@ namespace ECommereceApi.Repo
             await MySaveChangesAsync();
             return _mapper.Map<SubCategoryDTO>(target);
         }
-                public async Task<Status> DeleteSubCategoryAsync(int id)
+        public async Task<Status> DeleteSubCategoryAsync(int id)
         {
             var target = await _db.SubCategories.Include(s => s.CategorySubCategories).FirstOrDefaultAsync(s => s.SubCategoryId == id);
             if (target is null)
@@ -105,18 +106,18 @@ namespace ECommereceApi.Repo
             await MySaveChangesAsync();
             return Status.Success;
         }
-                public async Task<SubCategoryDTO> AddSubCategoryAsync(SubCategoryAddDTO category)
+        public async Task<SubCategoryDTO> AddSubCategoryAsync(SubCategoryAddDTO category)
         {
             var Subcategory = _mapper.Map<SubCategory>(category);
             var result = await _db.SubCategories.AddAsync(Subcategory);
             await MySaveChangesAsync();
             return _mapper.Map<SubCategoryDTO>(result.Entity);
         }
-                public async Task<IEnumerable<SubCategoryDTO>> GetAllSubCategoriesForCategoryAsync(int categoryId)
+        public async Task<IEnumerable<SubCategoryDTO>> GetAllSubCategoriesForCategoryAsync(int categoryId)
         {
             return _mapper.Map<List<SubCategoryDTO>>(await _db.SubCategories.Where(s => s.CategorySubCategories.Select(c => c.CategoryId).Contains(categoryId)).ToListAsync());
         }
-                public async Task<CategorySubCategoryValueDTO> AddSubCategoryValueAsync(CategorySubCategoryValuesAddDTO input)
+        public async Task<CategorySubCategoryValueDTO> AddSubCategoryValueAsync(CategorySubCategoryValuesAddDTO input)
         {
             var result = await _db.CategorySubCategoryValues.AddAsync(new CategorySubCategoryValues()
             {
@@ -127,37 +128,38 @@ namespace ECommereceApi.Repo
             {
                 var imageresult = await _fileCloudService.UploadImagesAsync(input.Image);
                 result.Entity.ImageId = imageresult;
+                result.Entity.ImageUri = _fileCloudService.GetImageUrl(imageresult);
             }
             var output = _mapper.Map<CategorySubCategoryValueDTO>(input);
             output.ImageId = result.Entity?.ImageId;
-            if (result.Entity.ImageId is not null)
-                output.ImageUrl = _fileCloudService.GetImageUrl(result.Entity.ImageId);
+            output.ImageUrl = result.Entity?.ImageUri;
+
             await MySaveChangesAsync();
             output.Id = result.Entity.Id;
             return output;
         }
-                public async Task<int> AssignSubCategoryToCategoryAsync(int categoryId, int subCategoryId)
+        public async Task<int> AssignSubCategoryToCategoryAsync(int categoryId, int subCategoryId)
         {
             var result = await _db.CategorySubCategory.AddAsync(new CategorySubCategory() { CategoryId = categoryId, SubCategoryId = subCategoryId });
             await MySaveChangesAsync();
             return result.Entity.CategorySubCategoryId;
         }
-                public async Task<ICollection<SubCategoriesValuesForCategoryDTO>> GetAllCategoriesDetailsAsync()
+        public async Task<ICollection<SubCategoriesValuesForCategoryDTO>> GetAllCategoriesDetailsAsync()
         {
             var CategoriesIds = await GetAllCategoriesIdsAsync();
             return await GetAllCategoriesDetailsFromIdsAsync(CategoriesIds);
         }
-                public async Task<SubCategoriesValuesForCategoryDTO> GetCategoryDetailsAsync(int categoryId)
+        public async Task<SubCategoriesValuesForCategoryDTO> GetCategoryDetailsAsync(int categoryId)
         {
             var category = await GetCategoryWithSubCategoryWithValuesAsync(categoryId);
             return await MapSubCategoriesValuesForCategory(category);
         }
-                public async Task<CategoriesValuesForSubCategoryDTO> GetSubCategoryDetails(int subCategoryId)
+        public async Task<CategoriesValuesForSubCategoryDTO> GetSubCategoryDetails(int subCategoryId)
         {
             var subCategory = await GetSubCategoryWithCategoryValuesAsync(subCategoryId);
             return await MapCategoriesValuesForSubCategory(subCategory);
         }
-                public async Task<ProductCategorySubCategoryValuesDTO> UpdateCategorySubCategoryValue(CategorySubCategoryValuesAddDTO addDTO, string newValue)
+        public async Task<ProductCategorySubCategoryValuesDTO> UpdateCategorySubCategoryValue(CategorySubCategoryValuesAddDTO addDTO, string newValue)
         {
             var CategorySubCategory = await _db.CategorySubCategory
                 .FirstOrDefaultAsync(c => c.CategoryId == addDTO.CategoryId && c.SubCategoryId == addDTO.SubCategoryId);
@@ -177,11 +179,14 @@ namespace ECommereceApi.Repo
                 {
                     var output = await _fileCloudService.UpdateImageAsync(addDTO.Image, target.ImageId);
                     target.ImageId = output;
+                    target.ImageUri = _fileCloudService.GetImageUrl(output);
                 }
                 else
                 {
                     var output = await _fileCloudService.UploadImagesAsync(addDTO.Image);
                     target.ImageId = output;
+                    target.ImageUri = _fileCloudService.GetImageUrl(output);
+
                 }
             }
             else
@@ -190,7 +195,10 @@ namespace ECommereceApi.Repo
                 {
                     var result = await _fileCloudService.DeleteImageAsync(target.ImageId);
                     if (result)
+                    {
                         target.ImageId = null;
+                        target.ImageUri = null;
+                    }
                 }
             }
             _db.Update(target);
@@ -199,27 +207,27 @@ namespace ECommereceApi.Repo
             await _db.Entry(target).Reference(t => t.CategorySubCategory).TargetEntry.Reference(te => te.SubCategory).LoadAsync();
             return _mapper.Map<ProductCategorySubCategoryValuesDTO>(target);
         }
-                public async Task<bool> IsCategorySubCategoryExistsAsync(int categoryId, int subCategoryId)
+        public async Task<bool> IsCategorySubCategoryExistsAsync(int categoryId, int subCategoryId)
         {
             return await _db.CategorySubCategory.AnyAsync(cs => cs.CategoryId == categoryId && cs.SubCategoryId == subCategoryId);
         }
-                public async Task<bool> IsCategoryExistsAsync(int id)
+        public async Task<bool> IsCategoryExistsAsync(int id)
         {
             return await _db.Categories.AnyAsync(c => c.CategoryId == id);
         }
-                public async Task<bool> IsSubCategoryExistsAsync(int id)
+        public async Task<bool> IsSubCategoryExistsAsync(int id)
         {
             return await _db.SubCategories.AnyAsync(s => s.SubCategoryId == id);
         }
-                public Task<int> GetCategorySubCategoryIdFromSeparateIds(int categoryId, int subCategoryId)
+        public Task<int> GetCategorySubCategoryIdFromSeparateIds(int categoryId, int subCategoryId)
         {
             return _db.CategorySubCategory.Where(cs => cs.CategoryId == categoryId && cs.SubCategoryId == subCategoryId).Select(cs => cs.CategorySubCategoryId).FirstOrDefaultAsync();
         }
-                public async Task<ICollection<int>> GetAllCategoriesIdsAsync()
+        public async Task<ICollection<int>> GetAllCategoriesIdsAsync()
         {
             return await _db.Categories.Select(c => c.CategoryId).ToListAsync();
         }
-                public async Task<int> GetCategorySubCategoryValueIdAsync(int categoryId, int subCategoryId, string value)
+        public async Task<int> GetCategorySubCategoryValueIdAsync(int categoryId, int subCategoryId, string value)
         {
             var output = await _db.CategorySubCategoryValues
                 .FirstOrDefaultAsync(c => c.CategorySubCategory.CategoryId == categoryId && c.CategorySubCategory.SubCategoryId == subCategoryId && c.Value.ToLower() == value.ToLower());
@@ -227,7 +235,7 @@ namespace ECommereceApi.Repo
                 return -1;
             return output.Id;
         }
-                public async Task<ICollection<SubCategoriesValuesForCategoryDTO>> GetAllCategoriesDetailsFromIdsAsync(ICollection<int> ids)
+        public async Task<ICollection<SubCategoriesValuesForCategoryDTO>> GetAllCategoriesDetailsFromIdsAsync(ICollection<int> ids)
         {
             List<SubCategoriesValuesForCategoryDTO> output = new();
             foreach (var id in ids)
@@ -236,7 +244,7 @@ namespace ECommereceApi.Repo
             }
             return output;
         }
-                public async Task<CategoriesValuesForSubCategoryDTO> MapCategoriesValuesForSubCategory(SubCategory subCategory)
+        public async Task<CategoriesValuesForSubCategoryDTO> MapCategoriesValuesForSubCategory(SubCategory subCategory)
         {
             var categories = await GetCategoriesForSubCategoryAsync(subCategory);
             var output = _mapper.Map<CategoriesValuesForSubCategoryDTO>(subCategory);
@@ -249,7 +257,7 @@ namespace ECommereceApi.Repo
             }
             return output;
         }
-                public async Task<Category> GetCategoryWithSubCategoryWithValuesAsync(int categoryId)
+        public async Task<Category> GetCategoryWithSubCategoryWithValuesAsync(int categoryId)
         {
             return await _db.Categories
                 .Include(c => c.CategorySubCategory).ThenInclude(c => c.SubCategory)
@@ -263,11 +271,11 @@ namespace ECommereceApi.Repo
                 .Include(c => c.CategorySubCategories).ThenInclude(c => c.CategorySubCategoryValues)
                 .FirstOrDefaultAsync(c => c.SubCategoryId == subCategoryId);
         }
-                public async Task<ICollection<Category>> GetCategoriesForSubCategoryAsync(SubCategory subCategory)
+        public async Task<ICollection<Category>> GetCategoriesForSubCategoryAsync(SubCategory subCategory)
         {
             return subCategory.CategorySubCategories.Select(c => c.Category).ToList();
         }
-                public async Task<SubCategoriesValuesForCategoryDTO> MapSubCategoriesValuesForCategory(Category category)
+        public async Task<SubCategoriesValuesForCategoryDTO> MapSubCategoriesValuesForCategory(Category category)
         {
             var subCategories = await GetSubCategoriesForCategoryAsync(category);
             var output = _mapper.Map<SubCategoriesValuesForCategoryDTO>(category);
@@ -280,7 +288,7 @@ namespace ECommereceApi.Repo
             }
             return output;
         }
-                public async Task<ICollection<SubCategory>> GetSubCategoriesForCategoryAsync(Category category)
+        public async Task<ICollection<SubCategory>> GetSubCategoriesForCategoryAsync(Category category)
         {
             return category.CategorySubCategory.Select(c => c.SubCategory).ToList();
         }
